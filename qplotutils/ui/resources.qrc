@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="bench">
+    <file alias="close_1">icons/window-close_grey.svg</file>
+    <file alias="close">icons/window-close.svg</file>
+  </qresource>
+</RCC>
