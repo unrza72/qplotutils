@@ -1,8 +1,8 @@
 """
-Bench
------
+qplotutils.bench
+----------------
 
-Provides a work bench on which docks can freely added / removed, positioned and re-sized.
+Widgets to create IDE like workbenches with dock widgets that can be rearanged and resized freely.
 """
 import json
 import logging
@@ -36,15 +36,16 @@ _log.setLevel(LOG_LEVEL)
 
 
 class BenchItem(QWidget, object):
+    """ Base class for all items that can be placed on the Bench.
+
+    That are:
+     * TabContainers,
+     * SplitterContainers, and
+     * Docks
+    """
+
 
     def __init__(self):
-        """ Base class for all items that can be placed on the Bench.
-
-        That are:
-         * TabContainers,
-         * SplitterContainers, and
-         * Docks
-        """
         super(BenchItem, self).__init__()
 
         self._uid = str(uuid.uuid4())
@@ -75,7 +76,7 @@ class BenchItem(QWidget, object):
         self._parent_container = value
 
     def paintEvent(self, event):
-        """ Overirde from QWidget, needed to get stylesheets working
+        """ Override from QWidget, needed to get stylesheets working
 
         :param event: paint event
         """
@@ -109,6 +110,14 @@ class BenchItem(QWidget, object):
         return layout
 
     def loadLayout(self, layout):
+        """ Restores the given layout of the item based on a layout directory.
+
+        ..see: saveLayout()
+
+        :param layout: dict with layout information.
+        :return:
+        """
+
         pass
 
 
@@ -118,15 +127,17 @@ class Placement(object):
 
 
 class Bench(QWidget):
+    """ Widget that provides the area on which docks can be added and moved around completely free
 
-    """ Signal that notifies connected slots about changes in layout or added/removed items. """
+    :param parent: parent Widget
+    """
+
+
+    #: Signal that notifies connected slots about changes in layout or added/removed items.
     contentModified = pyqtSignal()
 
     def __init__(self, parent=None):
-        """ Widget that provides the area on which docks can be added and moved around completely free
 
-        :param parent: parent Widget
-        """
         super(Bench, self).__init__(parent)
 
         self.layout = QHBoxLayout()
@@ -239,11 +250,23 @@ class Bench(QWidget):
         self.contentModified.emit()
 
     def removeDock(self, dock):
+        """ Removes the given dock from the bench.
+
+        :param dock: Dock that should be removed.
+        """
         _log.debug("Removing dock: {}".format(dock))
         dock.parentContainer.closeChild(dock.uid)
         self.contentModified.emit()
 
     def dockMove(self, dock_uid, placement, ref_uid):
+        """ Moves the dock programatically.
+
+        .. TODO:: Check if ref == None is possible.
+
+        :param dock_uid: UID of the docks that should move
+        :param placement: Placement relative to the reference dock or absolute if no reference given
+        :param ref_uid: UID of the reference dock
+        """
         _log.debug("Dock move: {}, {}, {}".format(dock_uid, placement, ref_uid))
 
         dock = None
@@ -259,6 +282,11 @@ class Bench(QWidget):
         previous_container.closeChild(dock.uid)
 
     def getDock(self, uid):
+        """ Returns the dock with the given UID if dock is part of this bench.
+
+        :param uid: Dock UID
+        :return: Dock instance if found else None
+        """
         for d in self.root_container.docks:
             if d.uid == uid:
                 return d
@@ -268,9 +296,18 @@ class Bench(QWidget):
 
     @property
     def docks(self):
+        """ List a dock on the bench.
+
+        :return: list with all docks
+        """
         return self.root_container.docks
 
     def saveLayout(self, filename=None):
+        """ Saves the benches dock layout to filename
+
+        :param filename: Full path to json
+        :return: Layout as dict
+        """
         layout = self.root_container.saveLayout()
 
         if filename is not None:
@@ -280,7 +317,10 @@ class Bench(QWidget):
         return layout
 
     def loadLayout(self, filename):
+        """ Loads layout from file.
 
+        :param filename: Full path to layout json file
+        """
         self.clearAll()
         self.root_container.setParent(None)
         self.root_container.close()
@@ -302,6 +342,8 @@ class Bench(QWidget):
             self.root_container.loadLayout(layout)
 
     def clearAll(self):
+        """ Removes all docks from the bench.
+        """
         for dock in self.docks:
             self.removeDock(dock)
 
@@ -1259,3 +1301,5 @@ class Tab(QWidget):
 class BenchException(Exception):
     """ Wrapper for all exceptions. """
     pass
+
+

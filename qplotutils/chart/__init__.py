@@ -1,11 +1,10 @@
 """
-pyQt chart - A super simple charting library
-============================================
+chart
+=====
 
-bench
------
 
-Widgets to create IDE like docks, that can be moved and re-sized
+
+
 """
 import logging
 

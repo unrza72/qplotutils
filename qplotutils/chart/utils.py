@@ -1,4 +1,8 @@
-""" Utility routines that easy the usage of QTs graphics view framework.
+"""
+qplotutils.chart.utils
+----------------------
+
+Utility classes to aid proper vizualization.
 """
 import logging
 

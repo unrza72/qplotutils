@@ -1,3 +1,9 @@
+"""
+qplotutils.chart.items
+----------------------
+
+Charts and and other items that can be added to view.
+"""
 import numpy as np
 import logging
 import itertools
@@ -26,14 +32,15 @@ class ChartItemFlags(object):
 
 
 class BaseMixin(object):
+    """ Base mixin for all items that are placed on the chart view.
+
+    :param parent: Parent QGraphicsItem, QGraphicsItemGroup or QGraohicsItemWidget
+    """
 
     def __init__(self, parent=None):
-        """ Base mixin for all items that are placed on the chart view.
-
-        :param parent: Parent QGraphicsItem, QGraphicsItemGroup or QGraohicsItemWidget
-        """
         super(BaseMixin, self).__init__(parent=parent)
         self.__flags = 0
+        self._color = QColor("#FFFFFF")
 
     def visibleRangeChanged(self, rect):
         """ Slot that is called when the chart view visible range changed.
@@ -44,10 +51,7 @@ class BaseMixin(object):
 
     @property
     def chartItemFlags(self):
-        """ Returns the ChartItemFlags for this chart item
-
-        :return: flags
-        """
+        """ Property of the ChartItemFlags for this chart item. """
         return self.__flags
 
     @chartItemFlags.setter
@@ -56,28 +60,22 @@ class BaseMixin(object):
 
     @property
     def color(self):
-        """ The items plot color.
-
-        :return: color
-        """
-        return QColor("#FFFFFF")
+        """ The items plot color. """
+        return self._color
 
     @property
     def label(self):
-        """ Label of the item.
-
-        :return: label
-        """
+        """ Label of the item. """
         return "-"
 
 
 class ChartItemGroup(BaseMixin, QGraphicsItemGroup):
+    """ Item group for chart view items
+
+    :param parent:
+    """
 
     def __init__(self, parent=None):
-        """ Item group for chart view items
-
-        :param parent:
-        """
         super(ChartItemGroup, self).__init__(parent=parent)
 
     def __repr__(self):
@@ -88,12 +86,12 @@ class ChartItemGroup(BaseMixin, QGraphicsItemGroup):
 
 
 class ChartWidgetItem(BaseMixin, QGraphicsWidget):
+    """ Base class for all custom view widgets.
+
+    :param parent: Parent view item.
+    """
 
     def __init__(self, parent=None):
-        """
-
-        :param parent:
-        """
         super(ChartWidgetItem, self).__init__(parent=parent)
 
     def __repr__(self):
@@ -104,6 +102,11 @@ class ChartWidgetItem(BaseMixin, QGraphicsWidget):
 
 
 class ChartItem(BaseMixin, QGraphicsItem):
+    """ Base class for all GraphicItems.
+    This implementation overrides boundingRect and paint in order to provide bounding boxing during debugging.
+
+    :param parent: Parent item
+    """
 
     def __init__(self, parent=None):
         super(ChartItem, self).__init__(parent=parent)
@@ -129,6 +132,13 @@ class ChartItem(BaseMixin, QGraphicsItem):
 
 
 class TextItem(ChartItem):
+    """ Item to add a string to the view.
+
+    :param pos: Top-left position of the text
+    :param text: Content
+    :param parent: Parent item.
+    """
+
     def __init__(self, pos, text, parent=None):
         super(TextItem, self).__init__(parent)
         self.setFlags(QGraphicsItem.ItemIgnoresTransformations)
@@ -152,6 +162,7 @@ class TextItem(ChartItem):
 
 
 class WireItem(ChartItem):
+
     def __init__(self, parent=None):
         super(WireItem, self).__init__(parent)
 
@@ -165,6 +176,10 @@ class WireItem(ChartItem):
 
 
 class CoordCross(ChartItem):
+    """ Coordiante cross to indicate the charts origin.
+
+    :param parent: Items parent.
+    """
 
     def __init__(self, parent=None):
         super(CoordCross, self).__init__(parent)
@@ -192,14 +207,17 @@ class CoordCross(ChartItem):
 
 
 class LineChartItem(ChartItem):
-    """ Visualises the given data as line chart. """
+    """ Visualises the given data as line chart.
+
+    :param parent: Items parent
+    """
 
     def __init__(self, parent=None):
         super(LineChartItem, self).__init__(parent)
         self._xData = None
         self._yData = None
         self._label = None
-        self._color = None
+        # self._color = None
         self._bRect = None
         self.markers = {}
 
@@ -216,6 +234,7 @@ class LineChartItem(ChartItem):
 
     @property
     def ordinate(self):
+        """ Property to set/get the items ordinate name. """
         return self._ordinate
 
     @ordinate.setter
@@ -224,6 +243,7 @@ class LineChartItem(ChartItem):
 
     @property
     def abscissa(self):
+        """ Property to set/get the items abscissa name. """
         return self._abscissa
 
     @abscissa.setter
@@ -232,6 +252,9 @@ class LineChartItem(ChartItem):
 
     @property
     def showTicks(self):
+        """ Property if true the chart will display tickmarks if the number of displayed data points is below
+        400.
+        """
         return self._showticks
 
     @showTicks.setter
@@ -239,15 +262,23 @@ class LineChartItem(ChartItem):
         self._showticks = value
         self.visibleRangeChanged(self._visible_range)
 
-    @property
-    def color(self):
-        return self._color
+    # @property
+    # def color(self):
+    #     return self._color
 
     @property
     def label(self):
+        """ Property to get the items label. """
         return self._label
 
     def plot(self, data, index=None, label=None, color=QColor(Qt.red)):
+        """ Sets the charts data points.
+
+        :param data: ordinate values
+        :param index: abscissa values. Optional, if not set datapoints are indexed starting with 0
+        :param label: Label of the chart.
+        :param color: Color of the chart
+        """
         self._yData = data
 
         if index is not None:
@@ -308,6 +339,11 @@ class LineChartItem(ChartItem):
 
 
     def visibleRangeChanged(self, rect=QRectF()):
+        """ Slot that is called whenver the views visible range changed.
+
+        :param rect: view rectangle.
+        """
+
         _log.debug("Visible range changed to: {}".format(rect))
         self._visible_range = rect
 
@@ -347,6 +383,10 @@ class LineChartItem(ChartItem):
 
 
 class RectMarker(ChartItem):
+    """ Recatngular tick mark.
+
+    :param parent: Parent Item
+    """
 
     def __init__(self, pos, parent=None):
         super(RectMarker, self).__init__(parent)
@@ -442,26 +482,36 @@ class ColorSet(object):
 
 
 class HLine(ChartItem):
+    """ Simple horizontal line without horizontal bounds.
+
+    :param parent: Parent item.
+    """
 
     def __init__(self, parent=None):
         super(HLine, self).__init__(parent)
         self._y = None
 
         self._label = None
-        self._color = None
+        # self._color = None
         self._bRect = None
 
         self.chartItemFlags = ChartItemFlags.FLAG_NO_LABEL | ChartItemFlags.FLAG_NO_AUTO_RANGE
 
-    @property
-    def color(self):
-        return self._color
+    # @property
+    # def color(self):
+    #     return self._color
 
     @property
     def label(self):
         return self._label
 
     def setY(self, y, label=None, color=QColor(Qt.red)):
+        """ Sets the Hline's y value
+
+        :param y: Ordinate value
+        :param label:
+        :param color:
+        """
         self._y = y
 
         if label is not None:
@@ -503,26 +553,36 @@ class HLine(ChartItem):
 
 
 class VLine(ChartItem):
+    """ Simple vertical line without vertical bounds.
+
+    :param parent: Parent item.
+    """
 
     def __init__(self, parent=None):
         super(VLine, self).__init__(parent)
         self._x = None
         self._label = None
-        self._color = None
+        # self._color = None
         self._bRect = None
 
         # self._flags = FLAG_NO_AUTO_RANGE | FLAG_NO_LABEL
         self.chartItemFlags = ChartItemFlags.FLAG_NO_AUTO_RANGE | ChartItemFlags.FLAG_NO_LABEL
 
-    @property
-    def color(self):
-        return self._color
+    # @property
+    # def color(self):
+    #     return self._color
 
     @property
     def label(self):
         return self._label
 
     def setX(self, x, label=None, color=QColor(Qt.red)):
+        """ Sets the Vline's x value.
+
+        :param x: abscissa value.
+        :param label:
+        :param color:
+        """
         self._x = x
 
         if label is not None:

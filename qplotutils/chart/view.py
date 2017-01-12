@@ -1,4 +1,8 @@
-""" Classes to display chart items in a Qt widget.
+"""
+qplotutils.chart.view
+---------------------
+
+Base widget that provides the view for all charts including axis, legend and zooming and panning capabilities.
 """
 import math
 import logging
@@ -121,19 +125,19 @@ class ChartLegend(ChartItem):
 
 
 class ChartView(QGraphicsView):
+    """ Widget that display chart items.
+    """
 
-    # point of origin upper left corner, x axis to the right, y axis to the bottom
+    #: point of origin upper left corner, x axis to the right, y axis to the bottom
     DEFAULT_ORIENTATION = QTransform(1, 0, 0, 1, 0, 0)
 
-    # point of origin lower left corner, x axis to the right, y axis to the top
+    #: point of origin lower left corner, x axis to the right, y axis to the top
     CARTESIAN = QTransform(1, 0, 0, -1, 0, 0)
 
-    # point of origin lower right corner, x axis to the top, y axis to the left
+    #: point of origin lower right corner, x axis to the top, y axis to the left
     AUTOSAR = QTransform(0, -1, -1, 0, 0, 0)
 
     def __init__(self, parent=None, orientation=DEFAULT_ORIENTATION):
-        """ Widget that display chart items.
-        """
         super(ChartView, self).__init__(parent)
 
         self.setFocusPolicy(Qt.StrongFocus)
@@ -236,6 +240,14 @@ class ChartView(QGraphicsView):
     def autoRange(self):
         self.centralWidget.area.autoRange()
 
+    @property
+    def legend(self):
+        return self._legend.isVisible()
+
+    @legend.setter
+    def legend(self, value):
+        self._legend.setVisible(value)
+
     def setMaxVisibleRange(self, rect):
         self.centralWidget.area.setMaxVisibleRange(rect)
 
@@ -247,14 +259,14 @@ class ChartView(QGraphicsView):
 
 
 class ChartWidget(QGraphicsWidget):
+    """ Provides the base layout and adds the axis to bottom and left side.
 
+    .. note:: Is instantiated and connected by the parent chart view.
+
+    :param parent: the Chart view
+    """
     def __init__(self, parent=None):
-        """ Provides the base layout and adds the axis to bottom and left side.
 
-        .. note:: Is instantiated and connected by the parent chart view.
-
-        :param parent: the Chart view
-        """
         super(ChartWidget, self).__init__(parent)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
@@ -297,12 +309,12 @@ class ChartWidget(QGraphicsWidget):
 
 
 class ChartAxis(QGraphicsWidget):
+    """ Base implementation for all chart axes.
 
+     :param parent: a chart widget.
+     """
     def __init__(self, parent=None):
-        """ Base implementation for all chart axes.
 
-        :param parent: a chart widget.
-        """
         super(ChartAxis, self).__init__(parent)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
         self.setFlags(QGraphicsItem.ItemClipsChildrenToShape | QGraphicsItem.ItemIsFocusable)
@@ -350,9 +362,9 @@ class ChartAxis(QGraphicsWidget):
         """ Calculates the axis ticks.
          The ticks are calculated along the logarithm of the base 10 of the displayed value range.
          The resulting exponent for the ticks is than scaled with respect to the preferred number of
-          ticks and the value range.
+         ticks and the value range.
          In case the value range would cause more ticks as previously determined the exponent is incremented
-          by 1. Otherwise if the exponent results in to less ticks, the exponent is divided by 2.
+         by 1. Otherwise if the exponent results in to less ticks, the exponent is divided by 2.
 
         :param shift: offset from point of origin along the current axis (m31 / m32 from transform)
         :param scaling: scaling of scene (m11 / m12 / m21 / m22 from transform)
@@ -934,19 +946,3 @@ class ChartArea(QGraphicsWidget):
     def __del__(self):
         _log.debug("Finalizing: {}".format(self))
 
-
-"""
-Copyright 2015, 2016 Philipp Baust
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""

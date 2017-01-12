@@ -1,12 +1,13 @@
 #!/usr/bin/python
 """
-Bench01
+Chart01
 -------
 
-Minimal Example opening two dock widgets.
+
 """
 import os
 import sys
+import numpy as np
 from PyQt4.QtGui import *
 
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
@@ -14,7 +15,8 @@ print(PKG_DIR)
 if PKG_DIR not in sys.path:
     sys.path.append(PKG_DIR)
 
-from qplotutils.bench import Dock, Bench
+from qplotutils.chart.view import ChartView
+from qplotutils.chart.items import LineChartItem
 
 
 __author__ = "Philipp Baust"
@@ -33,19 +35,16 @@ if __name__ == "__main__":
     """
     qapp = QApplication([])
 
-    # Creating the bench
-    bench = Bench()
+    view = ChartView(orientation=ChartView.CARTESIAN)
 
-    # First dock
-    dock_01 = Dock()
-    bench.addDock(dock_01)
+    l = LineChartItem()
+    x = np.arange(-30, 300, 0.2, dtype=np.float)
+    y = np.sin(2 * np.pi * 3 / float(max(x) - min(x)) * x)
+    l.plot(y, x, "a sine")
 
-    # Second dock
-    dock_02 = Dock(title="Dock 2")
-    bench.addDock(dock_02)
+    view.addItem(l)
+    view.autoRange()
 
-    bench.setWindowTitle("Bench Example 01")
-    bench.resize(300, 400)
-    bench.show()
+    view.show()
+
     qapp.exec_()
-
