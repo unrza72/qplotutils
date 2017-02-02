@@ -9,7 +9,8 @@ import logging
 import itertools
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from . import DEBUG, LOG_LEVEL
+from qplotutils.config import Configuration
+from . import LOG_LEVEL
 from .utils import makePen
 
 __author__ = "Philipp Baust"
@@ -22,22 +23,32 @@ __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
 
 
+#: Module level logger
 _log = logging.getLogger(__name__)
 _log.setLevel(LOG_LEVEL)
 
+#: Global configuration
+_cfg = Configuration()
+
 
 class ChartItemFlags(object):
+    """ Enum with flags that control behavior and apearance of chart items. """
+
+    #: Inidicates the items bounding box shall considered when auto-ranging the view.
     FLAG_NO_AUTO_RANGE = 1
+
+    #: The item will not be displayed in the views legend.
     FLAG_NO_LABEL = 2
 
 
 class BaseMixin(object):
-    """ Base mixin for all items that are placed on the chart view.
-
-    :param parent: Parent QGraphicsItem, QGraphicsItemGroup or QGraohicsItemWidget
-    """
+    """ Base mixin for all items that are placed on the chart view. """
 
     def __init__(self, parent=None):
+        """ Constructor.
+
+        :param parent: Parent QGraphicsItem, QGraphicsItemGroup or QGraphicsItemWidget
+        """
         super(BaseMixin, self).__init__(parent=parent)
         self.__flags = 0
         self._color = QColor("#FFFFFF")
@@ -120,7 +131,7 @@ class ChartItem(BaseMixin, QGraphicsItem):
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
         # Override
-        if DEBUG:
+        if _cfg.debug:
             p.setPen(QPen(Qt.blue))
             p.drawRect(self.b_rect)
 
@@ -332,11 +343,9 @@ class LineChartItem(ChartItem):
         #         marker = RectMarker(m)
         #         marker.setParentItem(self)
 
-
-        if DEBUG:
+        if _cfg.debug:
             p.setPen(Qt.yellow)
             p.drawRect(self._bRect)
-
 
     def visibleRangeChanged(self, rect=QRectF()):
         """ Slot that is called whenver the views visible range changed.
@@ -368,7 +377,6 @@ class LineChartItem(ChartItem):
                     marker = RectMarker(pos)
                     self.markers[idx] = marker
                     marker.setParentItem(self)
-
 
         else:
             _log.debug("removing all markers")
@@ -423,7 +431,6 @@ class ColorSet(object):
             QColor(153, 153, 153),
         ])
 
-
     @classmethod
     def QualitativePaired(cls):
         """ Set with 12 colors """
@@ -442,7 +449,6 @@ class ColorSet(object):
             QColor(177, 89, 40),
         ])
 
-
     @classmethod
     def Qualitative(cls):
         """ Another set with 12 colors """
@@ -460,7 +466,6 @@ class ColorSet(object):
             QColor(255, 255, 153),
             QColor(177, 89, 40),
         ])
-
 
     @classmethod
     def Stupid(cls):
@@ -565,6 +570,8 @@ class VLine(ChartItem):
         # self._color = None
         self._bRect = None
 
+        self._path = QPainterPath()
+
         # self._flags = FLAG_NO_AUTO_RANGE | FLAG_NO_LABEL
         self.chartItemFlags = ChartItemFlags.FLAG_NO_AUTO_RANGE | ChartItemFlags.FLAG_NO_LABEL
 
@@ -616,7 +623,7 @@ class VLine(ChartItem):
         if self._path:
             p.drawPath(self._path)
 
-        if DEBUG:
+        if _cfg.debug:
             p.setPen(Qt.yellow)
             p.drawRect(self._bRect)
 

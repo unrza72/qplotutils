@@ -22,9 +22,14 @@ Chart
     :show-inheritance:
     :exclude-members: bin, hex, oct
 
+.. automodule:: qplotutils.chart.roi
+    :members:
+    :show-inheritance:
+    :exclude-members: bin, hex, oct
+
+
 Bench
 =====
-
 
 .. automodule:: qplotutils.bench
     :members:

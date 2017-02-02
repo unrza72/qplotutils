@@ -8,8 +8,8 @@ import math
 import logging
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-
-from . import LOG_LEVEL, DEBUG
+from qplotutils.config import Configuration
+from . import LOG_LEVEL
 from .utils import makePen
 from .items import ChartItem, ChartItemFlags
 
@@ -26,8 +26,11 @@ __status__ = "Development"
 _log = logging.getLogger(__name__)
 _log.setLevel(LOG_LEVEL)
 
+_cfg = Configuration()
+
 
 class ChartLegend(ChartItem):
+    """ Legend for chart views. """
 
     def __init__(self):
         """ Displays the chart item in a legend table. """
@@ -184,14 +187,6 @@ class ChartView(QGraphicsView):
         # Pycharm / pyLint inspection error. Please ignore
         self.apect1by1Action.toggled.connect(self.__toggle_apect1by1)
 
-    def __toggle_apect1by1(self, checked):
-        _log.debug("Aspect 1:1")
-        if checked:
-            self.centralWidget.area.setAspectRatio(1.0)
-
-        else:
-            self.centralWidget.area.setAspectRatio(None)
-
     def __toggle_legend(self, checked):
         self._legend.setVisible(checked)
 
@@ -239,6 +234,21 @@ class ChartView(QGraphicsView):
 
     def autoRange(self):
         self.centralWidget.area.autoRange()
+
+    def __toggle_apect1by1(self, checked):
+        _log.debug("Aspect 1:1")
+        if checked:
+            self.centralWidget.area.setAspectRatio(1.0)
+
+        else:
+            self.centralWidget.area.setAspectRatio(None)
+
+    @property
+    def aspectRatio(self):
+        return self.centralWidget.area.aspectRatio
+
+    def setAspectRatio(self, value):
+        self.centralWidget.area.setAspectRatio(value)
 
     @property
     def legend(self):
@@ -296,7 +306,7 @@ class ChartWidget(QGraphicsWidget):
         return b_rect
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-        if DEBUG:
+        if _cfg.debug:
             b_rect = QRectF(0, 0, self.size().width(), self.size().height())
             p.setPen(QPen(Qt.yellow))
             p.drawRect(b_rect)
@@ -583,6 +593,10 @@ class ChartArea(QGraphicsWidget):
 
         self.__aspectRatio = None
 
+    @property
+    def aspectRatio(self):
+        return self.__aspectRatio
+
     def setAspectRatio(self, value):
         self.__aspectRatio = value
         if value is not None:
@@ -601,7 +615,7 @@ class ChartArea(QGraphicsWidget):
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
         # Override
-        if DEBUG:  # _log.getEffectiveLevel() < logging.INFO:
+        if _cfg.debug:  # _log.getEffectiveLevel() < logging.INFO:
             p.setPen(QPen(Qt.blue))
             p.drawRect(self.boundingRect())
 
@@ -835,8 +849,11 @@ class ChartArea(QGraphicsWidget):
 
             if bbox is None:
                 bbox = c.boundingRect().normalized()
+                bbox.moveCenter(bbox.center() + c.pos())
             else:
-                bbox = bbox.united(c.boundingRect().normalized())
+                other = c.boundingRect().normalized()
+                other.moveCenter(other.center() + c.pos())
+                bbox = bbox.united(other)
 
         _log.debug("bbox: {}".format(bbox))
         if bbox is None:

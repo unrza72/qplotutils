@@ -1,10 +1,9 @@
 """
-chart
-=====
+========================
+Package qplotutils.chart
+========================
 
-
-
-
+Widgets to display line charts.
 """
 import logging
 
@@ -17,11 +16,10 @@ __maintainer__ = "Philipp Baust"
 __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
 
-LOG_LEVEL = logging.DEBUG
-""" Default logging level for all modules. """
 
-MIME_TYPE = 'application/x-dockbench'
-""" MIME type for drag and drop of docks. """
+#: Default logging level for all modules.
+LOG_LEVEL = logging.INFO
 
-DEBUG = False
-""" Enables debug visualisations. """
+
+# MIME_TYPE = 'application/x-dockbench'
+# """ MIME type for drag and drop of docks. """

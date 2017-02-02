@@ -10,6 +10,8 @@ import sys
 import numpy as np
 from PyQt4.QtGui import *
 
+from qplotutils.config import Configuration
+
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
 print(PKG_DIR)
 if PKG_DIR not in sys.path:
@@ -29,10 +31,15 @@ __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
 
 
+
 if __name__ == "__main__":
     """ Minimal example showing a bench with 2 docks.
     The docks can be resized and dragged around.
     """
+
+    cfg = Configuration()
+    cfg.debug = True
+
     qapp = QApplication([])
 
     view = ChartView(orientation=ChartView.CARTESIAN)
