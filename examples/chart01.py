@@ -10,13 +10,12 @@ import sys
 import numpy as np
 from PyQt4.QtGui import *
 
-from qplotutils.config import Configuration
-
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
 print(PKG_DIR)
 if PKG_DIR not in sys.path:
     sys.path.append(PKG_DIR)
 
+from qplotutils.config import Configuration
 from qplotutils.chart.view import ChartView
 from qplotutils.chart.items import LineChartItem
 
@@ -38,20 +37,19 @@ if __name__ == "__main__":
     """
 
     cfg = Configuration()
-    cfg.debug = True
+    cfg.debug = False
 
     qapp = QApplication([])
 
     view = ChartView(orientation=ChartView.CARTESIAN)
+    view.resize(800, 400)
 
     l = LineChartItem()
     x = np.arange(-30, 300, 0.2, dtype=np.float)
     y = np.sin(2 * np.pi * 3 / float(max(x) - min(x)) * x)
     l.plot(y, x, "a sine")
-
     view.addItem(l)
+
     view.autoRange()
-
     view.show()
-
     qapp.exec_()

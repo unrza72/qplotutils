@@ -375,7 +375,7 @@ class RoiHandle(ChartItem):
         :param position: Placement position.
         """
         super(RoiHandle, self).__init__(parent)
-        self.setFlags(QGraphicsItem.ItemIsSelectable | QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIsFocusable
+        self.setFlags( QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIsFocusable
                       | QGraphicsItem.ItemIgnoresTransformations | QGraphicsItem.ItemSendsGeometryChanges)
 
         self.setAcceptHoverEvents(True)

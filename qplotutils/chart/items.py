@@ -123,14 +123,11 @@ class ChartItem(BaseMixin, QGraphicsItem):
         super(ChartItem, self).__init__(parent=parent)
         self.b_rect = QRectF(0, 0, 1, 1)
 
-        # self._flags = 0
-
     def boundingRect(self):
         # Override
         return self.b_rect
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-        # Override
         if _cfg.debug:
             p.setPen(QPen(Qt.blue))
             p.drawRect(self.b_rect)
@@ -494,17 +491,17 @@ class HLine(ChartItem):
 
     def __init__(self, parent=None):
         super(HLine, self).__init__(parent)
+        self.chartItemFlags = ChartItemFlags.FLAG_NO_AUTO_RANGE
+
         self._y = None
-
         self._label = None
-        # self._color = None
-        self._bRect = None
 
-        self.chartItemFlags = ChartItemFlags.FLAG_NO_LABEL | ChartItemFlags.FLAG_NO_AUTO_RANGE
+        self._pen = QPen(QBrush(Qt.green), 1.0, Qt.SolidLine)
+        self._pen.setCosmetic(True)
+        self._brush = QBrush(QColor(255, 255, 255, 0))
 
-    # @property
-    # def color(self):
-    #     return self._color
+        finfo = np.finfo(np.float32)
+        self.b_rect = QRectF(finfo.min / 2., 0, finfo.max, 0)
 
     @property
     def label(self):
@@ -518,40 +515,27 @@ class HLine(ChartItem):
         :param color:
         """
         self._y = y
+        self.setPos(QPointF(0, self._y))
 
         if label is not None:
             self._label = label
 
         self._color = color
+        self._pen = QPen(QBrush(color), 1.0, Qt.SolidLine)
+        self._pen.setCosmetic(True)
+        self._brush = QBrush(QColor(255, 255, 255, 0))
 
-        finfo = np.finfo(np.float32)
-
-        self._bRect = QRectF(QPointF(finfo.min, y + 1),
-                             QPointF(finfo.max, y - 1),)
-        self._makePath()
-
-    def _makePath(self):
-
-        finfo = np.finfo(np.float32)
-
-        self._path = QPainterPath()
-        self._path.moveTo(finfo.max, self._y)
-        self._path.lineTo(finfo.min, self._y)
-
-    def boundingRect(self):
-        """ Returns the bounding rect of the chart item
-        :return: Bounding Rectangle
-        :rtype: QRectF
-        """
-        return self._bRect
+    def visibleRangeChanged(self, rect):
+        b = min(rect.left(), rect.right())
+        self.b_rect = QRectF(b - 10, 0,  rect.width() + 20, 0)
+        self.prepareGeometryChange()
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-        # _log.debug(": paint")
-        pen = makePen(self.color)
-        p.setPen(pen)
-
-        if self._path:
-            p.drawPath(self._path)
+        p.setRenderHint(QPainter.Antialiasing)
+        p.setPen(self._pen)
+        p.setBrush(self._brush)
+        p.drawLine(QLineF(QPointF(self.b_rect.left(), 0), QPointF(self.b_rect.right(), 0)))
+        super(HLine, self).paint(p, o, widget)
 
     def __del__(self):
         _log.debug("Finalize VLine {}".format(self))
@@ -565,19 +549,17 @@ class VLine(ChartItem):
 
     def __init__(self, parent=None):
         super(VLine, self).__init__(parent)
+        self.chartItemFlags = ChartItemFlags.FLAG_NO_AUTO_RANGE
+
         self._x = None
         self._label = None
-        # self._color = None
-        self._bRect = None
 
-        self._path = QPainterPath()
+        self._pen = QPen(QBrush(Qt.green), 1.0, Qt.SolidLine)
+        self._pen.setCosmetic(True)
+        self._brush = QBrush(QColor(255, 255, 255, 0))
 
-        # self._flags = FLAG_NO_AUTO_RANGE | FLAG_NO_LABEL
-        self.chartItemFlags = ChartItemFlags.FLAG_NO_AUTO_RANGE | ChartItemFlags.FLAG_NO_LABEL
-
-    # @property
-    # def color(self):
-    #     return self._color
+        finfo = np.finfo(np.float32)
+        self.b_rect = QRectF(0, finfo.min / 2., 0, finfo.max)
 
     @property
     def label(self):
@@ -591,41 +573,30 @@ class VLine(ChartItem):
         :param color:
         """
         self._x = x
+        self.setPos(QPointF(self._x, 0))
 
         if label is not None:
             self._label = label
 
         self._color = color
+        self._pen = QPen(QBrush(color), 1.0, Qt.SolidLine)
+        self._pen.setCosmetic(True)
+        self._brush = QBrush(QColor(255, 255, 255, 0))
 
-        finfo = np.finfo(np.float32)
-
-        self._bRect = QRectF(QPointF(x-1, finfo.max),
-                             QPointF(x+1, finfo.min),)
-
-    def boundingRect(self):
-        """ Returns the bounding rect of the chart item
-        :return: Bounding Rectangle
-        :rtype: QRectF
-        """
-        return self._bRect
+    def visibleRangeChanged(self, rect):
+        b = min(rect.bottom(), rect.top())
+        self.b_rect = QRectF(0, b - 10, 0, rect.height() + 20)
+        self.prepareGeometryChange()
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-        # _log.debug("LCI: paint")
-        pen = makePen(self.color)
-        p.setPen(pen)
+        p.setRenderHint(QPainter.Antialiasing)
+        p.setPen(self._pen)
+        p.setBrush(self._brush)
 
-        finfo = np.finfo(np.float32)
+        p.drawLine(QLineF(QPointF(0, self.b_rect.bottom()), QPointF(0, self.b_rect.top())))
 
-        self._path = QPainterPath()
-        self._path.moveTo(self._x, finfo.max)
-        self._path.lineTo(self._x, finfo.min)
+        super(VLine, self).paint(p, o, widget)
 
-        if self._path:
-            p.drawPath(self._path)
-
-        if _cfg.debug:
-            p.setPen(Qt.yellow)
-            p.drawRect(self._bRect)
 
     def __del__(self):
         _log.debug("Finalize VLine {}".format(self))

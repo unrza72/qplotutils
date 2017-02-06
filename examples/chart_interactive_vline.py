@@ -16,8 +16,10 @@ print(PKG_DIR)
 if PKG_DIR not in sys.path:
     sys.path.append(PKG_DIR)
 
-from qplotutils.chart.view import ChartView, SecondaryHorizontalAxis
-from qplotutils.chart.items import LineChartItem, HLine, VLine
+from qplotutils.chart.interactive import InteractiveVerticalLine, InteractiveChangeEvent
+from qplotutils.chart.view import ChartView
+from qplotutils.chart.items import LineChartItem
+
 
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2017, Philipp Baust"
@@ -27,6 +29,18 @@ __version__ = "0.0.1"
 __maintainer__ = "Philipp Baust"
 __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
+
+_log = logging.getLogger(__name__)
+_log.setLevel(logging.DEBUG)
+
+
+class AWidget(QObject):
+
+    def __init__(self, parent=None):
+        super(AWidget, self).__init__(parent)
+
+    def report(self, e=InteractiveChangeEvent):
+        _log.debug(e.position)
 
 
 if __name__ == "__main__":
@@ -41,27 +55,21 @@ if __name__ == "__main__":
     x = np.arange(-30, 300, 0.2, dtype=np.float)
     y = np.sin(2 * np.pi * 3 / float(max(x) - min(x)) * x)
     l.plot(y, x, "a sine")
-
-    sec = SecondaryHorizontalAxis(x + 0.24, x * 2e14 - 12.67567)
-    view.centralWidget.addSecondaryHorizontalAxis(sec)
-
-
     view.addItem(l)
-    view.autoRange()
 
+    ivline = InteractiveVerticalLine()
+    ivline.setX(5, "Current Timestamp", Qt.darkGreen)
+    view.addItem(ivline)
 
-
-    # Add a horizontal line
-    h = HLine()
-    h.setY(0.1, "A Hline", QColor(Qt.green))
-    view.addItem(h)
-
-    # Add a vertical line
-    v = VLine()
-    v.setX(12, "A Vline", QColor(Qt.yellow))
-    view.addItem(v)
-
-    # Set legend visible
+    # # Set legend visible
     view.legend = True
+    view.autoRange()
+    # view.setRange(QRectF(0,0,30,1))
+    # view.setMaxVisibleRange(QRectF(-100,-10000,600,20000))
+
+
+    a = AWidget()
+    ivline.postionChange.connect(a.report)
+
 
     qapp.exec_()

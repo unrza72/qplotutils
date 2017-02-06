@@ -241,6 +241,9 @@ class ChartView(QGraphicsView):
     def autoRange(self):
         self.centralWidget.area.autoRange()
 
+    def setRange(self, rect):
+        self.centralWidget.area.setRange(rect)
+
     def __toggle_apect1by1(self, checked):
         _log.debug("Aspect 1:1")
         if checked:
@@ -366,7 +369,7 @@ class ChartAxis(QGraphicsWidget):
 
         super(ChartAxis, self).__init__(parent)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
-        self.setFlags(QGraphicsItem.ItemClipsChildrenToShape | QGraphicsItem.ItemIsFocusable)
+        self.setFlags(QGraphicsItem.ItemClipsChildrenToShape) #  | QGraphicsItem.ItemIsFocusable)
 
         self.font = QFont("Helvetica [Cronyx]", 11, QFont.Normal)
         self.flags = Qt.TextDontClip | Qt.AlignRight | Qt.AlignVCenter

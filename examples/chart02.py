@@ -36,6 +36,7 @@ if __name__ == "__main__":
     qapp = QApplication([])
 
     view = ChartView(orientation=ChartView.CARTESIAN)
+    view.resize(800, 400)
     view.show()
 
     # A line chart item (again)

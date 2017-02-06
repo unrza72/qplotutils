@@ -1,8 +1,9 @@
 #!/usr/bin/python
 """
-Chart01
--------
+Region of interest
+------------------
 
+Example for a region of interest (ROI) with different handles.
 
 """
 import logging
@@ -12,8 +13,7 @@ import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-
-PKG_DIR = os.path.abspath(os.path.join(__file__, "..", "..", "..", ".."))
+PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
 print(PKG_DIR)
 if PKG_DIR not in sys.path:
     sys.path.append(PKG_DIR)
@@ -41,8 +41,6 @@ if __name__ == "__main__":
     """
     logging.basicConfig(level=logging.DEBUG)
 
-    global DEBUG
-    DEBUG = True
 
     qapp = QApplication([])
 
