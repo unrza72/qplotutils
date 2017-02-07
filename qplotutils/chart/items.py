@@ -536,7 +536,7 @@ class HLine(ChartItem):
         self.prepareGeometryChange()
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-        p.setRenderHint(QPainter.Antialiasing)
+        # p.setRenderHint(QPainter.N)
         p.setPen(self._pen)
         p.setBrush(self._brush)
         p.drawLine(QLineF(QPointF(self.b_rect.left(), 0), QPointF(self.b_rect.right(), 0)))
@@ -594,7 +594,7 @@ class VLine(ChartItem):
         self.prepareGeometryChange()
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-        p.setRenderHint(QPainter.Antialiasing)
+        # p.setRenderHint(QPainter.Antialiasing)
         p.setPen(self._pen)
         p.setBrush(self._brush)
 

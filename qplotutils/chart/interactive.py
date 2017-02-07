@@ -46,6 +46,7 @@ class InteractiveVerticalLine(ChartWidgetItem):
         super(InteractiveVerticalLine, self).__init__(parent)
         self.setFlags(QGraphicsItem.ItemIsMovable| QGraphicsItem.ItemSendsGeometryChanges)
         self.chartItemFlags = ChartItemFlags.FLAG_NO_AUTO_RANGE
+        self.setZValue(1e6)
 
         self.setAcceptHoverEvents(True)
 
@@ -60,35 +61,38 @@ class InteractiveVerticalLine(ChartWidgetItem):
     def label(self):
         return self._label
 
-    def setX(self, x, label=None, color=QColor(Qt.red)):
+    def setX(self, x, label=None, color=None):
         """ Sets the line's x value.
 
         :param x: abscissa value.
         :param label:
         :param color:
         """
-        self._x = x
-        self.setPos(QPointF(self._x, 0))
-
         if label is not None:
             self._label = label
 
-        self._color = color
-        self._pen = QPen(QBrush(color), 1.0, Qt.SolidLine)
-        self._pen.setCosmetic(True)
-        self._brush = QBrush(QColor(255, 255, 255, 0))
+        if color is not None:
+            self._color = color
+            self._pen = QPen(QBrush(color), 1.0, Qt.SolidLine)
+            self._pen.setCosmetic(True)
+        # self._brush = QBrush(QColor(255, 255, 255, 0))
+
+        if self._x != x:
+            self._x = x
+            self.setPos(QPointF(self._x, 0))
 
     def visibleRangeChanged(self, rect):
         t = self.parentItem().transform()
         bb = 4 / t.m11()
         _log.debug("{}, {} -> {}".format(rect.bottom(), rect.height(), bb))
 
+
         b = min(rect.bottom(), rect.top())
-        self.b_rect = QRectF(-bb, b - 10, 2 * bb, rect.height() + 20)
+        self.b_rect = QRectF(-bb, b, 2 * bb, rect.height())
         self.prepareGeometryChange()
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-        p.setRenderHint(QPainter.Antialiasing)
+        # p.setRenderHint(QPainter.Antialiasing)
         p.setPen(self._pen)
         p.setBrush(self._brush)
 
