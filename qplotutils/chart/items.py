@@ -104,6 +104,11 @@ class ChartWidgetItem(BaseMixin, QGraphicsWidget):
 
     def __init__(self, parent=None):
         super(ChartWidgetItem, self).__init__(parent=parent)
+        self.b_rect = QRectF(0, 0, 1, 1)
+
+    def boundingRect(self):
+        # Override
+        return self.b_rect
 
     def __repr__(self):
         return "<ChartWidget>"
@@ -538,7 +543,7 @@ class HLine(ChartItem):
         super(HLine, self).paint(p, o, widget)
 
     def __del__(self):
-        _log.debug("Finalize VLine {}".format(self))
+        _log.debug("Finalize HLine {}".format(self))
 
 
 class VLine(ChartItem):

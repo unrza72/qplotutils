@@ -36,9 +36,11 @@ class InteractiveChangeEvent(object):
     def __init__(self):
         self.position = None
 
-class InteractiveVerticalLine(ChartWidgetItem):
 
-    postionChange = pyqtSignal(object)
+class InteractiveVerticalLine(ChartWidgetItem):
+    """ Vertical Line which can be moved by mouse interaction. Usefull for timelines. """
+
+    positionChange = pyqtSignal(object)
 
     def __init__(self, parent=None):
         super(InteractiveVerticalLine, self).__init__(parent)
@@ -59,7 +61,7 @@ class InteractiveVerticalLine(ChartWidgetItem):
         return self._label
 
     def setX(self, x, label=None, color=QColor(Qt.red)):
-        """ Sets the Vline's x value.
+        """ Sets the line's x value.
 
         :param x: abscissa value.
         :param label:
@@ -76,23 +78,12 @@ class InteractiveVerticalLine(ChartWidgetItem):
         self._pen.setCosmetic(True)
         self._brush = QBrush(QColor(255, 255, 255, 0))
 
-    def boundingRect(self):
-        """ Returns the bounding rect of the chart item
-        :return: Bounding Rectangle
-        :rtype: QRectF
-        """
-        return self.b_rect
-
     def visibleRangeChanged(self, rect):
-        _log.debug("VR CH")
         t = self.parentItem().transform()
         bb = 4 / t.m11()
         _log.debug("{}, {} -> {}".format(rect.bottom(), rect.height(), bb))
 
         b = min(rect.bottom(), rect.top())
-        # t = max(rect.bottom(), rect.top())
-
-        # finfo = np.finfo(np.float32)
         self.b_rect = QRectF(-bb, b - 10, 2 * bb, rect.height() + 20)
         self.prepareGeometryChange()
 
@@ -116,20 +107,22 @@ class InteractiveVerticalLine(ChartWidgetItem):
             value = value.toPointF()
 
             e = InteractiveChangeEvent()
-            e.position =value
-            self.postionChange.emit(e)
+            e.position = value
+            self.positionChange.emit(e)
 
             return QPointF(value.x(), old_pos.y())
 
         return super(InteractiveVerticalLine, self).itemChange(change, value)
 
     def hoverEnterEvent(self, e):
-        self._brush = QBrush(QColor(255, 255, 255, 50))
         super(InteractiveVerticalLine, self).hoverEnterEvent(e)
+        self._brush = QBrush(QColor(255, 255, 255, 40))
+        self.update()
 
     def hoverLeaveEvent(self, e):
-        self._brush = QBrush(QColor(255, 255, 255, 0))
         super(InteractiveVerticalLine, self).hoverLeaveEvent(e)
+        self._brush = QBrush(QColor(255, 255, 255, 0))
+        self.update()
 
     def __del__(self):
-        _log.debug("Finalize VLine {}".format(self))
+        _log.debug("Finalize Interactive vLine {}".format(self))

@@ -69,7 +69,7 @@ if __name__ == "__main__":
 
 
     a = AWidget()
-    ivline.postionChange.connect(a.report)
+    ivline.positionChange.connect(a.report)
 
 
     qapp.exec_()
