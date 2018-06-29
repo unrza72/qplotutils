@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-qplotutils documentation contents
-=================================
+qplotutils user guide
+=====================
 
 .. toctree::
     :maxdepth: 4
@@ -12,8 +12,17 @@ qplotutils documentation contents
     intro
     bench
     chart
-    todo
     api
+
+
+Developer documentation
+=======================
+
+.. toctree::
+    :maxdepth: 4
+
+    todo
+    styleguide
 
 
 

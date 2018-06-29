@@ -1,10 +1,15 @@
 TODO
 ====
 
+.. role:: strike
+    :class: strike
+
 
 ChartView
-    * Axis Labels
+    * :strike:`Axis Labels`
     * Title
+    * Secondary / tertiary left axis
+
     * Save as image
 
 
