@@ -9,6 +9,6 @@ setup(name='qplotutils',
       license='MIT',
       packages=['qplotutils',],
       install_requires=[
-            'PyQt4',
+            'PyQt4', 'numpy'
       ],
       zip_safe=False)
