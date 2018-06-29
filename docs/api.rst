@@ -38,4 +38,14 @@ Bench
     :exclude-members: bin, hex, oct
 
 
+Widgets
+=======
+
+.. automodule:: qplotutils.player
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :exclude-members: bin, hex, oct
+
+
 

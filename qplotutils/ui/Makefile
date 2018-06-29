@@ -5,7 +5,7 @@ RESOURCE_DIR = .
 COMPILED_DIR = .
  
 #UI files to compile
-UI_FILES = dock_properties.ui
+UI_FILES = dock_properties.ui playback.ui
 #Qt resource files to compile
 RESOURCES = resources.qrc
  
