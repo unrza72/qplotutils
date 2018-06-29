@@ -14,7 +14,7 @@ from .utils import makePen
 from .items import ChartItem, ChartItemFlags
 
 __author__ = "Philipp Baust"
-__copyright__ = "Copyright 2015, 2017, Philipp Baust"
+__copyright__ = "Copyright 2015 - 2018, Philipp Baust"
 __credits__ = []
 __license__ = "MIT"
 __version__ = "0.0.1"
@@ -29,12 +29,24 @@ _log.setLevel(LOG_LEVEL)
 _cfg = Configuration()
 
 
+class Style(object):
+    """ Borg for global styling.
+
+    TODO: Not yet implemented
+    """
+    __shared_state = {}
+
+    def __init__(self):
+        self.__dict__ = self.__shared_state
+        self.grid_color = QColor(90, 90, 90, 255)
+
+
 class ChartLegend(ChartItem):
     """ Legend for chart views. """
 
     def __init__(self):
         """ Displays the chart item in a legend table. """
-        super(ChartLegend, self).__init__() # Pycharm / pyLint inspection error. Please ignore
+        super(ChartLegend, self).__init__()  # Pycharm / pyLint inspection error. Please ignore
         self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIgnoresTransformations)
 
         self._picture = None
@@ -265,6 +277,9 @@ class ChartView(QGraphicsView):
 
     @legend.setter
     def legend(self, value):
+        # TODO: legend should track its position by itself and relative to parent
+        parent_w = self.size().width()
+        self._legend.setPos(parent_w - self._legend.boundingRect().width() - 15, 40)
         self._legend.setVisible(value)
 
     def setMaxVisibleRange(self, rect):
@@ -294,23 +309,84 @@ class ChartWidget(QGraphicsWidget):
         self.layout().setHorizontalSpacing(-1)
         self.layout().setVerticalSpacing(-1)
 
-        self.mainVerticalAxis = VerticalAxis(self)
+        # optional title
+        self.title_widget = ChartLabel(self)
+        self.title_widget.font = QFont("Helvetica [Cronyx]", 14, QFont.Bold)
+        self.layout().addItem(self.title_widget, 0, 2, 1, 1)
+        self.layout().setRowFixedHeight(0, 0)
+        self.title_widget.setVisible(False)
 
-        self.layout().addItem(self.mainVerticalAxis, 0, 0)
-        self.layout().setColumnFixedWidth(0, 60)
 
-        self.mainHorizontalAxis = HorizontalAxis(self)
+        # optional left axis label
+        self.vertical_axis_label = VerticalChartLabel(self)
+        self.layout().addItem(self.vertical_axis_label, 1, 0)
+        self.layout().setColumnFixedWidth(0, 0)
+        self.vertical_axis_label.setVisible(False)
 
-        self.layout().addItem(self.mainHorizontalAxis, 1, 1)
-        self.layout().setRowFixedHeight(1, 30)
+        self.main_vertical_axis = VerticalAxis(self)
+        self.layout().addItem(self.main_vertical_axis, 1, 1)
+        self.layout().setColumnFixedWidth(1, 60)
 
+        self.main_horizontal_axis = HorizontalAxis(self)
+        self.layout().addItem(self.main_horizontal_axis, 2, 2)
+        self.layout().setRowFixedHeight(2, 30)
+
+        # optional bottom axis label
+        self.horizontal_axis_label = ChartLabel(self)
+        self.layout().addItem(self.horizontal_axis_label, 3, 2, 1, 1)
+        self.layout().setRowFixedHeight(3, 0)
+        self.horizontal_axis_label.setVisible(False)
+
+        # canvas for the items
         self.area = ChartArea(self)
-        self.layout().addItem(self.area, 0, 1)
+        self.layout().addItem(self.area, 1, 2)
 
-        self.area.vAxisChange.connect(self.mainVerticalAxis.axisChange)
-        self.area.hAxisChange.connect(self.mainHorizontalAxis.axisChange)
+        self.area.vAxisChange.connect(self.main_vertical_axis.axisChange)
+        self.area.hAxisChange.connect(self.main_horizontal_axis.axisChange)
 
         self._dbg_box_color = Qt.green
+
+    @property
+    def title(self):
+        return self.title_widget.label
+
+    @title.setter
+    def title(self, value):
+        if value is None:
+            self.title_widget.setVisible(False)
+            self.layout().setRowFixedHeight(0, 0)
+        else:
+            self.title_widget.label = value
+            self.title_widget.setVisible(True)
+            self.layout().setRowFixedHeight(0, 20)
+
+    @property
+    def verticalLabel(self):
+        return self.vertical_axis_label.label
+
+    @verticalLabel.setter
+    def verticalLabel(self, value):
+        if value is None:
+            self.vertical_axis_label.setVisible(False)
+            self.layout().setColumnFixedWidth(0, 0)
+        else:
+            self.vertical_axis_label.label = value
+            self.vertical_axis_label.setVisible(True)
+            self.layout().setColumnFixedWidth(0, 20)
+
+    @property
+    def horizontalLabel(self):
+        return self.horizontal_axis_label.label
+
+    @horizontalLabel.setter
+    def horizontalLabel(self, value):
+        if value is None:
+            self.horizontal_axis_label.setVisible(False)
+            self.layout().setRowFixedHeight(3, 0)
+        else:
+            self.horizontal_axis_label.label = value
+            self.horizontal_axis_label.setVisible(True)
+            self.layout().setRowFixedHeight(3, 20)
 
     def addSecondaryHorizontalAxis(self, axis):
         """ Adds a second horizontal axis on top to the plot.
@@ -321,20 +397,20 @@ class ChartWidget(QGraphicsWidget):
         axis.setParent(self)
 
         # Unfortunately we need to re-layout everything
-        self.layout().removeItem(self.mainVerticalAxis)
-        self.layout().removeItem(self.mainHorizontalAxis)
+        self.layout().removeItem(self.main_vertical_axis)
+        self.layout().removeItem(self.main_horizontal_axis)
         self.layout().removeItem(self.area)
 
         self.layout().addItem(axis, 0, 1)
         self.layout().setRowFixedHeight(0, 30)
         self.area.hAxisChange.connect(axis.axisChange)
 
-        self.layout().addItem(self.mainVerticalAxis, 1, 0)
+        self.layout().addItem(self.main_vertical_axis, 1, 0)
         self.layout().setColumnFixedWidth(0, 60)
 
         self.layout().addItem(self.area, 1, 1)
 
-        self.layout().addItem(self.mainHorizontalAxis, 2, 1)
+        self.layout().addItem(self.main_horizontal_axis, 2, 1)
         self.layout().setRowFixedHeight(2, 30)
 
 
@@ -358,6 +434,74 @@ class ChartWidget(QGraphicsWidget):
     def wheelEvent(self, e):
         e.accept()  # but do nothing
         _log.debug("Wheel on axis is ignored")
+
+
+class ChartLabel(QGraphicsWidget):
+
+    def __init__(self, label="", parent=None):
+        super(ChartLabel, self).__init__(parent)
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
+        self.setFlags(QGraphicsItem.ItemClipsChildrenToShape)  # | QGraphicsItem.ItemIsFocusable)
+
+        self.font = QFont("Helvetica [Cronyx]", 11, QFont.Normal)
+        self.font_flags = Qt.TextDontClip | Qt.AlignHCenter | Qt.AlignVCenter
+        self.color = QColor(110, 110, 110, 255)
+
+        self.label = label
+
+    def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
+        p.setRenderHint(QPainter.Antialiasing, False)
+        if self._picture is None:
+            self._refreshPicture()
+        self._picture.play(p)
+
+        if _cfg.debug:
+            p.setPen(QPen(self._dbg_box_color))
+            p.drawRect(self.boundingRect())
+
+    def _refreshPicture(self):
+        """ Repaints the picture that is played in the paint method. """
+        self._picture = QPicture()
+        painter = QPainter(self._picture)
+        self._generatePicture(painter)
+        painter.end()
+
+    def resizeEvent(self, event):
+        _log.debug("Resize Event")
+        self._refreshPicture()
+
+    def _generatePicture(self, p=QPainter()):
+        p.setBrush(QBrush(Qt.transparent))
+        p.setPen(QPen(self.color))
+        p.setFont(self.font)
+        p.drawText(self.boundingRect(), self.font_flags, "{}".format(self.label))
+
+    def __repr__(self):
+        return "<ChartLabel>"
+
+    def __del__(self):
+        _log.debug("Finalizing: {}".format(self))
+
+
+class VerticalChartLabel(ChartLabel):
+
+    def __init__(self, label="", parent=None):
+        super(VerticalChartLabel, self).__init__(label, parent)
+
+    def _generatePicture(self, p=QPainter()):
+        r = self.boundingRect()
+        p.rotate(-90)
+        rr = QRectF(-r.height(), 0, r.height(), r.width())
+
+        if _cfg.debug:
+            p.setPen(QPen(Qt.red))
+            p.drawRect(rr)
+
+        p.setBrush(QBrush(Qt.transparent))
+        p.setPen(QPen(self.color))
+        p.setFont(self.font)
+        p.drawText(rr, self.font_flags, "{}".format(self.label))
+        p.rotate(90)
 
 
 class ChartAxis(QGraphicsWidget):
@@ -522,7 +666,7 @@ class VerticalAxis(ChartAxis):
 
         ticks, run_width = self.calcTicks(translation, scaling, parent_h)
 
-        self.parentWidget().layout().setColumnFixedWidth(0, run_width + 10)
+        self.parentWidget().layout().setColumnFixedWidth(1, run_width + 10)
 
         p.drawLine(self.size().width(), 0, self.size().width(), self.size().height())
         for pos, tickString in ticks:
@@ -547,7 +691,7 @@ class HorizontalAxis(ChartAxis):
 
     def boundingRect(self):
         parent = self.parentWidget().area.size()
-        v_axis = self.parentWidget().mainVerticalAxis.size()
+        v_axis = self.parentWidget().main_vertical_axis.size()
         s = self.size()
         b_rect = QRectF(-v_axis.width(), -parent.height(), s.width()+v_axis.width(), parent.height() + s.height())
         return b_rect
@@ -643,7 +787,6 @@ class SecondaryHorizontalAxis(HorizontalAxis):
 
                 tickRect = QRectF(pos - rw, self.size().height() - 18, run_width, 10)
                 p.drawText(tickRect, self.flags, tickString)
-
 
     def calcTicks(self, shift, scaling, displayRange, maxGridSpace=80, minGridSpace=40):
         """ Calculates the axis ticks.
