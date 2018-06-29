@@ -1,18 +1,17 @@
 #Directory with ui and resource files
-RESOURCE_DIR = ./
+RESOURCE_DIR = .
  
 #Directory for compiled resources
-COMPILED_DIR = ./
+COMPILED_DIR = .
  
 #UI files to compile
 UI_FILES = dock_properties.ui
 #Qt resource files to compile
-RESOURCES =
-#resources.qrc
+RESOURCES = resources.qrc
  
 #pyuic4 and pyrcc4 binaries
 PYUIC = pyuic4
-PYRCC = pyrcc4
+PYRCC = pyrcc4 -py3
  
 #################################
 # DO NOT EDIT FOLLOWING
