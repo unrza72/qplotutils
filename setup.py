@@ -7,5 +7,8 @@ setup(name='qplotutils',
       author='Philipp Baust',
       author_email='philipp.baust@gmail.com',
       license='MIT',
-      packages=['qplotutils', 'PyQt4'],
+      packages=['qplotutils',],
+      install_requires=[
+            'PyQt4',
+      ],
       zip_safe=False)
