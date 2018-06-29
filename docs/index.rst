@@ -12,7 +12,9 @@ qplotutils documentation contents
     intro
     bench
     chart
+    todo
     api
+
 
 
 Indices and tables
