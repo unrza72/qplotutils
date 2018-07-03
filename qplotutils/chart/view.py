@@ -312,7 +312,7 @@ class ChartWidget(QGraphicsWidget):
         # optional title
         self.title_widget = ChartLabel(self)
         self.title_widget.font = QFont("Helvetica [Cronyx]", 14, QFont.Bold)
-        self.layout().addItem(self.title_widget, 0, 2, 1, 1)
+        self.layout().addItem(self.title_widget, 0, 0, 1, 3)
         self.layout().setRowFixedHeight(0, 0)
         self.title_widget.setVisible(False)
 
@@ -333,7 +333,7 @@ class ChartWidget(QGraphicsWidget):
 
         # optional bottom axis label
         self.horizontal_axis_label = ChartLabel(self)
-        self.layout().addItem(self.horizontal_axis_label, 3, 2, 1, 1)
+        self.layout().addItem(self.horizontal_axis_label, 3, 1, 1, 2)
         self.layout().setRowFixedHeight(3, 0)
         self.horizontal_axis_label.setVisible(False)
 
@@ -1167,8 +1167,8 @@ class ChartArea(QGraphicsWidget):
 
         bbox = None
         for c in children:
-            if int(c.flags()) & int(QGraphicsItem.ItemIgnoresTransformations):
-                continue
+            # if int(c.flags()) & int(QGraphicsItem.ItemIgnoresTransformations):
+            #     continue
 
             if c.chartItemFlags & ChartItemFlags.FLAG_NO_AUTO_RANGE:
                 continue
