@@ -48,4 +48,14 @@ Widgets
     :exclude-members: bin, hex, oct
 
 
+Utilities
+=========
+
+.. automodule:: qplotutils.chart.color
+    :members:
+    :undoc-members:
+    :show-inheritance:
+    :exclude-members: bin, hex, oct
+
+
 

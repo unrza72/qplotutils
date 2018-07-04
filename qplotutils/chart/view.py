@@ -152,6 +152,13 @@ class ChartView(QGraphicsView):
     #: point of origin lower right corner, x axis to the top, y axis to the left
     AUTOSAR = QTransform(0, -1, -1, 0, 0, 0)
 
+    #: Reference corner for map keys (e.g. legend)
+    TOP_LEFT = "top_left"
+    TOP_RIGHT = "top_right"
+    BOTTOM_LEFT = "bottom_left"
+    BOTTOM_RIGHT = "bottom_right"
+
+
     def __init__(self, parent=None, orientation=DEFAULT_ORIENTATION):
         super(ChartView, self).__init__(parent)
 
@@ -176,27 +183,26 @@ class ChartView(QGraphicsView):
         self.centralWidget = ChartWidget()
         self.scene().addItem(self.centralWidget)
 
-        # scale central widget to take the entire view
         b_rect = QRectF(0, 0, self.size().width() - 2, self.size().height() - 2)
         self.centralWidget.setGeometry(b_rect)
-        # self.setSceneRect(self.centralWidget.rect())
 
         self.setBackgroundBrush(QBrush(Qt.black, Qt.SolidPattern))
 
         self.centralWidget.area.getRootItem().setTransform(orientation)
 
-        # Legend
-        self._legend = self._make_legend()
+        self._map_keys = []
 
+        # Legend
+        self._make_legend()
+
+        # Toggle chart legend
         self.legendAction = QAction("Legend", self)
         self.legendAction.setCheckable(True)
-        # Pycharm / pyLint inspection error. Please ignore
         self.legendAction.triggered.connect(self.__toggle_legend)
 
         # Force aspect ratio
         self.apect1by1Action = QAction("Aspect ratio 1:1", self)
         self.apect1by1Action.setCheckable(True)
-        # Pycharm / pyLint inspection error. Please ignore
         self.apect1by1Action.toggled.connect(self.__toggle_apect1by1)
 
         self._dbg_box_color = Qt.blue
@@ -209,17 +215,32 @@ class ChartView(QGraphicsView):
         self.centralWidget.setGeometry(b_rect)
         # self.autoRange()
         self.centralWidget.area.axisChange()
+        self.__layout_map_keys()
 
-        # if self._legend is not None:
-        #     # ca_size = self.centralWidget.area.size()
-        #     # ca_pos = self.centralWidget.area.pos()
-        #     v = self.centralWidget.mainVerticalAxis.size().width()
-        #     # parent_w = event.size().width()
-        #     # self._legend.setPos(parent_w - self._legend.boundingRect().width() - 15, 10)
-        #     self._legend.setPos(v + 10, 40)
+    def __layout_map_keys(self):
+        a = self.centralWidget.area.size()
+        b = self.centralWidget.area.pos()
+
+        for r in self._map_keys:
+            c, dx, dy, item = r["corner"], r["x"], r["y"], r["Item"]
+            if c == self.TOP_RIGHT:
+                x = self.width() - item.boundingRect().width() - dx
+                y = dy
+            elif c == self.BOTTOM_LEFT:
+                x = b.x() + dx
+                y = b.y() + a.height() - item.boundingRect().height() - dy
+            elif c == self.BOTTOM_RIGHT:
+                x = self.width() - item.boundingRect().width() - dx
+                y = b.y() + a.height() - item.boundingRect().height() - dy
+            else:
+                x = dx
+                y = dy
+
+            item.setPos(x, y)
 
     def showEvent(self, event):
         self.centralWidget.area.axisChange()
+        self.__layout_map_keys()
 
     def setCoordinatesOrientation(self, orientation=DEFAULT_ORIENTATION):
         self.centralWidget.area.getRootItem().setTransform(orientation)
@@ -234,21 +255,26 @@ class ChartView(QGraphicsView):
         # self.connect(self.centralWidget.area, SIGNAL("visibleRangeChange"), item.visibleRangeChanged)
 
         if not item.chartItemFlags & ChartItemFlags.FLAG_NO_LABEL:
-            self._legend.addEntry(item)
+            self.legend.addEntry(item)
 
     def removeItem(self, item):
-        if self._legend and not item.chartItemFlags & ChartItemFlags.FLAG_NO_LABEL:
-            self._legend.removeEntry(item)
+        if self.legend and not item.chartItemFlags & ChartItemFlags.FLAG_NO_LABEL:
+            self.legend.removeEntry(item)
         item.setParentItem(None)
 
     def _make_legend(self):
         legend = ChartLegend()
         self.scene().addItem(legend)
 
-        parent_w = self.size().width()
-        legend.setPos(parent_w - legend.boundingRect().width() - 15, 40)
-
-        return legend
+        # parent_w = self.size().width()
+        # legend.setPos(parent_w - legend.boundingRect().width() - 15, 40)
+        # return legend
+        self._map_keys.append({
+            "corner": self.TOP_RIGHT,
+            "x": 10,
+            "y": 10,
+            "Item": legend,
+        })
 
     def autoRange(self):
         self.centralWidget.area.autoRange()
@@ -271,19 +297,67 @@ class ChartView(QGraphicsView):
     def setAspectRatio(self, value):
         self.centralWidget.area.setAspectRatio(value)
 
+    def setLegendVisible(self, visible, corner=TOP_RIGHT):
+        if visible:
+            self._map_keys[0]["corner"] = corner
+            self.__layout_map_keys()
+
+        self._map_keys[0]["Item"].setVisible(visible)
+
     @property
     def legend(self):
-        return self._legend.isVisible()
+        return self._map_keys[0]["Item"]
 
-    @legend.setter
-    def legend(self, value):
-        # TODO: legend should track its position by itself and relative to parent
-        parent_w = self.size().width()
-        self._legend.setPos(parent_w - self._legend.boundingRect().width() - 15, 40)
-        self._legend.setVisible(value)
+    def add_chart_key(self, key_item, corner):
+        self.scene().addItem(key_item)
+        self._map_keys.append({
+            "corner": corner,
+            "x": 10,
+            "y": 10,
+            "Item": key_item,
+        })
+        self.__layout_map_keys()
+
+    # @property
+    # def legend(self):
+    #     return self._legend.isVisible()
+    #
+    # @legend.setter
+    # def legend(self, value):
+    #     # TODO: legend should track its position by itself and relative to parent
+    #     parent_w = self.size().width()
+    #     self._legend.setPos(parent_w - self._legend.boundingRect().width() - 15, 40)
+    #     self._legend.setVisible(value)
 
     def setMaxVisibleRange(self, rect):
         self.centralWidget.area.setMaxVisibleRange(rect)
+
+    @property
+    def title(self):
+        return self.centralWidget.title
+
+    @title.setter
+    def title(self, value):
+        self.centralWidget.title = value
+        self.__layout_map_keys()
+
+    @property
+    def horizontalLabel(self):
+        return self.centralWidget.horizontalLabel
+
+    @horizontalLabel.setter
+    def horizontalLabel(self, value):
+        self.centralWidget.horizontalLabel = value
+        self.__layout_map_keys()
+
+    @property
+    def verticalLabel(self):
+        return self.centralWidget.verticalLabel
+
+    @verticalLabel.setter
+    def verticalLabel(self, value):
+        self.centralWidget.verticalLabel = value
+        self.__layout_map_keys()
 
     def __repr__(self):
         return "<ChartView>"
@@ -1167,17 +1241,19 @@ class ChartArea(QGraphicsWidget):
 
         bbox = None
         for c in children:
-            # if int(c.flags()) & int(QGraphicsItem.ItemIgnoresTransformations):
-            #     continue
+            if int(c.flags()) & int(QGraphicsItem.ItemIgnoresTransformations):
+                rect = QRectF(-.5e-8, -.5e-8, 1e-8, 1e-8)
+            else:
+                rect = c.boundingRect()
 
             if c.chartItemFlags & ChartItemFlags.FLAG_NO_AUTO_RANGE:
                 continue
 
             if bbox is None:
-                bbox = c.boundingRect().normalized()
+                bbox = rect.normalized()
                 bbox.moveCenter(bbox.center() + c.pos())
             else:
-                other = c.boundingRect().normalized()
+                other = rect.normalized()
                 other.moveCenter(other.center() + c.pos())
                 bbox = bbox.united(other)
 

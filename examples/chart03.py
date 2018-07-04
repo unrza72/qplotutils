@@ -35,7 +35,6 @@ if __name__ == "__main__":
 
     view = ChartView(orientation=ChartView.CARTESIAN)
     view.resize(800, 400)
-    view.show()
 
     # A line chart item (again)
     l = LineChartItem()
@@ -47,10 +46,11 @@ if __name__ == "__main__":
     view.autoRange()
 
     # Set legend visible
-    view.legend = True
+    view.setLegendVisible(True, ChartView.BOTTOM_LEFT)
 
-    view.centralWidget.title = "A new title"
-    view.centralWidget.horizontalLabel = "Timestamp"
-    view.centralWidget.verticalLabel = "Velocity"
+    view.title = "A new title"
+    view.horizontalLabel = "Timestamp"
+    view.verticalLabel = "Velocity"
 
+    view.show()
     qapp.exec_()
