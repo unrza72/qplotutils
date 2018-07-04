@@ -9,6 +9,8 @@ import random
 
 import logging
 import numpy as np
+import weakref
+
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
@@ -50,19 +52,6 @@ class ScatterItem(ChartItem):
 
         self._picture = None
 
-        # self._updatePicture()
-
-
-    # def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-    #
-    #     a = self.colormap(self.normalize(self.z))
-    #
-    #     color = QColor.fromRgbF(a[0], a[1], a[2])
-    #
-    #     p.setPen(QPen(color))
-    #     p.setBrush(QBrush(color))
-    #     # p.drawRect(self.b_rect)
-    #     p.drawEllipse(0,0,self.w,self.w)
 
 
     def _updatePicture(self):
@@ -219,45 +208,6 @@ class Colorbar(ChartItem):
 
         self._updatePicture()
 
-    # def addEntry(self, chart_item):
-    #     """ Slot. Adds an entry for the given chart item to the legend.
-    #
-    #     :param chart_item:
-    #     """
-    #     _log.debug("Add entry chart item: {}".format(chart_item.label))
-    #     self._entries.append(chart_item)
-    #
-    #     self._updateBoundingRect()
-    #     self._updatePicture()
-    #
-    #     # self.setVisible(True)
-    #
-    # def removeEntry(self, chart_item):
-    #     """ Slot. Removes the entry for the given chart item to the legend.
-    #
-    #     :param chart_item: chart item such as line chart item, e.g.
-    #     """
-    #
-    #     _log.debug("Remove chart item entry: {}".format(chart_item.label))
-    #     self._entries.remove(chart_item)
-    #
-    #     self._updateBoundingRect()
-    #     self._updatePicture()
-
-    # def _updateBoundingRect(self):
-    #     metrics = QFontMetrics(self.font)
-    #     runWidth = 0
-    #
-    #     for entry in self._entries:
-    #
-    #         # (text, color, width, tick) = entry
-    #         if entry.label is not None:
-    #             w = metrics.width(entry.label)
-    #             if w > runWidth:
-    #                 runWidth = w
-    #
-    #     self._bRect.setWidth(runWidth + 40)
-    #     self._bRect.setHeight(len(self._entries) * 20 + 8)
 
     def _updatePicture(self):
         self._picture = QPicture()

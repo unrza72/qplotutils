@@ -59,6 +59,6 @@ if __name__ == "__main__":
     view.addItem(v)
 
     # Set legend visible
-    view.legend = True
+    view.setLegendVisible(True, ChartView.BOTTOM_RIGHT)
 
     qapp.exec_()

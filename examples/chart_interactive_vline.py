@@ -63,7 +63,7 @@ if __name__ == "__main__":
     view.addItem(ivline)
 
     # # Set legend visible
-    view.legend = True
+    view.setLegendVisible(True)
     view.autoRange()
     # view.setRange(QRectF(0,0,30,1))
     # view.setMaxVisibleRange(QRectF(-100,-10000,600,20000))
