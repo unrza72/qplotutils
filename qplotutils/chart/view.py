@@ -224,14 +224,14 @@ class ChartView(QGraphicsView):
         for r in self._map_keys:
             c, dx, dy, item = r["corner"], r["x"], r["y"], r["Item"]
             if c == self.TOP_RIGHT:
-                x = self.width() - self.legend.boundingRect().width() - dx
+                x = self.width() - item.boundingRect().width() - dx
                 y = dy
             elif c == self.BOTTOM_LEFT:
                 x = b.x() + dx
-                y = b.y() + a.height() - self.legend.boundingRect().height() - dy
+                y = b.y() + a.height() - item.boundingRect().height() - dy
             elif c == self.BOTTOM_RIGHT:
-                x = self.width() - self.legend.boundingRect().width() - dx
-                y = b.y() + a.height() - self.legend.boundingRect().height() - dy
+                x = self.width() - item.boundingRect().width() - dx
+                y = b.y() + a.height() - item.boundingRect().height() - dy
             else:
                 x = dx
                 y = dy
@@ -316,6 +316,7 @@ class ChartView(QGraphicsView):
             "y": 10,
             "Item": key_item,
         })
+        self.__layout_map_keys()
 
     # @property
     # def legend(self):
@@ -1241,16 +1242,18 @@ class ChartArea(QGraphicsWidget):
         bbox = None
         for c in children:
             if int(c.flags()) & int(QGraphicsItem.ItemIgnoresTransformations):
-                continue
+                rect = QRectF(-.5e-8, -.5e-8, 1e-8, 1e-8)
+            else:
+                rect = c.boundingRect()
 
             if c.chartItemFlags & ChartItemFlags.FLAG_NO_AUTO_RANGE:
                 continue
 
             if bbox is None:
-                bbox = c.boundingRect().normalized()
+                bbox = rect.normalized()
                 bbox.moveCenter(bbox.center() + c.pos())
             else:
-                other = c.boundingRect().normalized()
+                other = rect.normalized()
                 other.moveCenter(other.center() + c.pos())
                 bbox = bbox.united(other)
 
