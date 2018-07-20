@@ -1,6 +1,6 @@
 """
 ========================
-Package qplotutils.chart
+Package qplotutils.chart_tests
 ========================
 
 Widgets to display line charts.

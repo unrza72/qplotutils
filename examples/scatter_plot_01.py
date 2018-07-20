@@ -13,28 +13,28 @@ import random
 import sys
 from PyQt4.QtGui import *
 
-from qplotutils.bench import Bench, Dock, Placement
-from qplotutils.chart import color
-from qplotutils.chart.color import Colormap
-from qplotutils.chart.scatter_plot import ScatterPlotView, ScatterItem
 
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
 print(PKG_DIR)
 if PKG_DIR not in sys.path:
     sys.path.append(PKG_DIR)
 
-from qplotutils.config import Configuration
+
+from qplotutils import Configuration
+from qplotutils.bench import Bench, Dock, Placement
+from qplotutils.chart import color
+from qplotutils.chart.color import Colormap
+from qplotutils.chart.scatter_plot import ScatterPlotView, ScatterItem
 
 
 __author__ = "Philipp Baust"
-__copyright__ = "Copyright 2015, 2017, Philipp Baust"
+__copyright__ = "Copyright 2015-2018 Philipp Baust"
 __credits__ = []
 __license__ = "MIT"
 __version__ = "0.0.1"
 __maintainer__ = "Philipp Baust"
 __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
-
 
 
 if __name__ == "__main__":
@@ -51,8 +51,6 @@ if __name__ == "__main__":
     bench.resize(900, 400)
 
     # First dock
-
-
     cm_01 = Colormap()
     view_01 = ScatterPlotView(cm_01)
 

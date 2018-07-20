@@ -9,8 +9,8 @@ import numpy as np
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from qplotutils.config import Configuration
-from qplotutils.ui.playback import Ui_PlaybackControl
+from qplotutils import CONFIG
+from .ui.playback import Ui_PlaybackControl
 
 
 __author__ = "Philipp Baust"
@@ -26,7 +26,7 @@ _log = logging.getLogger(__name__)
 _log.setLevel(logging.DEBUG)
 
 
-_cfg = Configuration()
+
 
 
 class PlaybackWidget(QWidget):
@@ -62,7 +62,7 @@ class PlaybackWidget(QWidget):
         self.ui.slider_index.sliderPressed.connect(self._slider_pressed)
         self.ui.edit_timestamp.textEdited.connect(self.jump_to_timestamp)
 
-        if _cfg.debug:
+        if CONFIG.debug:
             self.timestamp_changed.connect(self.debug_slider)
 
     def jump_to_timestamp(self, text):

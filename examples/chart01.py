@@ -10,12 +10,14 @@ import sys
 import numpy as np
 from PyQt4.QtGui import *
 
+
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
 print(PKG_DIR)
 if PKG_DIR not in sys.path:
     sys.path.append(PKG_DIR)
 
-from qplotutils.config import Configuration
+
+from qplotutils import Configuration
 from qplotutils.chart.view import ChartView
 from qplotutils.chart.items import LineChartItem
 
@@ -37,7 +39,7 @@ if __name__ == "__main__":
     """
 
     cfg = Configuration()
-    cfg.debug = False
+    cfg.debug = True
 
     qapp = QApplication([])
 

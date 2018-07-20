@@ -3,7 +3,7 @@ Color
 -----
 
 Color and gradient definitions as well as colormap and normalization
-generic to all qplotutils chart types.
+generic to all qplotutils chart_tests types.
 """
 import random
 

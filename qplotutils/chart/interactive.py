@@ -10,7 +10,8 @@ import logging
 import itertools
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from qplotutils.config import Configuration
+
+from .. import CONFIG
 from . import LOG_LEVEL
 from .utils import makePen
 from qplotutils.chart.items import VLine, ChartItem, ChartItemFlags, ChartWidgetItem
@@ -26,10 +27,6 @@ __status__ = "Development"
 
 _log = logging.getLogger(__name__)
 _log.setLevel(logging.DEBUG)
-
-
-#: Global configuration
-_cfg = Configuration()
 
 
 class InteractiveChangeEvent(object):
@@ -101,7 +98,7 @@ class InteractiveVerticalLine(ChartWidgetItem):
         p.setPen(Qt.transparent)
         p.drawRect(self.b_rect)
 
-        if _cfg.debug:
+        if CONFIG.debug:
             p.setPen(Qt.yellow)
             p.drawRect(self.b_rect)
 

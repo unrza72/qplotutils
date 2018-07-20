@@ -11,13 +11,14 @@ import numpy as np
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from qplotutils.bench import Dock, Bench, Placement
 
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
 print(PKG_DIR)
 if PKG_DIR not in sys.path:
     sys.path.append(PKG_DIR)
 
+
+from qplotutils.bench import Dock, Bench, Placement
 from qplotutils.chart.view import ChartView
 from qplotutils.chart.items import LineChartItem
 

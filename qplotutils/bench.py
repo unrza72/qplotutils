@@ -13,7 +13,7 @@ import math
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 
-from . import LOG_LEVEL, DEBUG, MIME_TYPE
+from . import LOG_LEVEL, MIME_TYPE, CONFIG
 from .ui.dock_properties import Ui_DialogDockProperties
 
 
@@ -25,7 +25,6 @@ __version__ = "0.0.1"
 __maintainer__ = "Philipp Baust"
 __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
-
 
 _log = logging.getLogger(__name__)
 _log.setLevel(LOG_LEVEL)
@@ -43,7 +42,6 @@ class BenchItem(QWidget, object):
      * SplitterContainers, and
      * Docks
     """
-
 
     def __init__(self):
         super(BenchItem, self).__init__()
@@ -87,7 +85,7 @@ class BenchItem(QWidget, object):
         painter = QPainter(self)
         self.style().drawPrimitive(QStyle.PE_Widget, opt, painter, self)
 
-        if DEBUG:
+        if CONFIG.debug_layout:
             painter.setPen(QPen(Qt.red, 1.0))
             painter.drawRect(self.rect().adjusted(0, 0, -1, -1))
             painter.setPen(QPen(Qt.black, 1.0))
@@ -97,7 +95,7 @@ class BenchItem(QWidget, object):
         return "<{}.{}: uid='{}'>".format(self.__module__, self.__class__.__name__, self.uid)
 
     def __del__(self):
-        if DEBUG:
+        if CONFIG.debug_layout:
             _log.debug("Finalize: {}".format(self))
 
     def saveLayout(self):
@@ -132,7 +130,6 @@ class Bench(QWidget):
     :param parent: parent Widget
     """
 
-
     #: Signal that notifies connected slots about changes in layout or added/removed items.
     contentModified = pyqtSignal()
 
@@ -143,7 +140,7 @@ class Bench(QWidget):
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(2, 2, 2, 2)
         self.layout.setSpacing(4)
-        if DEBUG:
+        if CONFIG.debug_layout:
             self.layout.setContentsMargins(2, 16, 2, 2)
         self.setLayout(self.layout)
 
@@ -183,7 +180,7 @@ class Bench(QWidget):
                 raise BenchException("Cannot add tab without reference")
 
             if (self.root_container.orientation == self.__widgetOrientation(placement) or
-                    len(self.root_container.docks) == 0):
+                    len(self.root_container.flatDockList) == 0):
                 # root container orientation is as needed to add the new dock to the
                 # outer border of the bench.
                 # Get the index from the requested placement and add the dock to
@@ -271,7 +268,7 @@ class Bench(QWidget):
 
         dock = None
         ref = None
-        for d in self.root_container.docks:
+        for d in self.root_container.flatDockList:
             if d.uid == dock_uid:
                 dock = d
             elif d.uid == ref_uid:
@@ -287,7 +284,7 @@ class Bench(QWidget):
         :param uid: Dock UID
         :return: Dock instance if found else None
         """
-        for d in self.root_container.docks:
+        for d in self.root_container.flatDockList:
             if d.uid == uid:
                 return d
 
@@ -300,7 +297,7 @@ class Bench(QWidget):
 
         :return: list with all docks
         """
-        return self.root_container.docks
+        return self.root_container.flatDockList
 
     def saveLayout(self, filename=None):
         """ Saves the benches dock layout to filename
@@ -424,14 +421,38 @@ class AbstractContainer(BenchItem):
         self._parent_container = parent_container
 
     @property
+    def flatContainerList(self):
+        """ Returns a flatten list of all containers recursively.
+
+        :return: list of all children
+        """
+        return []
+
+    @property
     def containers(self):
+        """ Returns a list of direct child containers.
+
+        :return: list of containers
+        """
         return []
 
     def addItem(self, index, item):
         pass
 
     @property
+    def flatDockList(self):
+        """ Return a list of all docks from this an all child containers recursively.
+
+        :return: list of all docks
+        """
+        return []
+
+    @property
     def docks(self):
+        """ Returns a list of docks which are directly attached to that container
+
+        :return: list of docks
+        """
         return []
 
 
@@ -449,7 +470,7 @@ class SplitterContainer(AbstractContainer):
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(4)
-        if DEBUG:
+        if CONFIG.debug_layout:
             self.layout.setContentsMargins(2, 16, 2, 2)
         self.setLayout(self.layout)
 
@@ -473,29 +494,30 @@ class SplitterContainer(AbstractContainer):
         return self._splitter.indexOf(container)
 
     @property
-    def docks(self):
+    def flatDockList(self):
         dock_list = []
 
         for k in range(self._splitter.count()):
             widget = self._splitter.widget(k)
-            child_docks = widget.docks
+            child_docks = widget.flatDockList
             dock_list.extend(child_docks)
 
         return dock_list
 
     @property
-    def containers(self):
+    def flatContainerList(self):
         container_list = []
 
         for k in range(self._splitter.count()):
             widget = self._splitter.widget(k)
             container_list.append(widget)
-            child_containers = widget.containers
+            child_containers = widget.flatContainerList
             container_list.extend(child_containers)
 
         return container_list
 
-    def _child_containers(self):
+    @property
+    def containers(self):
         container_list = []
 
         for k in range(self._splitter.count()):
@@ -547,7 +569,7 @@ class SplitterContainer(AbstractContainer):
         layout["item_sizes"] = self._splitter.sizes()
 
         children = []
-        for container in self._child_containers():
+        for container in self.containers:
             children.append(container.saveLayout())
         layout["children"] = children
 
@@ -591,7 +613,7 @@ class TabContainer(AbstractContainer):
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
-        if DEBUG:
+        if CONFIG.debug_layout:
             self.layout.setContentsMargins(2, 16, 2, 2)
         self.setLayout(self.layout)
 
@@ -606,7 +628,7 @@ class TabContainer(AbstractContainer):
     def activateTab(self, uid):
         _log.debug("Activating tab for dock: {}".format(uid))
 
-        for d in self.docks:
+        for d in self.flatDockList:
             if d.uid == uid:
                 self._dockstack.setCurrentWidget(d)
                 d.tab.setActive(True)
@@ -617,7 +639,7 @@ class TabContainer(AbstractContainer):
         _log.debug("Closing dock: {}".format(uid))
 
         was_active = False
-        for d in self.docks:
+        for d in self.flatDockList:
             if d.uid == uid:
                 _log.debug("Removing dock: {}".format(d))
 
@@ -635,16 +657,21 @@ class TabContainer(AbstractContainer):
             # Container is empty, close and propagate
             self.closing.emit(self._uid)
         elif was_active:
-            dock = self.docks[0]
+            dock = self.flatDockList[0]
             self.activateTab(dock.uid)
 
     @property
-    def docks(self):
+    def flatDockList(self):
         return [self._dockstack.itemAt(k).widget() for k in range(self._dockstack.count())]
+
+    @property
+    def docks(self):
+        return self.flatDockList
+
 
     def addItem(self, index, item):
 
-        # DEBUG check
+        # _config.debug check
         if not isinstance(item, Dock):
             raise BenchException("Misuse")
 
@@ -682,8 +709,8 @@ class TabContainer(AbstractContainer):
         dock_uid = pickle.loads(data)
         _log.debug("ETID: {}".format(dock_uid))
 
-        for d in self.docks:
-            if d.uid == dock_uid and len(self.docks) == 1:
+        for d in self.flatDockList:
+            if d.uid == dock_uid and len(self.flatDockList) == 1:
                 _log.debug("Tab in container")
                 event.ignore()
                 return
@@ -796,7 +823,7 @@ class TabContainer(AbstractContainer):
         layout = super(TabContainer, self).saveLayout()
 
         children = []
-        for dock in self.docks:
+        for dock in self.flatDockList:
             children.append(dock.saveLayout())
         layout["children"] = children
 
@@ -844,7 +871,7 @@ class DropOverlay(QWidget):
         """
         painter = QPainter(self)
 
-        if DEBUG:
+        if CONFIG.debug_layout:
             painter.setPen(QPen(Qt.yellow, 4.0))
             painter.drawRect(self.rect().adjusted(1, 1, -2, -2))
             painter.setPen(QPen(Qt.black, 1.0))
@@ -1278,7 +1305,7 @@ class Tab(QWidget):
         self.render(pixmap)
 
         self.setVisible(False)
-        if len(self._dock.parentContainer.docks) == 1:
+        if len(self._dock.parentContainer.flatDockList) == 1:
             self._dock.parentContainer.setVisible(False)
 
         # Build drag object

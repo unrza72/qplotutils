@@ -16,11 +16,52 @@ __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
 
 
+#. Default logging level for all modules.
 LOG_LEVEL = logging.INFO
-""" Default logging level for all modules. """
 
+
+#: MIME type for drag and drop of docks.
 MIME_TYPE = 'application/x-dockbench'
-""" MIME type for drag and drop of docks. """
 
-DEBUG = False
-""" Enables debug visualisations. """
+
+# DEBUG = False
+# """ Enables debug visualisations. """
+
+
+class Configuration:
+    """ Global states and settings, shared as a borg object. """
+
+    __shared_state = None
+
+    def __init__(self):
+        """ Constructor. """
+        if not Configuration.__shared_state:
+            Configuration.__shared_state = self.__dict__
+
+            self.__debug = False
+            self.__debug__layout = False
+
+        else:
+            self.__dict__ = Configuration.__shared_state
+
+    @property
+    def debug(self):
+        """ Enables / disbales general debugging. """
+        return self.__debug
+
+    @debug.setter
+    def debug(self, value):
+        self.__debug = value
+
+    @property
+    def debug_layout(self):
+        """ Enable / disable layout debuging frames. """
+        return self.__debug__layout
+
+    @debug_layout.setter
+    def debug_layout(self, value):
+        self.__debug__layout = value
+
+
+#: Global configuration for qplotutils (e.g. disable/enable debug visualization)
+CONFIG = Configuration()

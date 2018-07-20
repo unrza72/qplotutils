@@ -1,5 +1,5 @@
 """
-qplotutils.chart.utils
+qplotutils.chart_tests.utils
 ----------------------
 
 Utility classes to aid proper vizualization.

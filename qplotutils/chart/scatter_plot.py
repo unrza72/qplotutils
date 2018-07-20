@@ -95,7 +95,7 @@ class ScatterItem(ChartItem):
 class Colorbar(ChartItem):
 
     def __init__(self, colormap, v_min, v_max, parent=None):
-        """ Displays the chart item in a legend table. """
+        """ Displays the chart_tests item in a legend table. """
         super(Colorbar, self).__init__()  # Pycharm / pyLint inspection error. Please ignore
         self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIgnoresTransformations)
         self.chartItemFlags = ChartItemFlags.FLAG_NO_LABEL

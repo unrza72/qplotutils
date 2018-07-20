@@ -51,7 +51,7 @@ if __name__ == "__main__":
     view.resize(600, 600)
     view.show()
 
-    # A line chart item (again)
+    # A line chart_tests item (again)
     l = LineChartItem()
     x = np.arange(-30, 300, 0.2, dtype=np.float)
     y = np.sin(2 * np.pi * 3 / float(max(x) - min(x)) * x)

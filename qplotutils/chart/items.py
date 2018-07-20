@@ -1,5 +1,5 @@
 """
-qplotutils.chart.items
+qplotutils.chart_tests.items
 ----------------------
 
 Charts and and other items that can be added to view.
@@ -9,7 +9,8 @@ import logging
 import itertools
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from qplotutils.config import Configuration
+
+from .. import CONFIG
 from . import LOG_LEVEL
 from .utils import makePen
 
@@ -27,12 +28,9 @@ __status__ = "Development"
 _log = logging.getLogger(__name__)
 _log.setLevel(LOG_LEVEL)
 
-#: Global configuration
-_cfg = Configuration()
-
 
 class ChartItemFlags(object):
-    """ Enum with flags that control behavior and apearance of chart items. """
+    """ Enum with flags that control behavior and apearance of chart_tests items. """
 
     #: Inidicates the items bounding box shall considered when auto-ranging the view.
     FLAG_NO_AUTO_RANGE = 1
@@ -42,7 +40,7 @@ class ChartItemFlags(object):
 
 
 class BaseMixin(object):
-    """ Base mixin for all items that are placed on the chart view. """
+    """ Base mixin for all items that are placed on the chart_tests view. """
 
     def __init__(self, parent=None):
         """ Constructor.
@@ -54,7 +52,7 @@ class BaseMixin(object):
         self._color = QColor("#FFFFFF")
 
     def visibleRangeChanged(self, rect):
-        """ Slot that is called when the chart view visible range changed.
+        """ Slot that is called when the chart_tests view visible range changed.
 
         :param rect: The visible rectangle
         """
@@ -62,7 +60,7 @@ class BaseMixin(object):
 
     @property
     def chartItemFlags(self):
-        """ Property of the ChartItemFlags for this chart item. """
+        """ Property of the ChartItemFlags for this chart_tests item. """
         return self.__flags
 
     @chartItemFlags.setter
@@ -81,7 +79,7 @@ class BaseMixin(object):
 
 
 class ChartItemGroup(BaseMixin, QGraphicsItemGroup):
-    """ Item group for chart view items
+    """ Item group for chart_tests view items
 
     :param parent:
     """
@@ -133,7 +131,7 @@ class ChartItem(BaseMixin, QGraphicsItem):
         return self.b_rect
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-        if _cfg.debug:
+        if CONFIG.debug_layout:
             p.setPen(QPen(Qt.blue))
             p.drawRect(self.b_rect)
 
@@ -220,7 +218,7 @@ class CoordCross(ChartItem):
 
 
 class LineChartItem(ChartItem):
-    """ Visualises the given data as line chart.
+    """ Visualises the given data as line chart_tests.
 
     :param parent: Items parent
     """
@@ -265,7 +263,7 @@ class LineChartItem(ChartItem):
 
     @property
     def showTicks(self):
-        """ Property if true the chart will display tickmarks if the number of displayed data points is below
+        """ Property if true the chart_tests will display tickmarks if the number of displayed data points is below
         400.
         """
         return self._showticks
@@ -289,8 +287,8 @@ class LineChartItem(ChartItem):
 
         :param data: ordinate values
         :param index: abscissa values. Optional, if not set datapoints are indexed starting with 0
-        :param label: Label of the chart.
-        :param color: Color of the chart
+        :param label: Label of the chart_tests.
+        :param color: Color of the chart_tests
         """
         self._yData = data
 
@@ -322,7 +320,7 @@ class LineChartItem(ChartItem):
             self._path.lineTo(idx, d)
 
     def boundingRect(self):
-        """ Returns the bounding rect of the chart item
+        """ Returns the bounding rect of the chart_tests item
         :return: Bounding Rectangle
         :rtype: QRectF
         """
@@ -345,7 +343,7 @@ class LineChartItem(ChartItem):
         #         marker = RectMarker(m)
         #         marker.setParentItem(self)
 
-        if _cfg.debug:
+        if CONFIG.debug_layout:
             p.setPen(Qt.yellow)
             p.drawRect(self._bRect)
 

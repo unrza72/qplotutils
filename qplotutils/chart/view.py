@@ -8,7 +8,8 @@ import math
 import logging
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from qplotutils.config import Configuration
+
+from .. import CONFIG
 from . import LOG_LEVEL
 from .utils import makePen
 from .items import ChartItem, ChartItemFlags
@@ -25,8 +26,6 @@ __status__ = "Development"
 
 _log = logging.getLogger(__name__)
 _log.setLevel(LOG_LEVEL)
-
-_cfg = Configuration()
 
 
 class Style(object):
@@ -494,7 +493,7 @@ class ChartWidget(QGraphicsWidget):
         return b_rect
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-        if _cfg.debug:
+        if CONFIG.debug:
             # b_rect = QRectF(0, 0, self.size().width(), self.size().height())
             p.setPen(QPen(self._dbg_box_color))
             p.drawRect(self.boundingRect())
@@ -529,7 +528,7 @@ class ChartLabel(QGraphicsWidget):
             self._refreshPicture()
         self._picture.play(p)
 
-        if _cfg.debug:
+        if CONFIG.debug:
             p.setPen(QPen(self._dbg_box_color))
             p.drawRect(self.boundingRect())
 
@@ -567,7 +566,7 @@ class VerticalChartLabel(ChartLabel):
         p.rotate(-90)
         rr = QRectF(-r.height(), 0, r.height(), r.width())
 
-        if _cfg.debug:
+        if CONFIG.debug:
             p.setPen(QPen(Qt.red))
             p.drawRect(rr)
 
@@ -610,7 +609,7 @@ class ChartAxis(QGraphicsWidget):
             self._refreshPicture()
         self._picture.play(p)
 
-        if _cfg.debug:
+        if CONFIG.debug:
             p.setPen(QPen(self._dbg_box_color))
             p.drawRect(self.boundingRect())
 
@@ -967,7 +966,8 @@ class ChartArea(QGraphicsWidget):
     visibleRangeChange = pyqtSignal(object)
 
     def __init__(self, parent=None):
-        """ Hosts all items that are placed on the chart basically the visible area of the chart.
+        """ Hosts all items that are placed on the chart basically the visible area of
+        the chart.
         Handles pan and zoom and updates the axis accordingly.
 
         .. note:: Instantiated along with the ChartView
@@ -1015,7 +1015,7 @@ class ChartArea(QGraphicsWidget):
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
         # Override
-        if _cfg.debug:  # _log.getEffectiveLevel() < logging.INFO:
+        if CONFIG.debug:  # _log.getEffectiveLevel() < logging.INFO:
             p.setPen(QPen(self._dbg_box_color))
             p.drawRect(self.boundingRect())
 

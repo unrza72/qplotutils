@@ -1,5 +1,5 @@
 """
-qplotutils.chart.roi
+qplotutils.chart_tests.roi
 ---------------------
 
 Region of interest
@@ -226,7 +226,11 @@ class Vec2(object):
         :param other: Vec2
         :return: rotation in radians with directionality
         """
-        delta = np.arccos(np.dot(self.array, other.array) / (np.linalg.norm(self.array) * np.linalg.norm(other.array)))
+        try:
+            delta = np.arccos(np.dot(self.array, other.array) / (np.linalg.norm(self.array) * np.linalg.norm(other.array)))
+        except Exception as ex:
+            _log.info(ex)
+            delta = 0
 
         # cross product to determine the turning direction
         k = np.cross(other.array, self.array)
