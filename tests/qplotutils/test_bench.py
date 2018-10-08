@@ -18,7 +18,6 @@ from qplotutils import CONFIG
 
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
 if PKG_DIR not in sys.path:
-    print PKG_DIR
     sys.path.append(PKG_DIR)
 
 from qplotutils.bench import Bench, Dock, Placement
