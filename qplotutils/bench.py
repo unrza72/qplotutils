@@ -10,8 +10,9 @@ import uuid
 import pickle
 import math
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtWidgets import *
 
 from . import LOG_LEVEL, MIME_TYPE, CONFIG
 from .ui.dock_properties import Ui_DialogDockProperties
@@ -80,7 +81,7 @@ class BenchItem(QWidget, object):
         """
         # _log.debug("Tab: paint event.")
         opt = QStyleOption()
-        opt.init(self)
+        opt.initFrom(self)
 
         painter = QPainter(self)
         self.style().drawPrimitive(QStyle.PE_Widget, opt, painter, self)
@@ -131,7 +132,7 @@ class Bench(QWidget):
     """
 
     #: Signal that notifies connected slots about changes in layout or added/removed items.
-    contentModified = pyqtSignal()
+    contentModified = Signal()
 
     def __init__(self, parent=None):
 
@@ -347,10 +348,10 @@ class Bench(QWidget):
 
 class Dock(BenchItem):
 
-    closing = pyqtSignal(object)
+    closing = Signal(object)
     """ Signal that is emited when the dock is about to be closed. """
 
-    activated = pyqtSignal(object)
+    activated = Signal(object)
     """ Signal that is emited when the dock is activated and thus becomes visible in the tabcontainer. """
 
     def __init__(self, title="Dock"):
@@ -406,8 +407,8 @@ class Dock(BenchItem):
 
 class AbstractContainer(BenchItem):
 
-    closing = pyqtSignal(object)
-    contentModified = pyqtSignal()
+    closing = Signal(object)
+    contentModified = Signal()
 
     def __init__(self, bench, parent_container):
         """ Base class for all containers.
@@ -595,7 +596,19 @@ class SplitterContainer(AbstractContainer):
 
 class TabContainer(AbstractContainer):
 
-    dockMove = pyqtSignal(object, object, object)
+    dockMove = Signal(object, object, object)
+
+    class Point(object):
+        def __init__(self, x, y):
+            self.__x = x
+            self.__y = y
+
+        def x(self):
+            return self.__x
+
+        def y(self):
+            return self.__y
+
 
     def __init__(self, bench, parent_container):
         """ Container which layouts its child items on stacked layout and provides a tab bar.
@@ -733,17 +746,17 @@ class TabContainer(AbstractContainer):
             yc = pos.y() + w.height() / 2.
 
             self.refDropRegions = {
-                QPointF(xc - 34, yc): Placement.LEFT,
-                QPointF(xc + 34, yc): Placement.RIGHT,
-                QPointF(xc, yc - 34): Placement.TOP,
-                QPointF(xc, yc + 34): Placement.BOTTOM,
-                QPointF(xc, yc): Placement.TAB,
+                TabContainer.Point(xc - 34, yc): Placement.LEFT,
+                TabContainer.Point(xc + 34, yc): Placement.RIGHT,
+                TabContainer.Point(xc, yc - 34): Placement.TOP,
+                TabContainer.Point(xc, yc + 34): Placement.BOTTOM,
+                TabContainer.Point(xc, yc): Placement.TAB,
             }
             self.absDropRegions = {
-                QPointF(xc - 68, yc): Placement.LEFT,
-                QPointF(xc + 68, yc): Placement.RIGHT,
-                QPointF(xc, yc - 68): Placement.TOP,
-                QPointF(xc, yc + 68): Placement.BOTTOM,
+                TabContainer.Point(xc - 68, yc): Placement.LEFT,
+                TabContainer.Point(xc + 68, yc): Placement.RIGHT,
+                TabContainer.Point(xc, yc - 68): Placement.TOP,
+                TabContainer.Point(xc, yc + 68): Placement.BOTTOM,
             }
 
     def dragMoveEvent(self, event):
@@ -1246,7 +1259,7 @@ class Tab(QWidget):
     def title(self, value):
         self.titleLabel.setText(value)
 
-    @pyqtProperty(bool)
+    @Property(bool)
     def active(self):
         """ Returns the tabs state. If active the parent tabcontainer displays the contents of
         that tabs dockbench.
@@ -1282,7 +1295,7 @@ class Tab(QWidget):
         """
         # _log.debug("Tab: paint event.")
         opt = QStyleOption()
-        opt.init(self)
+        opt.initFrom(self)
 
         painter = QPainter(self)
         self.style().drawPrimitive(QStyle.PE_Widget, opt, painter, self)
@@ -1328,5 +1341,3 @@ class Tab(QWidget):
 class BenchException(Exception):
     """ Wrapper for all exceptions. """
     pass
-
-

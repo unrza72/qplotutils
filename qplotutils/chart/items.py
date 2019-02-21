@@ -7,8 +7,10 @@ Charts and and other items that can be added to view.
 import numpy as np
 import logging
 import itertools
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtOpenGL import *
+from qtpy.QtWidgets import *
 
 from .. import CONFIG
 from . import LOG_LEVEL

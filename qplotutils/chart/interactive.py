@@ -5,16 +5,13 @@ Interactive Item
 Item can be changed from the UI.
 
 """
-import numpy as np
 import logging
-import itertools
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtWidgets import *
 
 from .. import CONFIG
-from . import LOG_LEVEL
-from .utils import makePen
-from qplotutils.chart.items import VLine, ChartItem, ChartItemFlags, ChartWidgetItem
+from qplotutils.chart.items import ChartItemFlags, ChartWidgetItem
 
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2017, Philipp Baust"
@@ -37,7 +34,7 @@ class InteractiveChangeEvent(object):
 class InteractiveVerticalLine(ChartWidgetItem):
     """ Vertical Line which can be moved by mouse interaction. Usefull for timelines. """
 
-    positionChange = pyqtSignal(object)
+    positionChange = Signal(object)
 
     def __init__(self, parent=None):
         super(InteractiveVerticalLine, self).__init__(parent)
@@ -105,7 +102,7 @@ class InteractiveVerticalLine(ChartWidgetItem):
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange:
             old_pos = self.pos()
-            value = value.toPointF()
+            value = value #.toPointF()
 
             e = InteractiveChangeEvent()
             e.position = value

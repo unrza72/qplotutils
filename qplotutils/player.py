@@ -6,8 +6,10 @@ User controls for interactivity.
 """
 import logging
 import numpy as np
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtOpenGL import *
+from qtpy.QtWidgets import *
 
 from qplotutils import CONFIG
 from .ui.playback import Ui_PlaybackControl

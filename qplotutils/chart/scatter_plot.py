@@ -12,8 +12,10 @@ import numpy as np
 import weakref
 
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtOpenGL import *
+from qtpy.QtWidgets import *
 
 from qplotutils.chart import color
 from qplotutils.chart.color import Normalize, Colormap
@@ -43,6 +45,8 @@ class ScatterItem(ChartItem):
         super(ScatterItem, self).__init__(parent)
         self.setFlags(self.flags() | QGraphicsItem.ItemIgnoresTransformations)
         self.chartItemFlags = ChartItemFlags.FLAG_NO_LABEL
+
+        self.setCacheMode(QGraphicsItem.ItemCoordinateCache)
 
         self.x = x
         self.y = y
@@ -177,6 +181,8 @@ class ScatterPlotView(ChartView):
     def __init__(self, colormap, min=None, max=None, parent=None):
         super(ScatterPlotView, self).__init__(parent, orientation=ChartView.CARTESIAN)
 
+        self.setCacheMode(QGraphicsView.CacheBackground)
+
         self.normalize = Normalize(min, max)
         self.lower_bound_dynamic = min is None
         self.upper_bound_dynamic = max is None
@@ -206,11 +212,11 @@ class ScatterPlotView(ChartView):
                 r = weakref.ref(item)
                 self.scatter_items.append(r)
 
-                if self.lower_bound_dynamic and item.z < self.normalize.value_min or self.normalize.value_min is None:
+                if self.normalize.value_min is None or self.lower_bound_dynamic and item.z < self.normalize.value_min:
                     self.normalize.value_min = item.z
                     force_update_all = True
 
-                if self.upper_bound_dynamic and item.z > self.normalize.value_max or self.normalize.value_max is None:
+                if self.normalize.value_max is None or self.upper_bound_dynamic and item.z > self.normalize.value_max:
                     self.normalize.value_max = item.z
                     force_update_all = True
 

@@ -5,13 +5,13 @@ RESOURCE_DIR = .
 COMPILED_DIR = .
  
 #UI files to compile
-UI_FILES = dock_properties.ui playback.ui
+UI_FILES = dock_properties.ui playback.ui cam_control.ui
 #Qt resource files to compile
 RESOURCES = resources.qrc
  
 #pyuic4 and pyrcc4 binaries
-PYUIC = pyuic4
-PYRCC = pyrcc4 -py3
+PYUIC = pyuic5
+PYRCC = pyrcc5
  
 #################################
 # DO NOT EDIT FOLLOWING
@@ -24,7 +24,9 @@ all : resources ui
 resources : $(COMPILED_RESOURCES) 
  
 ui : $(COMPILED_UI)
- 
+
+
+
 $(COMPILED_DIR)/%.py : $(RESOURCE_DIR)/%.ui
 	$(PYUIC) $< -o $@
  

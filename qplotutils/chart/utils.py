@@ -6,8 +6,10 @@ Utility classes to aid proper vizualization.
 """
 import logging
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtOpenGL import *
+from qtpy.QtWidgets import *
 
 from . import LOG_LEVEL
 
