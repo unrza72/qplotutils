@@ -6,10 +6,13 @@ Chart01
 
 """
 import os
+import signal
 import sys
 import numpy as np
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtOpenGL import *
+from qtpy.QtWidgets import *
 
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
 print(PKG_DIR)
@@ -31,7 +34,27 @@ __status__ = "Development"
 
 if __name__ == "__main__":
     """ ChartView with labels and title """
+
+
+    def sigint_handler(signum, frame):
+        """ Install handler for the SIGINT signal. To kill app through shell.
+
+        :param signum:
+        :param frame:
+        :return:
+        """
+        # sys.stderr.write('\r')
+        QApplication.exit()
+
+
+    signal.signal(signal.SIGINT, sigint_handler)
+
     qapp = QApplication([])
+
+    # call the python loop periodically to catch interrupts from shell
+    timer = QTimer()
+    timer.start(1000)
+    timer.timeout.connect(lambda: None)
 
     view = ChartView(orientation=ChartView.CARTESIAN)
     view.resize(800, 400)

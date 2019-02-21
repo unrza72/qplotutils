@@ -8,10 +8,12 @@ Example for a region of interest (ROI) with different handles.
 """
 import logging
 import os
+import signal
 import sys
-
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtOpenGL import *
+from qtpy.QtWidgets import *
 
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
 print(PKG_DIR)
@@ -32,7 +34,7 @@ __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
 
 _log = logging.getLogger(__name__)
-_log.setLevel(logging.INFO)
+_log.setLevel(logging.DEBUG)
 
 
 if __name__ == "__main__":
@@ -42,7 +44,25 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
 
 
+    def sigint_handler(signum, frame):
+        """ Install handler for the SIGINT signal. To kill app through shell.
+
+        :param signum:
+        :param frame:
+        :return:
+        """
+        # sys.stderr.write('\r')
+        QApplication.exit()
+
+
+    signal.signal(signal.SIGINT, sigint_handler)
+
     qapp = QApplication([])
+
+    # call the python loop periodically to catch interrupts from shell
+    timer = QTimer()
+    timer.start(1000)
+    timer.timeout.connect(lambda: None)
 
     view = ChartView(orientation=ChartView.CARTESIAN)
     view.setWindowTitle("ROI Test")
@@ -53,12 +73,13 @@ if __name__ == "__main__":
     view.show()
 
     roi = RectangularRegion(1, 0, 2, 1, 0.)
-    roi.addHandle(ResizeHandle(roi, position=HandlePosition.TOP))
-    roi.addHandle(ResizeHandle(roi, position=HandlePosition.LEFT))
-    roi.addHandle(ResizeHandle(roi, position=HandlePosition.BOTTOM))
-    roi.addHandle(ResizeHandle(roi, position=HandlePosition.RIGHT))
-    roi.addHandle(RotateHandle(roi, position=HandlePosition.RIGHT | HandlePosition.TOP))
+    roi.addHandle(ResizeHandle(position=HandlePosition.TOP))
+    roi.addHandle(ResizeHandle(position=HandlePosition.LEFT))
+    roi.addHandle(ResizeHandle(position=HandlePosition.BOTTOM))
+    roi.addHandle(ResizeHandle(position=HandlePosition.RIGHT))
+    roi.addHandle(RotateHandle(position=HandlePosition.RIGHT | HandlePosition.TOP))
     view.addItem(roi)
+
 
 
     def contextMenu(pos):

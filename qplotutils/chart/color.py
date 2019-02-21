@@ -5,18 +5,8 @@ Color
 Color and gradient definitions as well as colormap and normalization
 generic to all qplotutils chart_tests types.
 """
-import random
-
 import logging
 import numpy as np
-import weakref
-
-
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-
-from qplotutils.chart.items import ChartItem, ChartItemFlags, LineChartItem
-from qplotutils.chart.view import ChartView
 
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2015, 2017, 2018, Philipp Baust"
@@ -28,7 +18,6 @@ __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
 
 _log = logging.getLogger(__name__)
-
 
 
 # Format is compatible with the one from matplotlib
@@ -49,7 +38,7 @@ _autumn_data = {
         (0., .5, .5),
         (1.0, 1., 1.)
     ),
-    "masked": (0,0,1,1),
+    "masked": (0, 0, 1, 1),
 }
 
 _test_data = {
@@ -68,12 +57,9 @@ _test_data = {
     )
 }
 
-_jet_data = {'red':   ((0., 0, 0), (0.35, 0, 0), (0.66, 1, 1), (0.89, 1, 1),
-                         (1, 0.5, 0.5)),
-             'green': ((0., 0, 0), (0.125, 0, 0), (0.375, 1, 1), (0.64, 1, 1),
-                         (0.91, 0, 0), (1, 0, 0)),
-             'blue':  ((0., 0.5, 0.5), (0.11, 1, 1), (0.34, 1, 1),
-                         (0.65, 0, 0), (1, 0, 0))}
+_jet_data = {'red':   ((0., 0, 0), (0.35, 0, 0), (0.66, 1, 1), (0.89, 1, 1), (1, 0.5, 0.5)),
+             'green': ((0., 0, 0), (0.125, 0, 0), (0.375, 1, 1), (0.64, 1, 1), (0.91, 0, 0), (1, 0, 0)),
+             'blue':  ((0., 0.5, 0.5), (0.11, 1, 1), (0.34, 1, 1), (0.65, 0, 0), (1, 0, 0))}
 
 
 class Colormap(object):
@@ -90,12 +76,12 @@ class Colormap(object):
 
         :param data: gradient definition dict
         """
-        self.lut = np.zeros((self.N,4), dtype=np.float)
+        self.lut = np.zeros((self.N, 4), dtype=np.float)
 
         if "masked" in data:
             self.masked_color = data["masked"]
         else:
-            self.masked_color = (1,1,1,0)
+            self.masked_color = (1, 1, 1, 0)
 
         r = self.__channel_gradient(data["red"])
         g = self.__channel_gradient(data["green"])
@@ -139,7 +125,7 @@ class Colormap(object):
             return self.masked_color
 
         idx = self.lut_index(v)
-        return self.lut[idx,:]
+        return self.lut[idx, :]
 
 
 class Normalize(object):
@@ -165,4 +151,3 @@ class Normalize(object):
 
         result = (valid - self.value_min) / (self.value_max - self.value_min * 1.0)
         return result
-

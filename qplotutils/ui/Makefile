@@ -10,10 +10,16 @@ UI_FILES = dock_properties.ui playback.ui cam_control.ui
 RESOURCES = resources.qrc
  
 #pyuic4 and pyrcc4 binaries
+<<<<<<< HEAD
 PYUIC = pyuic5 --import-from=.
 PYRCC = pyrcc5
 PATCH = python3 patch_ui.py
 
+=======
+PYUIC = pyuic5
+PYRCC = pyrcc5
+ 
+>>>>>>> default
 #################################
 # DO NOT EDIT FOLLOWING
  
@@ -26,6 +32,11 @@ resources : $(COMPILED_RESOURCES)
  
 ui : $(COMPILED_UI)
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> default
 $(COMPILED_DIR)/%.py : $(RESOURCE_DIR)/%.ui
 	$(PYUIC) $< -o $@
 	$(PATCH) $@

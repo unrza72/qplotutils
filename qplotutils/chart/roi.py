@@ -7,8 +7,10 @@ Region of interest
 import math
 import logging
 import numpy as np
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtOpenGL import *
+from qtpy.QtWidgets import *
 from qplotutils.chart.items import ChartItemGroup
 from . import LOG_LEVEL
 from .items import ChartItem
@@ -24,7 +26,7 @@ __status__ = "Development"
 
 
 _log = logging.getLogger(__name__)
-_log.setLevel(LOG_LEVEL)
+_log.setLevel(logging.DEBUG)
 
 
 class RoiState(object):
@@ -49,7 +51,7 @@ class RoiState(object):
         self.rotation = 0
 
 
-class RectangularRegion(ChartItemGroup):
+class RectangularRegion(ChartItem):
     """ Rectangular overlay, that (optionally) can be resized by handles.
 
     TODO:
@@ -72,7 +74,8 @@ class RectangularRegion(ChartItemGroup):
         self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIsFocusable
                       | QGraphicsItem.ItemSendsGeometryChanges)
 
-        self.setHandlesChildEvents(False)
+        # self.setHandlesChildEvents(False)
+        # self.setFiltersChildEvents(True)
         self.__in_move = False
 
         self._path = QPainterPath()
@@ -108,8 +111,9 @@ class RectangularRegion(ChartItemGroup):
         :param handle: Resize or rotate handle
         """
         handle.setParentItem(self)
-        self.addToGroup(handle)
+        # self.addToGroup(handle)
         self.handles.append(handle)
+        handle.updatePosition()
 
     def removeHandle(self, handle):
         """ Removes the given handle from the ROI.
@@ -122,7 +126,7 @@ class RectangularRegion(ChartItemGroup):
             return
 
         self.handles.remove(handle)
-        self.removeFromGroup(handle)
+        # self.removeFromGroup(handle)
         self.scene().removeItem(handle)
 
     def boundingRect(self):
@@ -171,13 +175,17 @@ class RectangularRegion(ChartItemGroup):
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange and self.__in_move:
             old_pos = self.pos()
-            new_pos = value.toPointF()
+            new_pos = value # .toPointF()
 
             delta = old_pos - new_pos
             _log.debug("Delta: {}".format(delta))
 
             self.state.pos = new_pos
-            return new_pos
+            value = new_pos
+
+            for handle in self.handles:
+                handle.updatePosition()
+
 
         return super(RectangularRegion, self).itemChange(change, value)
 
@@ -227,7 +235,11 @@ class Vec2(object):
         :return: rotation in radians with directionality
         """
         try:
-            delta = np.arccos(np.dot(self.array, other.array) / (np.linalg.norm(self.array) * np.linalg.norm(other.array)))
+            v = np.dot(self.array, other.array) / (np.linalg.norm(self.array) * np.linalg.norm(other.array))
+            if not -1 <= v <= 1:
+                return 0
+
+            delta = np.arccos(v)
         except Exception as ex:
             _log.info(ex)
             delta = 0
@@ -235,7 +247,10 @@ class Vec2(object):
         # cross product to determine the turning direction
         k = np.cross(other.array, self.array)
         _log.debug("Change by {}, {}".format(delta * 180 / np.pi, k))
-        return np.sign(k) * delta
+        v =  np.sign(k) * delta
+
+        return v
+
 
     @property
     def x(self):
@@ -372,14 +387,15 @@ class HandlePosition(object):
 class RoiHandle(ChartItem):
     """ Base for all ROI handles. """
 
-    def __init__(self, parent=None, position=HandlePosition.BOTTOM | HandlePosition.LEFT):
+    def __init__(self, position=HandlePosition.BOTTOM | HandlePosition.LEFT):
         """ Constructor
 
         :param parent: parent ROI
         :param position: Placement position.
         """
-        super(RoiHandle, self).__init__(parent)
-        self.setFlags( QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIsFocusable
+        super(RoiHandle, self).__init__()
+        # self.setParentItem(parent)
+        self.setFlags( QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIsFocusable | QGraphicsItem.ItemIsSelectable
                       | QGraphicsItem.ItemIgnoresTransformations | QGraphicsItem.ItemSendsGeometryChanges)
 
         self.setAcceptHoverEvents(True)
@@ -413,6 +429,7 @@ class RoiHandle(ChartItem):
 
     def hoverEnterEvent(self, e):
         self._brush = QBrush(QColor(Qt.white))
+        print("hover enter")
         super(RoiHandle, self).hoverEnterEvent(e)
 
     def hoverLeaveEvent(self, e):
@@ -430,16 +447,16 @@ class ResizeHandle(RoiHandle):
 
     """
 
-    def __init__(self, parent=None, position=HandlePosition.BOTTOM | HandlePosition.LEFT):
+    def __init__(self, position=HandlePosition.BOTTOM | HandlePosition.LEFT):
         """ Constructor.
 
         :param parent: parent ROI
         :param position: Handle position.
         """
-        super(ResizeHandle, self).__init__(parent, position)
+        super(ResizeHandle, self).__init__(position)
         self.__in_resize = False
         self._size = 10
-        self.updatePosition()
+        # self.updatePosition()
 
     def boundingRect(self):
         return QRectF(-self._size / 2, -self._size / 2., self._size, self._size)
@@ -459,7 +476,7 @@ class ResizeHandle(RoiHandle):
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange and self.__in_resize:
             # old_pos = self.pos()
-            value = value.toPointF()
+            value = value # .toPointF()
             new_pos = value
             _log.debug("new pos: {}".format(new_pos))
 
@@ -512,13 +529,13 @@ class ResizeHandle(RoiHandle):
 
 class RotateHandle(RoiHandle):
 
-    def __init__(self, parent=None, position=HandlePosition.TOP | HandlePosition.RIGHT):
-        super(RotateHandle, self).__init__(parent, position)
+    def __init__(self, position=HandlePosition.TOP | HandlePosition.RIGHT):
+        super(RotateHandle, self).__init__(position)
         self.__in_rotate = False
         self.handle_radius = 6
         self.__r = QRectF(-self.handle_radius, -self.handle_radius, 2 * self.handle_radius, 2 * self.handle_radius)
         self.last_pos = Vec2(0, 0)
-        self.updatePosition()
+        # self.updatePosition()
 
     def updatePosition(self):
         super(RotateHandle, self).updatePosition()
@@ -538,13 +555,15 @@ class RotateHandle(RoiHandle):
     def mouseReleaseEvent(self, e):
         super(RotateHandle, self).mouseReleaseEvent(e)
         self.__in_rotate = False
+        # self.updatePosition()
+        _log.debug("Mouse release")
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange and self.__in_rotate:
             state = self.parentItem().state
 
             u = self.last_pos
-            v = Vec2.fromQpointF(value.toPointF())
+            v = Vec2.fromQpointF(value) # .toPointF())
 
             delta = v.angle(u)
             a = state.rotation + delta

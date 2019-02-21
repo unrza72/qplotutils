@@ -7,7 +7,11 @@ Minimal Example opening two dock widgets.
 """
 import os
 import sys
-from PyQt4.QtGui import *
+import signal
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtOpenGL import *
+from qtpy.QtWidgets import *
 
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
 print(PKG_DIR)
@@ -15,7 +19,6 @@ if PKG_DIR not in sys.path:
     sys.path.append(PKG_DIR)
 
 from qplotutils.bench import Dock, Bench
-
 
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2015, 2017, Philipp Baust"
@@ -31,7 +34,26 @@ if __name__ == "__main__":
     """ Minimal example showing a bench with 2 docks.
     The docks can be resized and dragged around.
     """
+
+    def sigint_handler(signum, frame):
+        """ Install handler for the SIGINT signal. To kill app through shell.
+
+        :param signum:
+        :param frame:
+        :return:
+        """
+        # sys.stderr.write('\r')
+        QApplication.exit()
+
+
+    signal.signal(signal.SIGINT, sigint_handler)
+
     qapp = QApplication([])
+
+    # call the python loop periodically to catch interrupts from shell
+    timer = QTimer()
+    timer.start(1000)
+    timer.timeout.connect(lambda: None)
 
     # Creating the bench
     bench = Bench()

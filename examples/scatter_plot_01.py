@@ -10,8 +10,12 @@ Scatter plot example
 import logging
 import os
 import random
+import signal
 import sys
-from PyQt4.QtGui import *
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtOpenGL import *
+from qtpy.QtWidgets import *
 
 
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
@@ -46,7 +50,27 @@ if __name__ == "__main__":
     cfg = Configuration()
     cfg.debug = False
 
+
+    def sigint_handler(signum, frame):
+        """ Install handler for the SIGINT signal. To kill app through shell.
+
+        :param signum:
+        :param frame:
+        :return:
+        """
+        # sys.stderr.write('\r')
+        QApplication.exit()
+
+
+    signal.signal(signal.SIGINT, sigint_handler)
+
     qapp = QApplication([])
+
+    # call the python loop periodically to catch interrupts from shell
+    timer = QTimer()
+    timer.start(1000)
+    timer.timeout.connect(lambda: None)
+
     bench = Bench()
     bench.resize(900, 400)
 
@@ -61,7 +85,7 @@ if __name__ == "__main__":
     bench.addDock(dock_01)
 
     items = []
-    for k in range(500):
+    for k in range(10000):
         s = ScatterItem(random.randint(-100, 100), random.randint(-100, 100), k)
         items.append(s)
 
@@ -77,7 +101,7 @@ if __name__ == "__main__":
     s = ScatterItem(0, 3, -1)
     view_02.addItem(s)
 
-    for k in range(500):
+    for k in range(50):
         s = ScatterItem(random.randint(-100, 100), random.randint(-100, 100), k)
         view_02.addItem(s)
 
@@ -92,12 +116,13 @@ if __name__ == "__main__":
     s = ScatterItem(0, 3, -1)
     view_03.addItem(s)
 
+    # bag = []
     for k in range(60):
         s = ScatterItem(random.randint(-100, 100), random.randint(-100, 100), k)
         view_03.addItem(s)
 
-    view_01.autoRange()
-    view_02.autoRange()
-    view_03.autoRange()
+    # view_01.autoRange()
+    # view_02.autoRange()
+    # view_03.autoRange()
     bench.show()
     qapp.exec_()

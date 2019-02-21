@@ -6,7 +6,11 @@
 #
 # WARNING! All changes made in this file will be lost!
 
+<<<<<<< HEAD
 from qtpy import QtCore, QtGui, QtWidgets
+=======
+from PyQt5 import QtCore, QtGui, QtWidgets
+>>>>>>> default
 
 class Ui_PlaybackControl(object):
     def setupUi(self, PlaybackControl):

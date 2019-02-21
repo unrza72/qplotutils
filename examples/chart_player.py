@@ -8,11 +8,14 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtOpenGL import *
+from qtpy.QtWidgets import *
 import logging
 
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
+
 print(PKG_DIR)
 if PKG_DIR not in sys.path:
     sys.path.append(PKG_DIR)
@@ -53,8 +56,8 @@ if __name__ == "__main__":
     ts_merge = pd.merge(p1, p2, left_index=True, right_index=True, how='outer')
 
 
-    print p1.head(), p2.head()
-    print ts_merge.head(20)
+    print(p1.head(), p2.head())
+    print(ts_merge.head(20))
 
 
     ts_merge.reindex()

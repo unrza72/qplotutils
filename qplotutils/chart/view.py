@@ -6,8 +6,10 @@ Base widget that provides the view for all charts including axis, legend and zoo
 """
 import math
 import logging
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtOpenGL import *
+from qtpy.QtWidgets import *
 
 from .. import CONFIG
 from . import LOG_LEVEL
@@ -169,7 +171,7 @@ class ChartView(QGraphicsView):
         self.setResizeAnchor(QGraphicsView.AnchorViewCenter)
         self.setViewportUpdateMode(QGraphicsView.MinimalViewportUpdate)
 
-        self.setRenderHints(QPainter.SmoothPixmapTransform | QPainter.Antialiasing)
+        # self.setRenderHints(QPainter.SmoothPixmapTransform | QPainter.Antialiasing)
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         # self.customContextMenuRequested.connect(self.on_context_menu)
@@ -822,7 +824,7 @@ class SecondaryHorizontalAxis(HorizontalAxis):
 
     def boundingRect(self):
         area = self.parentWidget().area.size()
-        v_axis = self.parentWidget().mainVerticalAxis.size()
+        v_axis = self.parentWidget().main_vertical_axis.size()
         s = self.size()
         b_rect = QRectF(-v_axis.width(), 0, s.width()+v_axis.width(), area.height() + s.height())
         return b_rect
@@ -959,11 +961,11 @@ class ScaleBox(QGraphicsItem):
 class ChartArea(QGraphicsWidget):
 
     # Used to update axis,
-    hAxisChange = pyqtSignal(object)
-    vAxisChange = pyqtSignal(object)
+    hAxisChange = Signal(object)
+    vAxisChange = Signal(object)
 
     # Notifies interested parties
-    visibleRangeChange = pyqtSignal(object)
+    visibleRangeChange = Signal(object)
 
     def __init__(self, parent=None):
         """ Hosts all items that are placed on the chart basically the visible area of
