@@ -18,7 +18,7 @@ __status__ = "Development"
 
 
 #: Default logging level for all modules.
-LOG_LEVEL = logging.INFO
+LOG_LEVEL = logging.DEBUG
 
 
 # MIME_TYPE = 'application/x-dockbench'

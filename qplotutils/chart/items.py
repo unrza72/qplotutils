@@ -133,9 +133,10 @@ class ChartItem(BaseMixin, QGraphicsItem):
         return self.b_rect
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-        if CONFIG.debug_layout:
-            p.setPen(QPen(Qt.blue))
-            p.drawRect(self.b_rect)
+        # if CONFIG.debug_layout:
+        #     p.setPen(makePen(Qt.blue))
+        #     p.drawRect(self.b_rect)
+        pass
 
     def __repr__(self):
         return "<ChartItem>"
@@ -346,7 +347,8 @@ class LineChartItem(ChartItem):
         #         marker.setParentItem(self)
 
         if CONFIG.debug_layout:
-            p.setPen(Qt.yellow)
+            p.setPen(makePen(Qt.yellow))
+            p.setBrush(Qt.transparent)
             p.drawRect(self._bRect)
 
     def visibleRangeChanged(self, rect=QRectF()):

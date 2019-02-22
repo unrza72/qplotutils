@@ -6,11 +6,13 @@ Base widget that provides the view for all charts including axis, legend and zoo
 """
 import math
 import logging
+import numpy as np
 from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtOpenGL import *
 from qtpy.QtWidgets import *
 
+from qplotutils import QPlotUtilsException
 from .. import CONFIG
 from . import LOG_LEVEL
 from .utils import makePen
@@ -170,8 +172,7 @@ class ChartView(QGraphicsView):
         self.setTransformationAnchor(QGraphicsView.NoAnchor)
         self.setResizeAnchor(QGraphicsView.AnchorViewCenter)
         self.setViewportUpdateMode(QGraphicsView.MinimalViewportUpdate)
-
-        # self.setRenderHints(QPainter.SmoothPixmapTransform | QPainter.Antialiasing)
+        self.setRenderHints(QPainter.SmoothPixmapTransform | QPainter.Antialiasing)
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         # self.customContextMenuRequested.connect(self.on_context_menu)
@@ -212,6 +213,9 @@ class ChartView(QGraphicsView):
         self._legend.setVisible(checked)
 
     def resizeEvent(self, event):
+        self.__relayout()
+
+    def __relayout(self):
         b_rect = QRectF(0, 0, self.size().width() - 3, self.size().height() - 3)
         self.centralWidget.setGeometry(b_rect)
         # self.autoRange()
@@ -225,8 +229,9 @@ class ChartView(QGraphicsView):
         for r in self._map_keys:
             c, dx, dy, item = r["corner"], r["x"], r["y"], r["Item"]
             if c == self.TOP_RIGHT:
-                x = self.width() - item.boundingRect().width() - dx
-                y = dy
+                # TODO: Does not work until the window is resized...
+                x = b.x() + a.width() - item.boundingRect().width() - dx
+                y = b.y() + dy
             elif c == self.BOTTOM_LEFT:
                 x = b.x() + dx
                 y = b.y() + a.height() - item.boundingRect().height() - dy
@@ -360,6 +365,14 @@ class ChartView(QGraphicsView):
         self.centralWidget.verticalLabel = value
         self.__layout_map_keys()
 
+    def addSecondaryHorizontalAxis(self, axis):
+        self.centralWidget.addSecondaryHorizontalAxis(axis)
+        self.__relayout()
+
+    def addSecondaryVerticalAxis(self, axis):
+        self.centralWidget.addSecondaryVerticalAxis(axis)
+        self.__layout_map_keys()
+
     def __repr__(self):
         return "<ChartView>"
 
@@ -387,34 +400,33 @@ class ChartWidget(QGraphicsWidget):
         # optional title
         self.title_widget = ChartLabel(self)
         self.title_widget.font = QFont("Helvetica [Cronyx]", 14, QFont.Bold)
-        self.layout().addItem(self.title_widget, 0, 0, 1, 3)
+        self.layout().addItem(self.title_widget, 0, 0, 1, 4)
         self.layout().setRowFixedHeight(0, 0)
         self.title_widget.setVisible(False)
 
-
         # optional left axis label
         self.vertical_axis_label = VerticalChartLabel(self)
-        self.layout().addItem(self.vertical_axis_label, 1, 0)
+        self.layout().addItem(self.vertical_axis_label, 2, 0, 1, 1)
         self.layout().setColumnFixedWidth(0, 0)
         self.vertical_axis_label.setVisible(False)
 
         self.main_vertical_axis = VerticalAxis(self)
-        self.layout().addItem(self.main_vertical_axis, 1, 1)
+        self.layout().addItem(self.main_vertical_axis, 2, 1, 1, 1)
         self.layout().setColumnFixedWidth(1, 60)
-
-        self.main_horizontal_axis = HorizontalAxis(self)
-        self.layout().addItem(self.main_horizontal_axis, 2, 2)
-        self.layout().setRowFixedHeight(2, 30)
-
-        # optional bottom axis label
-        self.horizontal_axis_label = ChartLabel(self)
-        self.layout().addItem(self.horizontal_axis_label, 3, 1, 1, 2)
-        self.layout().setRowFixedHeight(3, 0)
-        self.horizontal_axis_label.setVisible(False)
 
         # canvas for the items
         self.area = ChartArea(self)
-        self.layout().addItem(self.area, 1, 2)
+        self.layout().addItem(self.area, 2, 2, 1, 1)
+
+        self.main_horizontal_axis = HorizontalAxis(self)
+        self.layout().addItem(self.main_horizontal_axis, 3, 2, 1, 1)
+        self.layout().setRowFixedHeight(3, 30)
+
+        # optional bottom axis label
+        self.horizontal_axis_label = ChartLabel(self)
+        self.layout().addItem(self.horizontal_axis_label, 4, 2, 1, 1)
+        self.layout().setRowFixedHeight(4, 0)
+        self.horizontal_axis_label.setVisible(False)
 
         self.area.vAxisChange.connect(self.main_vertical_axis.axisChange)
         self.area.hAxisChange.connect(self.main_horizontal_axis.axisChange)
@@ -457,11 +469,11 @@ class ChartWidget(QGraphicsWidget):
     def horizontalLabel(self, value):
         if value is None:
             self.horizontal_axis_label.setVisible(False)
-            self.layout().setRowFixedHeight(3, 0)
+            self.layout().setRowFixedHeight(4, 0)
         else:
             self.horizontal_axis_label.label = value
             self.horizontal_axis_label.setVisible(True)
-            self.layout().setRowFixedHeight(3, 20)
+            self.layout().setRowFixedHeight(4, 20)
 
     def addSecondaryHorizontalAxis(self, axis):
         """ Adds a second horizontal axis on top to the plot.
@@ -471,23 +483,20 @@ class ChartWidget(QGraphicsWidget):
         """
         axis.setParent(self)
 
-        # Unfortunately we need to re-layout everything
-        self.layout().removeItem(self.main_vertical_axis)
-        self.layout().removeItem(self.main_horizontal_axis)
-        self.layout().removeItem(self.area)
-
-        self.layout().addItem(axis, 0, 1)
-        self.layout().setRowFixedHeight(0, 30)
+        self.layout().addItem(axis, 1, 2, 1, 1)
+        self.layout().setRowFixedHeight(1, 30)
         self.area.hAxisChange.connect(axis.axisChange)
 
-        self.layout().addItem(self.main_vertical_axis, 1, 0)
-        self.layout().setColumnFixedWidth(0, 60)
+    def addSecondaryVerticalAxis(self, axis):
+        """ Adds a second vertical axis on top to the plot.
 
-        self.layout().addItem(self.area, 1, 1)
-
-        self.layout().addItem(self.main_horizontal_axis, 2, 1)
-        self.layout().setRowFixedHeight(2, 30)
-
+        :param axis: secondary Axis
+        :return:
+        """
+        axis.setParent(self)
+        self.layout().addItem(axis, 2, 3, 1, 1)
+        # self.layout().setColumnFixedWidth(3, 6)
+        self.area.vAxisChange.connect(axis.axisChange)
 
 
     def boundingRect(self):
@@ -590,7 +599,7 @@ class ChartAxis(QGraphicsWidget):
         self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
         self.setFlags(QGraphicsItem.ItemClipsChildrenToShape) #  | QGraphicsItem.ItemIsFocusable)
 
-        self.font = QFont("Helvetica [Cronyx]", 11, QFont.Normal)
+        self.font = QFont("Helvetica [Cronyx]", 9, QFont.Normal)
         self.flags = Qt.TextDontClip | Qt.AlignRight | Qt.AlignVCenter
         self.gridColor = QColor(80, 80, 80, 255)
 
@@ -598,6 +607,8 @@ class ChartAxis(QGraphicsWidget):
 
         self._areaTransform = None
         self._picture = None
+
+        self.setZValue(-1)
 
         self._dbg_box_color = Qt.yellow
 
@@ -619,6 +630,7 @@ class ChartAxis(QGraphicsWidget):
         """ Repaints the picture that is played in the paint method. """
         self._picture = QPicture()
         painter = QPainter(self._picture)
+
         self._generatePicture(painter)
         painter.end()
 
@@ -699,7 +711,7 @@ class ChartAxis(QGraphicsWidget):
 
             ticks.append((pos, tickString))
 
-            cur_tick_width = metrics.width(tickString)
+            cur_tick_width = metrics.width(tickString) + 5
             if cur_tick_width > required_tick_width:
                 required_tick_width = cur_tick_width
 
@@ -729,7 +741,7 @@ class VerticalAxis(ChartAxis):
         if self._areaTransform is None:
             return
 
-        parent_w = self.parentWidget().size().width()
+        parent_w = self.parentWidget().area.size().width() + self.size().width() - 2 # self.parentWidget().size().width()
         parent_h = self.parentWidget().size().height()
 
         translation = self._areaTransform.m32()
@@ -783,7 +795,7 @@ class HorizontalAxis(ChartAxis):
         if self._areaTransform is None:
             return
 
-        parent_h = self.parentWidget().area.size().height()
+        parent_h = self.parentWidget().area.size().height() - 2
 
         shift = self._areaTransform.m31()
         scaling = self._areaTransform.m11() + self._areaTransform.m21()
@@ -817,6 +829,8 @@ class SecondaryHorizontalAxis(HorizontalAxis):
         """
         super(SecondaryHorizontalAxis, self).__init__(parent)
         # self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed))
+        self.font = QFont("Helvetica [Cronyx]", 9, QFont.Normal)
+        self.tickFormat = "{0:1.4G}"
         self.main_axis_values = main_axis_values
         self.secondary_axis_values = secondary_axis_values
 
@@ -882,54 +896,167 @@ class SecondaryHorizontalAxis(HorizontalAxis):
         minNumberOfGridLines = displayRange / float(maxGridSpace)
         maxNumberOfGridLines = displayRange / float(minGridSpace)
 
+        if maxNumberOfGridLines == 0:
+            return [], 0
+
         # Calculate the up most and lowest value on axis
         lowerValue = -shift / scaling
         upperValue = (displayRange - shift) / scaling
 
-        valueRange = abs(upperValue - lowerValue)
-        # _log.debug("Value range: {}".format(valueRange))
-
-        if valueRange == 0:
-            _log.debug("Value range is 0")
-            log10Exponent = 0
-        else:
-            log10Exponent = math.floor(math.log10(valueRange)) - 1
-
-        # Fulfill the minimum gridline constraint
-        while valueRange / 10 ** log10Exponent > maxNumberOfGridLines:
-            log10Exponent += 1
-
-        # fulfill the max gridlines constraint
-        tickDistance = 10 ** log10Exponent
-        while valueRange / tickDistance < minNumberOfGridLines:
-            tickDistance *= 0.5
+        idx, = np.where(np.logical_and(self.main_axis_values <= upperValue, self.main_axis_values >= lowerValue))
 
         required_tick_width = 0
         metrics = QFontMetrics(self.font)
-        ticks = []
-
-        for k, main_tick in enumerate(self.main_axis_values):
-            if main_tick < lowerValue or main_tick > upperValue:
-                continue
-
-            pos = round(main_tick * scaling + shift)
-            if ticks and ticks[-1][0]:
-                last_pos = ticks[-1][0]
-                d = pos -last_pos
-                if d < minGridSpace:
-                    continue
-
-            value = self.secondary_axis_values[k]
+        positions = np.ones(int(maxNumberOfGridLines) + 5, np.float) * np.inf
+        c = 0
+        labels = []
+        for k in idx:
+            v = self.main_axis_values[k]
+            pos = round(v * scaling + shift)
+            value = round(self.secondary_axis_values[k], 10)
             tickString = self.tickFormat.format(value)
 
-            ticks.append((pos, tickString))
+            if np.min(np.abs(positions - pos)) < minGridSpace:
+                # _log.debug("Avoided tick collision")
+                continue
+
+            positions[c] = pos
+            c += 1
+            labels.append(tickString)
 
             cur_tick_width = metrics.width(tickString)
             if cur_tick_width > required_tick_width:
                 required_tick_width = cur_tick_width
 
-        return ticks, required_tick_width
+        positions = positions[:c]
 
+        return zip(positions, labels), required_tick_width
+
+
+class SecondaryVerticalAxis(VerticalAxis):
+    """ Vertical chart axis. """
+    def __init__(self, main_axis_values, secondary_axis_values, parent=None):
+        """ Due to free zooming and ranging on the
+
+        :param main_axis_values: values on the main axis.
+        :param secondary_axis_values: corresponding value on the main axis.
+        :param parent: parent item
+        """
+        super(SecondaryVerticalAxis, self).__init__(parent)
+
+        self.font = QFont("Helvetica [Cronyx]", 9, QFont.Normal)
+        self.flags = Qt.TextDontClip | Qt.AlignLeft | Qt.AlignVCenter
+        self.tickFormat = "{0:1.4G}"
+
+        self.main_axis_values = main_axis_values
+        self.secondary_axis_values = secondary_axis_values
+
+        if len(main_axis_values) != len(secondary_axis_values):
+            raise QPlotUtilsException("list length must be equal")
+
+        self._dbg_box_color = Qt.magenta
+
+    def boundingRect(self):
+        parent = self.parentWidget().size()
+        s = self.size()
+        b_rect = QRectF(-10, 0, parent.width(), s.height() + 20 )
+        return b_rect
+
+    def _generatePicture(self, p=QPainter()):
+        pen = QPen(QBrush(self.gridColor), 1.0)
+        pen.setCosmetic(True)
+        p.setPen(pen)
+        p.setBrush(Qt.transparent)
+        p.setFont(self.font)
+        p.drawLine(0, 0, 0, self.size().height())
+
+        if self._areaTransform is None:
+            return
+
+        parent_w = self.parentWidget().area.size().width() - 2
+
+        shift = self._areaTransform.m32()
+        scaling = self._areaTransform.m12() + self._areaTransform.m22()  # only for rotations along 90 degrees
+        displayRange = self.size().height()
+
+        if scaling == 0:
+            _log.debug("Scaling is 0")
+            return
+
+        ticks, run_width = self.calcTicks(shift, scaling, displayRange)
+
+        if run_width == 0:
+            self.parentWidget().layout().setColumnFixedWidth(3, 0)
+        else:
+            self.parentWidget().layout().setColumnFixedWidth(3, run_width + 14)
+
+        pen = QPen(QBrush(QColor(188, 136, 184, 255)), 1.0, style=Qt.DotLine)
+        pen.setCosmetic(True)
+        p.setPen(pen)
+
+        for pos, tickString in ticks:
+            # if 10 < pos < self.size().height():
+            p.drawLine(-parent_w, round(pos), 6, round(pos))
+
+            tickRect = QRectF(10, pos - 4, run_width + 2, 10)
+            p.drawText(tickRect, self.flags, tickString)
+
+
+    def calcTicks(self, shift, scaling, displayRange, maxGridSpace=80, minGridSpace=40):
+        """ Calculates the axis ticks.
+         The ticks are calculated along the logarithm of the base 10 of the displayed value range.
+         The resulting exponent for the ticks is than scaled with respect to the preferred number of
+         ticks and the value range.
+         In case the value range would cause more ticks as previously determined the exponent is incremented
+         by 1. Otherwise if the exponent results in to less ticks, the exponent is divided by 2.
+
+        :param shift: offset from point of origin along the current axis (m31 / m32 from transform)
+        :param scaling: scaling of scene (m11 / m12 / m21 / m22 from transform)
+        :param displayRange: range of visible pixels
+        :param maxGridSpace: maximum space between gridlines
+        :param minGridSpace: minimum space between gridlines
+        :return: list of ticks (tuple of position and label) and the required tick with
+        """
+        # first lets see how many ticks can be placed on the axis
+        minNumberOfGridLines = displayRange / float(maxGridSpace)
+        maxNumberOfGridLines = displayRange / float(minGridSpace)
+
+        if maxNumberOfGridLines == 0:
+            return [], 0
+
+
+        # Calculate the up most and lowest value on axis
+        upperValue = -shift / scaling
+        lowerValue = (displayRange - shift) / scaling
+
+        idx, = np.where(np.logical_and(self.main_axis_values <= upperValue, self.main_axis_values >= lowerValue))
+
+        required_tick_width = 0
+        metrics = QFontMetrics(self.font)
+        positions = np.ones(int(maxNumberOfGridLines) + 5, np.float) * np.inf
+        c = 0
+        labels = []
+        for k in idx:
+            v = self.main_axis_values[k]
+            pos = round(v * scaling + shift)
+            value = round(self.secondary_axis_values[k], 10)
+            tickString = self.tickFormat.format(value)
+
+            if np.min(np.abs(positions - pos)) < minGridSpace:
+                # _log.debug("Avoided tick collision")
+                continue
+
+            positions[c] = pos
+            c += 1
+            labels.append(tickString)
+
+            cur_tick_width = metrics.width(tickString)
+            if cur_tick_width > required_tick_width:
+                required_tick_width = cur_tick_width
+
+        positions = positions[:c]
+
+        return zip(positions, labels), required_tick_width
 
 class ScaleBox(QGraphicsItem):
 

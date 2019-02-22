@@ -14,12 +14,14 @@ from qtpy.QtOpenGL import *
 from qtpy.QtWidgets import *
 import logging
 
+from qplotutils import CONFIG
+
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
 print(PKG_DIR)
 if PKG_DIR not in sys.path:
     sys.path.append(PKG_DIR)
 
-from qplotutils.chart.view import ChartView, SecondaryHorizontalAxis
+from qplotutils.chart.view import ChartView, SecondaryHorizontalAxis, SecondaryVerticalAxis
 from qplotutils.chart.items import LineChartItem, HLine, VLine
 
 __author__ = "Philipp Baust"
@@ -49,6 +51,8 @@ if __name__ == "__main__":
 
     signal.signal(signal.SIGINT, sigint_handler)
 
+    CONFIG.debug_layout = True
+
     qapp = QApplication([])
 
     # call the python loop periodically to catch interrupts from shell
@@ -58,6 +62,8 @@ if __name__ == "__main__":
 
     view = ChartView(orientation=ChartView.CARTESIAN)
     view.show()
+    view.title = "A Title"
+
 
     # A line chart_tests item (again)
     l = LineChartItem()
@@ -66,12 +72,14 @@ if __name__ == "__main__":
     l.plot(y, x, "a sine")
 
     sec = SecondaryHorizontalAxis(x + 0.24, x * 2e14 - 12.67567)
-    view.centralWidget.addSecondaryHorizontalAxis(sec)
+    view.addSecondaryHorizontalAxis(sec)
+
+    sec_vertical = SecondaryVerticalAxis(y, y * 10)
+    view.centralWidget.addSecondaryVerticalAxis(sec_vertical)
 
 
     view.addItem(l)
     view.autoRange()
-
 
 
     # Add a horizontal line
@@ -86,5 +94,7 @@ if __name__ == "__main__":
 
     # Set legend visible
     view.setLegendVisible(True)
+
+    view.resize(300, 800)
 
     qapp.exec_()

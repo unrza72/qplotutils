@@ -65,3 +65,7 @@ class Configuration:
 
 #: Global configuration for qplotutils (e.g. disable/enable debug visualization)
 CONFIG = Configuration()
+
+
+class QPlotUtilsException(Exception):
+    pass
