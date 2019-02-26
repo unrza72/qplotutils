@@ -63,6 +63,7 @@ if __name__ == "__main__":
     b = ShaderBox()
     b.translate(.2, 1, 0)
     # b.setGLOptions('translucent')
+    b.setGLOptions('opaque')
     w.addItem(b)
 
     # b = Box()

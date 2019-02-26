@@ -427,86 +427,158 @@ class ShaderBox(GLGraphicsItem):
     def initializeGL(self):
 
 
-        VERTEX_SHADER = shaders.compileShader("""
-        varying vec3 normal;
-                      void main() {
-                          // compute here for use in fragment shader
-                          normal = normalize(gl_NormalMatrix * gl_Normal);
-                          gl_FrontColor = gl_Color;
-                          gl_BackColor = gl_Color;
-                          gl_Position = ftransform();
-                      }
-        """, GL_VERTEX_SHADER)
-        FRAGMENT_SHADER = shaders.compileShader("""
-         varying vec3 normal;
-                      void main() {
-                          vec4 color = gl_Color;
-                          color.w = min(color.w + 2.0 * color.w * pow(normal.x*normal.x + normal.y*normal.y, 5.0), 1.0);
-                          gl_FragColor = color;
-                      }
-        """, GL_FRAGMENT_SHADER)
+        # VERTEX_SHADER = shaders.compileShader("""
+        # varying vec3 normal;
+        #               void main() {
+        #                   // compute here for use in fragment shader
+        #                   normal = normalize(gl_NormalMatrix * gl_Normal);
+        #                   gl_FrontColor = gl_Color;
+        #                   gl_BackColor = gl_Color;
+        #                   gl_Position = ftransform();
+        #               }
+        # """, GL_VERTEX_SHADER)
+        # FRAGMENT_SHADER = shaders.compileShader("""
+        #  varying vec3 normal;
+        #               void main() {
+        #                   vec4 color = gl_Color;
+        #                   color.w = min(color.w + 2.0 * color.w * pow(normal.x*normal.x + normal.y*normal.y, 5.0), 1.0);
+        #                   gl_FragColor = color;
+        #               }
+        # """, GL_FRAGMENT_SHADER)
 
-        self.shader = shaders.compileProgram(VERTEX_SHADER, FRAGMENT_SHADER)
 
-    #     self.vbo = vbo.VBO(
-    #         np.array([
-    #             [0, 1, 0],
-    #             [-1, -1, 0],
-    #             [1, -1, 0],
-    #             [2, -1, 0],
-    #             [4, -1, 0],
-    #             [4, 1, 0],
-    #             [2, -1, 0],
-    #             [4, 1, 0],
-    #             [2, 1, 0],
-    #         ], "f")
-    #     )
-    #
-    # def paint(self):
-    #     shaders.glUseProgram(self.shader)
-    #     try:
-    #         self.vbo.bind()
-    #         try:
-    #             # glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    #             glColor4f(1.0, 0.0, 0.0, 0.1);
-    #             glEnableClientState(GL_VERTEX_ARRAY)
-    #             glVertexPointerf(self.vbo)
-    #             glDrawArrays(GL_TRIANGLES, 0, 9)
-    #         finally:
-    #             self.vbo.unbind()
-    #             glDisableClientState(GL_VERTEX_ARRAY);
-    #     finally:
-    #         shaders.glUseProgram( 0 )
+        vertex_shader = shaders.compileShader("""
+                 varying vec3 normal;
+                 void main() {
+                     // compute here for use in fragment shader
+                     normal = normalize(gl_NormalMatrix * gl_Normal);
+                     gl_FrontColor = gl_Color;
+                     gl_BackColor = gl_Color;
+                     gl_Position = ftransform();
+                 }
+             """, GL_VERTEX_SHADER)
+        fragment_shader = shaders.compileShader("""
+                 varying vec3 normal;
+                 void main() {
+                     vec4 color = gl_Color;
+                     float s = pow(normal.x*normal.x + normal.y*normal.y, 2.0);
+                     color.x = color.x + s * (1.0-color.x);
+                     color.y = color.y + s * (1.0-color.y);
+                     color.z = color.z + s * (1.0-color.z);
+                     gl_FragColor = color;
+                 }
+             """, GL_FRAGMENT_SHADER)
+
+
+
+        self.program = shaders.compileProgram(vertex_shader, fragment_shader)
+
+
+
     def paint(self):
+
+        self.setupGLState()
+        shaders.glUseProgram(self.program)
+
+        verts = np.array([
+            [0, 0, 0],
+            [1, 0, 0],
+            [0, 1, 0],
+            [1, 1, 0],
+            [0, 0, 1],
+            [1, 0, 1],
+            [0, 1, 1],
+            [1, 1, 1],
+        ])
+
+        faces = np.array([
+            [0, 2, 1],
+            [2, 1, 3],
+            [0, 1, 4],
+            [1, 5, 4],
+            [1, 5, 3],
+            [3, 5, 7],
+            [2, 3, 7],
+            [2, 7, 6],
+            [0, 2, 6],
+            [0, 6, 4],
+            [4, 5, 6],
+            [5, 7, 6],
+        ])
+
+        # edges = np.array([
+        #     [0,1],
+        #     [0,2],
+        #     [2,3],
+        #     [3,1],
+        #     [3,2],
+        #
+        #     # face zy
+        #     [1,5],
+        #
+        #
+        # ])
+
+        # face_normales = np.zeros(faces.shape, np.float)
+        v = verts[faces]
+        face_normals = np.cross(v[:, 1] - v[:, 0], v[:, 2] - v[:, 0])
+
+        norms = np.empty((face_normals.shape[0], 3, 3))
+        norms[:] = face_normals[:, np.newaxis, :]
+
         glEnableClientState(GL_VERTEX_ARRAY)
-        try:
-            glBegin(GL_TRIANGLES)
-            shaders.glUseProgram(self.shader)
 
-            glColor4f(1,0,0,1)
-            glVertex3f(0, 0, 0)
-            glVertex3f(1, 0, 0)
-            glVertex3f(0, 1, 0)
+        glVertexPointerf(v)
+        glColor4f(0.5,0.5,0.5,1.0)
 
-            glColor4f(0, 1, 0, 1)
-            glVertex3f(0, 0, 0)
-            glVertex3f(0, 0, 1)
-            glVertex3f(0, 1, 0)
+        glEnableClientState(GL_NORMAL_ARRAY)
+        glNormalPointerf(norms)
 
-            glColor4f(0, 0, 1, 1)
-            glVertex3f(0, 0, 0)
-            glVertex3f(0, 0, 1)
-            glVertex3f(1, 0, 0)
-            #
-            # glColor4f(1, 1, 0, 1)
-            # glVertex3f(0, 0, 1)
-            # glVertex3f(0, 1, 0)
-            # glVertex3f(1, 0, 0)
+        glDrawArrays(GL_TRIANGLES, 0, np.product(v.shape[:-1]))
+
+        glDisableClientState(GL_NORMAL_ARRAY)
+        glDisableClientState(GL_VERTEX_ARRAY)
+        glDisableClientState(GL_COLOR_ARRAY)
+
+        shaders.glUseProgram(0)
+
+        if True:
+            verts = np.array([
+                [0, 0, 0],
+                [1, 0, 0],
+                [0, 1, 0],
+                [1, 1, 0],
+                [0, 0, 1],
+                [1, 0, 1],
+                [0, 1, 1],
+                [1, 1, 1],
+            ])
+
+            edges = np.array([
+                [0, 1],
+                [0, 2],
+                [1, 2],
+                [3, 1],
+                [3, 2],
+
+                # face zy
+                [1, 5],
+
+            ])
+
+            glEnableClientState(GL_VERTEX_ARRAY)
+            try:
+                glVertexPointerf(verts)
 
 
-            glEnd()
-        except Exception as ex:
-            print(ex)
+                glColor4f(1,0,0,1)
+
+                edges = edges.flatten()
+                glDrawElements(GL_LINES, edges.shape[0], GL_UNSIGNED_INT, edges)
+            finally:
+                glDisableClientState(GL_VERTEX_ARRAY)
+                glDisableClientState(GL_COLOR_ARRAY)
+
 
 
 

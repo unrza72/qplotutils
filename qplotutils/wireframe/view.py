@@ -270,7 +270,8 @@ context->create();
                         glLoadName(i._id)
                         self._itemNames[i._id] = i
                     i.paint()
-                except:
+                except Exception as ex:
+                    print(ex)
                     # from .. import debug
                     # debug.printExc()
                     msg = "Error while drawing item %s." % str(item)
