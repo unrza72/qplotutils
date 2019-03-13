@@ -4,13 +4,17 @@ import logging
 import numpy as np
 import signal
 
+from OpenGL.GL.WIN.specular_fog import glInitSpecularFogWIN
 from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtOpenGL import *
 from qtpy.QtWidgets import *
 
+import qtpy.QtCore as qc
+
 from OpenGL.GL import *
 
+from pyqtgraph.Qt import PYQT5
 from qplotutils.wireframe.cam_control import CamControl
 from qplotutils.wireframe.items import Box, CoordinateCross, Grid
 from qplotutils.wireframe.base_types import Vector3d
@@ -19,6 +23,7 @@ _log = logging.getLogger(__name__)
 
 
 class ViewProperties(QObject):
+
     changed = Signal()
 
     def __init__(self, parent=None):
@@ -78,10 +83,6 @@ class ViewProperties(QObject):
         self.changed.emit()
 
 
-
-
-
-
 class ChartView3d(QGLWidget):
     """
     Basic widget for displaying 3D data
@@ -91,8 +92,6 @@ class ChartView3d(QGLWidget):
 
     """
 
-
-
     def __init__(self, parent=None):
         """
 
@@ -101,18 +100,7 @@ class ChartView3d(QGLWidget):
         super(ChartView3d, self).__init__(parent)
         self.setFocusPolicy(Qt.ClickFocus)
 
-        """
-        QSurfaceFormat format;
-format.setSamples(4);    // Set the number of samples used for multisampling
-setFormat(format);       // Note we set the format on the window...
-create();                // Create the window
-
-context = new QOpenGLContext(this);
-context->setFormat(format);    // ...and set the format on the context too
-context->create();
-        """
         self.format().setSamples(4)
-
 
         self.props = ViewProperties()
         self.items = []
@@ -122,30 +110,39 @@ context->create();
         self.cam_ctrl = CamControl(self.props, self)
         self.cam_ctrl.show()
 
-        self.props.changed.connect(self.update)
+        self.props.changed.connect(self.camera_update)
 
+        self.frame_count = 0
+        self.frame_time = QTime()
+        self.frame_time.start()
 
     def addItem(self, item):
         self.items.append(item)
         if hasattr(item, 'initializeGL'):
             self.makeCurrent()
-            # try:
             item.initializeGL()
-            # except:
-            #     self.checkOpenGLVersion('Error while adding item %s to GLViewWidget.' % str(item))
 
-        item._setView(self)
-        # print "set view", item, self, item.view()
+        item.view =self
         self.update()
 
     def removeItem(self, item):
         self.items.remove(item)
-        item._setView(None)
+        item.view = None
         self.update()
 
     def initializeGL(self):
+
+
         self.resizeGL(self.width(), self.height())
 
+        glEnable(GL_DEPTH_TEST)
+        glDepthFunc(GL_LEQUAL)
+
+        # lighting
+        light_position = [1., 1., 2., 0.]
+        glLight(GL_LIGHT0, GL_POSITION, light_position)
+        glMaterialfv(GL_FRONT, GL_SPECULAR, [1., 1., 1., 1.])
+        glMaterialf(GL_FRONT, GL_SHININESS, 100.)
 
     def getViewport(self):
         vp = self.props.viewport
@@ -155,9 +152,10 @@ context->create();
             return vp
 
     def resizeGL(self, w, h):
-        pass
-        # glViewport(*self.getViewport())
-        # self.update()
+        print("Resize called")
+        glViewport(*self.getViewport())
+        self.setProjection() # region=region)
+        self.setModelview()
 
     def setProjection(self, region=None):
         m = self.projectionMatrix(region)
@@ -246,12 +244,17 @@ context->create();
             glViewport(*self.getViewport())
         else:
             glViewport(*viewport)
-        self.setProjection(region=region)
-        self.setModelview()
+        # self.setProjection(region=region)
+        # self.setModelview()
         bgcolor = self.props.background_color
         glClearColor(*bgcolor)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
         self.drawItemTree(useItemNames=useItemNames)
+
+        self.frame_count += 1
+        fps = self.frame_count / ( self.frame_time.elapsed()/1000.0)
+        print("FPS", fps)
+
 
     def drawItemTree(self, item=None, useItemNames=False):
         if item is None:
@@ -308,7 +311,11 @@ context->create();
             self.props.elevation_angle = elevation
         if azimuth is not None:
             self.props.azimuth_angle = azimuth
-        self.update()
+
+        # self.setProjection()  # region=region)
+        # self.setModelview()
+        # self.update()
+        self.camera_update()
 
     def cameraPosition(self):
         """Return current position of camera based on center, dist, elevation, and azimuth"""
@@ -329,7 +336,8 @@ context->create();
         """Orbits the camera around the center position. *azim* and *elev* are given in degrees."""
         self.props.azimuth_angle += azim
         self.props.elevation_angle = np.clip(self.props.elevation_angle + elev, -90, 90)
-        self.update()
+        # self.update()
+        self.camera_update()
 
     def pan(self, dx, dy, dz, relative=False):
         """
@@ -363,7 +371,8 @@ context->create();
             yVec /= np.linalg.norm(yVec)
 
             self.props.center = self.props.center + xVec * xScale * dx + yVec * xScale * dy + zVec * xScale * dz
-        self.update()
+        # self.update()
+        self.camera_update()
 
     def pixelSize(self, pos):
         """
@@ -397,16 +406,33 @@ context->create();
 
 
     def wheelEvent(self, ev):
-        delta = ev.angleDelta()
+        if qc.PYQT5:
+            delta = ev.angleDelta()
 
+            if ev.modifiers() & Qt.ControlModifier:
+                self.props.fov *= 0.999 ** (delta.y() / 1.)
+            else:
+                self.props.distance *= 0.999 ** (delta.y() / 1.)
 
-        if ev.modifiers() & Qt.ControlModifier:
-            self.props.fov *= 0.999 ** (delta.y() / 1.)
-        else:
-            self.props.distance *= 0.999 ** (delta.y() / 1.)
+                # self.cam_ctrl.distance = self.props.distance
+                print(self.props.distance)
 
-            # self.cam_ctrl.distance = self.props.distance
-            print(self.props.distance)
+        if qc.PYQT4:
+            delta = ev.delta()
+
+            if ev.modifiers() & Qt.ControlModifier:
+                self.props.fov *= 0.999 ** (delta / 1.)
+            else:
+                self.props.distance *= 0.999 ** (delta / 1.)
+
+                # self.cam_ctrl.distance = self.props.distance
+                print(self.props.distance)
+
+        self.camera_update()
+
+    def camera_update(self):
+        self.setProjection()  # region=region)
+        self.setModelview()
         self.update()
 
     def keyPressEvent(self, ev):

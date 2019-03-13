@@ -54,28 +54,55 @@ if __name__ == "__main__":
     w.addItem(cc)
 
     grid = Grid()
-    # grid.setGLOptions('additive')
+    grid.setGLOptions('opaque')
     w.addItem(grid)
 
-    # b = Box()
-    # b.setGLOptions('translucent')
-    # b.translate(.2, 0, 0)
+    # import random
+    # k = 0
+    # for x in range(-10,10,2):
+    #     y = 1
+    #     for y in range(-10,10,2):
+    #         for z in range(-10, 10, 2):
+    #             b = ShaderBox()
+    #             b.translate(x, y, z)
+    #
+    #             f1 = random.random()
+    #             f2 = random.random()
+    #             f3 = random.random()
+    #             b.scale(f1, f2, f3)
+    #             b.setGLOptions('opaque')
+    #             w.addItem(b)
+    #
+    #     k += 1
+    # print(k)
+
     b = ShaderBox()
-    b.translate(.2, 1, 0)
+    b.translate(1.1, 1.1, 0)
+    b.scale(0.5,0.5,0.5)
     # b.setGLOptions('translucent')
     b.setGLOptions('opaque')
     w.addItem(b)
 
-    # b = Box()
+    b = ShaderBox(shader='balloon', face_color=(0.6, 0.1, 0.1, 0.3))
+    b.translate(2.1, 1.1, 0)
+    b.scale(0.5, 0.5, 0.5)
+    b.setGLOptions('translucent')
     # b.setGLOptions('opaque')
-    # b.translate(0, 5.0, 0)
-    # w.addItem(b)
-    #
-    # b = Box()
-    # b.setGLOptions('additive')
-    # b.translate(0, 2.0, 2.0)
-    # b.scale(0.1,1,1)
-    # b.rotate(45, 0, 0, 1.)
-    # w.addItem(b)
+    w.addItem(b)
+
+    b = ShaderBox(shader='shaded')
+    b.translate(3.1, 1.1, 0)
+    b.scale(0.5, 0.5, 0.5)
+    # b.setGLOptions('translucent')
+    b.setGLOptions('opaque')
+    w.addItem(b)
+
+    b = ShaderBox(shader='edge_highlight')
+    b.translate(4.1, 1.1, 0)
+    b.scale(0.5, 0.5, 0.5)
+    # b.setGLOptions('translucent')
+    b.setGLOptions('opaque')
+    w.addItem(b)
+
 
     qapp.exec_()

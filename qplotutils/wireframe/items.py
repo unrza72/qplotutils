@@ -1,38 +1,44 @@
-import os
-import sys
 import logging
 import numpy as np
 
 from qtpy.QtCore import *
 from qtpy.QtGui import *
-from qtpy.QtOpenGL import *
 from qtpy.QtWidgets import *
 
 from OpenGL.GL import *
 from OpenGL import GL
+
+# from OpenGLContext.arrays import *
+from qplotutils.wireframe.shader import ShaderRegistry
 
 GLOptions = {
     'opaque': {
         GL_DEPTH_TEST: True,
         GL_BLEND: False,
         GL_ALPHA_TEST: False,
-        GL_CULL_FACE: False,
+        GL_CULL_FACE: True,
     },
     'translucent': {
         GL_DEPTH_TEST: True,
         GL_BLEND: True,
         GL_ALPHA_TEST: False,
-        GL_CULL_FACE: False,
+        GL_CULL_FACE: True,
         'glBlendFunc': (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA),
     },
     'additive': {
         GL_DEPTH_TEST: False,
         GL_BLEND: True,
         GL_ALPHA_TEST: False,
-        GL_CULL_FACE: False,
+        GL_CULL_FACE: True,
         'glBlendFunc': (GL_SRC_ALPHA, GL_ONE),
     },
 }
+
+
+_log = logging.getLogger(__name__)
+
+
+DEBUG = True
 
 
 class GLGraphicsItem(QObject):
@@ -65,7 +71,8 @@ class GLGraphicsItem(QObject):
                 self.view().removeItem(self)
             self.__parent.view().addItem(self)
 
-    def setGLOptions(self, opts):
+    def \
+            setGLOptions(self, opts):
         """
         Set the OpenGL state options to use immediately before drawing this item.
         (Note that subclasses must call setupGLState before painting for this to work)
@@ -118,11 +125,18 @@ class GLGraphicsItem(QObject):
         """Return a list of this item's children in the scenegraph hierarchy."""
         return list(self.__children)
 
-    def _setView(self, v):
-        self.__view = v
-
+    # def _setView(self, v):
+    #     self.__view = v
+    #
+    # def view(self):
+    #     return self.__view
+    @property
     def view(self):
         return self.__view
+
+    @view.setter
+    def view(self, value):
+        self.__view = value
 
     def setDepthValue(self, value):
         """
@@ -270,7 +284,7 @@ class GLGraphicsItem(QObject):
         Indicates that this item needs to be redrawn, and schedules an update
         with the view it is displayed in.
         """
-        v = self.view()
+        v = self.view
         if v is None:
             return
         v.update()
@@ -300,13 +314,10 @@ class GLGraphicsItem(QObject):
         return tr.inverted()[0].map(point)
 
 
-
 class Grid(GLGraphicsItem):
 
     def __init__(self, parentItem=None):
         super(Grid, self).__init__(parentItem)
-
-
 
     def paint(self):
         super(Grid, self).paint()
@@ -339,8 +350,6 @@ class CoordinateCross(GLGraphicsItem):
 
     def __init__(self, parentItem=None):
         super(CoordinateCross, self).__init__(parentItem)
-
-
 
     def paint(self):
         super(CoordinateCross, self).paint()
@@ -415,72 +424,39 @@ class Box(GLGraphicsItem):
         glEnd()
 
 
-from OpenGL.arrays import vbo
-# from OpenGLContext.arrays import *
-from OpenGL.GL import shaders
-
-class ShaderBox(GLGraphicsItem):
-
-    def __init__(self, parentItem=None):
-        super(ShaderBox, self).__init__(parentItem)
-
-    def initializeGL(self):
-
-
-        # VERTEX_SHADER = shaders.compileShader("""
-        # varying vec3 normal;
-        #               void main() {
-        #                   // compute here for use in fragment shader
-        #                   normal = normalize(gl_NormalMatrix * gl_Normal);
-        #                   gl_FrontColor = gl_Color;
-        #                   gl_BackColor = gl_Color;
-        #                   gl_Position = ftransform();
-        #               }
-        # """, GL_VERTEX_SHADER)
-        # FRAGMENT_SHADER = shaders.compileShader("""
-        #  varying vec3 normal;
-        #               void main() {
-        #                   vec4 color = gl_Color;
-        #                   color.w = min(color.w + 2.0 * color.w * pow(normal.x*normal.x + normal.y*normal.y, 5.0), 1.0);
-        #                   gl_FragColor = color;
-        #               }
-        # """, GL_FRAGMENT_SHADER)
-
-
-        vertex_shader = shaders.compileShader("""
-                 varying vec3 normal;
-                 void main() {
-                     // compute here for use in fragment shader
-                     normal = normalize(gl_NormalMatrix * gl_Normal);
-                     gl_FrontColor = gl_Color;
-                     gl_BackColor = gl_Color;
-                     gl_Position = ftransform();
-                 }
-             """, GL_VERTEX_SHADER)
-        fragment_shader = shaders.compileShader("""
-                 varying vec3 normal;
-                 void main() {
-                     vec4 color = gl_Color;
-                     float s = pow(normal.x*normal.x + normal.y*normal.y, 2.0);
-                     color.x = color.x + s * (1.0-color.x);
-                     color.y = color.y + s * (1.0-color.y);
-                     color.z = color.z + s * (1.0-color.z);
-                     gl_FragColor = color;
-                 }
-             """, GL_FRAGMENT_SHADER)
 
 
 
-        self.program = shaders.compileProgram(vertex_shader, fragment_shader)
 
 
 
-    def paint(self):
+class Mesh(object):
 
-        self.setupGLState()
-        shaders.glUseProgram(self.program)
+    def __init__(self):
+        self.mesh_vertices = None
+        self.face_vertices = None
+        self.face_normal_vectors = None
 
-        verts = np.array([
+        self.debug_face_normals_vertices = None
+        self.debug_face_normals_edges = None
+
+        self.face_edges = None
+        self.mesh_edges = None
+
+        # def compute_face_normals(self, faces):
+    #     v = self.vertices[faces]
+    #     face_normals = np.cross(v[:, 1] - v[:, 0], v[:, 2] - v[:, 0])
+    #
+    #     norms = np.empty((face_normals.shape[0], 3, 3))
+    #     norms[:] = face_normals[:, np.newaxis, :]
+    #
+    #     self.face_normals = norms
+
+    @staticmethod
+    def cube(edge_length=1.0):
+        md = Mesh()
+
+        md.mesh_vertices = np.array([
             [0, 0, 0],
             [1, 0, 0],
             [0, 1, 0],
@@ -491,93 +467,159 @@ class ShaderBox(GLGraphicsItem):
             [1, 1, 1],
         ])
 
+        # be careful with culling
         faces = np.array([
-            [0, 2, 1],
-            [2, 1, 3],
-            [0, 1, 4],
+            [0, 2, 1],  # ok
+            [2, 3, 1],
+
+            [0, 1, 4],  # ok
             [1, 5, 4],
-            [1, 5, 3],
-            [3, 5, 7],
-            [2, 3, 7],
-            [2, 7, 6],
-            [0, 2, 6],
-            [0, 6, 4],
-            [4, 5, 6],
+
+            [1, 3, 5],  # ok
+            [3, 7, 5],
+
+            [2, 7, 3],  # ok
+            [2, 6, 7],
+
+            [0, 6, 2],  # ok
+            [0, 4, 6],
+
+            [4, 5, 6],  # ok
             [5, 7, 6],
         ])
 
-        # edges = np.array([
-        #     [0,1],
-        #     [0,2],
-        #     [2,3],
-        #     [3,1],
-        #     [3,2],
-        #
-        #     # face zy
-        #     [1,5],
-        #
-        #
-        # ])
-
-        # face_normales = np.zeros(faces.shape, np.float)
-        v = verts[faces]
+        v = md.mesh_vertices[faces]
         face_normals = np.cross(v[:, 1] - v[:, 0], v[:, 2] - v[:, 0])
 
-        norms = np.empty((face_normals.shape[0], 3, 3))
+        norms = np.zeros((face_normals.shape[0], 3, 3))
         norms[:] = face_normals[:, np.newaxis, :]
 
-        glEnableClientState(GL_VERTEX_ARRAY)
+        md.face_vertices = v
+        md.face_normal_vectors = norms
 
-        glVertexPointerf(v)
-        glColor4f(0.5,0.5,0.5,1.0)
+        face_centers_v = (v[:, 0] + v[:, 1] + v[:, 2]) / 3.
+        face_center_norm_v = face_centers_v + face_normals
+        md.debug_face_normals_vertices = np.append(face_centers_v, face_center_norm_v, axis=0)
+        md.debug_face_normals_edges = np.array([np.arange(0, 12, 1, np.int8), np.arange(0, 12, 1, np.int8) + 12]).T
 
-        glEnableClientState(GL_NORMAL_ARRAY)
-        glNormalPointerf(norms)
+        # computation for mesh grid vizu
+        face_edges = np.zeros((faces.shape[0] * 3, 2), np.int)
+        for k, f in enumerate(faces):
+            a = np.sort(f)
+            face_edges[k] = [a[0], a[1]]
+            face_edges[faces.shape[0] + k] = [a[1], a[2]]
+            face_edges[faces.shape[0] * 2 + k] = [a[0], a[2]]
 
-        glDrawArrays(GL_TRIANGLES, 0, np.product(v.shape[:-1]))
+        md.face_edges = np.unique(face_edges, axis=0)
 
-        glDisableClientState(GL_NORMAL_ARRAY)
-        glDisableClientState(GL_VERTEX_ARRAY)
-        glDisableClientState(GL_COLOR_ARRAY)
-
-        shaders.glUseProgram(0)
-
-        if True:
-            verts = np.array([
-                [0, 0, 0],
-                [1, 0, 0],
-                [0, 1, 0],
-                [1, 1, 0],
-                [0, 0, 1],
-                [1, 0, 1],
-                [0, 1, 1],
-                [1, 1, 1],
-            ])
-
-            edges = np.array([
-                [0, 1],
-                [0, 2],
-                [1, 2],
-                [3, 1],
-                [3, 2],
-
-                # face zy
-                [1, 5],
-
-            ])
-
-            glEnableClientState(GL_VERTEX_ARRAY)
-            try:
-                glVertexPointerf(verts)
+        # Hand constructed:
+        md.mesh_edges = np.array([
+            [0, 1],
+            [1, 3],
+            [3, 2],
+            [2, 0],
+            [4, 5],
+            [5, 7],
+            [7, 6],
+            [6, 4],
+            [0, 4],
+            [1, 5],
+            [2, 6],
+            [3, 7],
+        ], np.int8)
 
 
-                glColor4f(1,0,0,1)
+        return md
 
-                edges = edges.flatten()
-                glDrawElements(GL_LINES, edges.shape[0], GL_UNSIGNED_INT, edges)
-            finally:
+
+
+
+class ShaderBox(GLGraphicsItem):
+
+    def __init__(self, parentItem=None, shader=None, face_color=(0.6, 0.6, 0.6, 1.0), gloptions='opaque'):
+        super(ShaderBox, self).__init__(parentItem)
+
+        self.draw_faces = True
+        self.draw_edges = True
+
+        self.debug_face_normals = True
+        self.debug_face_edges = True
+
+        self.__antialiasing = True
+        self.edge_color = (1., 0.5, 0.5, 1.)
+        self.face_color = face_color
+
+        self.shader_registry = ShaderRegistry()
+        self.shader_registry.add(shader)
+        self.shader_program = self.shader_registry[shader]
+        self.setGLOptions(gloptions)
+
+        self.mesh = None
+
+    def initializeGL(self):
+        _log.debug("InitializeGL")
+        self.mesh = Mesh.cube()
+
+    def paint(self):
+        self.setupGLState()
+
+        if self.__antialiasing:
+            glEnable(GL_LINE_SMOOTH)
+            glEnable(GL_BLEND)
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+            glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+            glLineWidth(1.5)
+
+        if self.draw_faces:
+            with self.shader_program:
+                glEnableClientState(GL_VERTEX_ARRAY)
+
+                glVertexPointerf(self.mesh.face_vertices)
+                glColor4f(*self.face_color)
+
+                glEnableClientState(GL_NORMAL_ARRAY)
+                glNormalPointerf(self.mesh.face_normal_vectors)
+
+                glDrawArrays(GL_TRIANGLES, 0, np.product(self.mesh.face_vertices.shape[:-1]))
+
+                glDisableClientState(GL_NORMAL_ARRAY)
                 glDisableClientState(GL_VERTEX_ARRAY)
                 glDisableClientState(GL_COLOR_ARRAY)
+
+            if self.debug_face_normals:
+                glEnableClientState(GL_VERTEX_ARRAY)
+                glVertexPointerf(self.mesh.debug_face_normals_vertices)
+                glColor4f(*self.edge_color)
+
+                edges = self.mesh.debug_face_normals_edges.flatten()
+                glDrawElements(GL_LINES, edges.shape[0], GL_UNSIGNED_INT, edges)
+
+                glDisableClientState(GL_VERTEX_ARRAY)
+                glDisableClientState(GL_COLOR_ARRAY)
+
+            if self.debug_face_edges:
+                glEnableClientState(GL_VERTEX_ARRAY)
+                glVertexPointerf(self.mesh.mesh_vertices)
+                glColor4f(*self.edge_color)
+                edges = self.mesh.face_edges.flatten()
+                glDrawElements(GL_LINES, edges.shape[0], GL_UNSIGNED_INT, edges)
+
+                glDisableClientState(GL_VERTEX_ARRAY)
+                glDisableClientState(GL_COLOR_ARRAY)
+
+
+        if self.draw_edges:
+            glEnableClientState(GL_VERTEX_ARRAY)
+            glVertexPointerf(self.mesh.mesh_vertices)
+            glColor4f(0,1,0,1)
+            edges = self.mesh.mesh_edges.flatten()
+            glDrawElements(GL_LINES, edges.shape[0], GL_UNSIGNED_INT, edges)
+
+            glDisableClientState(GL_VERTEX_ARRAY)
+            glDisableClientState(GL_COLOR_ARRAY)
+
+
+
 
 
 
