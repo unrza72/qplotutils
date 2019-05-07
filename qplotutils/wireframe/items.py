@@ -11,25 +11,47 @@ from OpenGL import GL
 # from OpenGLContext.arrays import *
 from qplotutils.wireframe.shader import ShaderRegistry
 
+# GLOptions = {
+#     'opaque': {
+#         GL_DEPTH_TEST: True,
+#         GL_BLEND: False,
+#         GL_ALPHA_TEST: False,
+#         GL_CULL_FACE: False,
+#     },
+#     'translucent': {
+#         GL_DEPTH_TEST: True,
+#         GL_BLEND: True,
+#         GL_ALPHA_TEST: False,
+#         GL_CULL_FACE: False,
+#         'glBlendFunc': (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA),
+#     },
+#     'additive': {
+#         GL_DEPTH_TEST: False,
+#         GL_BLEND: True,
+#         GL_ALPHA_TEST: False,
+#         GL_CULL_FACE: False,
+#         'glBlendFunc': (GL_SRC_ALPHA, GL_ONE),
+#     },
+# }
 GLOptions = {
     'opaque': {
         GL_DEPTH_TEST: True,
         GL_BLEND: False,
         GL_ALPHA_TEST: False,
-        GL_CULL_FACE: True,
+        GL_CULL_FACE: False,
     },
     'translucent': {
         GL_DEPTH_TEST: True,
         GL_BLEND: True,
         GL_ALPHA_TEST: False,
-        GL_CULL_FACE: True,
+        GL_CULL_FACE: False,
         'glBlendFunc': (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA),
     },
     'additive': {
         GL_DEPTH_TEST: False,
         GL_BLEND: True,
         GL_ALPHA_TEST: False,
-        GL_CULL_FACE: True,
+        GL_CULL_FACE: False,
         'glBlendFunc': (GL_SRC_ALPHA, GL_ONE),
     },
 }
@@ -71,8 +93,7 @@ class GLGraphicsItem(QObject):
                 self.view().removeItem(self)
             self.__parent.view().addItem(self)
 
-    def \
-            setGLOptions(self, opts):
+    def setGLOptions(self, opts):
         """
         Set the OpenGL state options to use immediately before drawing this item.
         (Note that subclasses must call setupGLState before painting for this to work)
@@ -432,16 +453,22 @@ class Box(GLGraphicsItem):
 
 class Mesh(object):
 
-    def __init__(self):
-        self.mesh_vertices = None
+    def __init__(self, has_wireframe=False):
+        self.has_wireframe = has_wireframe
+
+
         self.face_vertices = None
         self.face_normal_vectors = None
 
         self.debug_face_normals_vertices = None
         self.debug_face_normals_edges = None
 
+
         self.face_edges = None
-        self.mesh_edges = None
+
+        # Wireframe
+        self.wireframe_vertices = None
+        self.wireframe_edges = None
 
         # def compute_face_normals(self, faces):
     #     v = self.vertices[faces]
@@ -453,10 +480,156 @@ class Mesh(object):
     #     self.face_normals = norms
 
     @staticmethod
-    def cube(edge_length=1.0):
+    def sphere(stacks=8, sectors=8, radius=1):
+
+        vertices = np.zeros(shape=((stacks-1)*sectors + 2,3), dtype=np.float)
+
+        sh = np.pi / (1. * stacks)
+        thetas = np.linspace(0 + sh, np.pi - sh, stacks - 1, endpoint=True, dtype=np.float)
+        phis = np.linspace(0, 2 * np.pi, sectors, endpoint=False, dtype=np.float)
+
+        for k, theta in enumerate(thetas):
+            z = radius * np.cos(theta)
+            xy = radius * np.sin(theta)
+
+            for j, phi in enumerate(phis):
+                x = xy * np.sin(phi)
+                y = xy * np.cos(phi)
+
+                vertices[k*sectors+j] = [x, y, z]
+
+        vertices[-2] = [0, 0, -1 * radius]
+        vertices[-1] = [0,0,1 * radius]
+
+        faces_top = np.zeros((sectors, 3), np.int)
+        faces_bottom = np.zeros((sectors, 3), np.int)
+        faces1 = np.zeros((sectors * (stacks - 2), 3), np.int)
+        faces2 = np.zeros((sectors * (stacks - 2), 3), np.int)
+
+        # top
+        for k in range(sectors):
+            f0 = len(vertices) - 1
+            f1 = k
+            if k + 1 == sectors:
+                f2 = 0
+            else:
+                f2 = k + 1
+            faces_top[k] = [f0,f1,f2]
+
+        # bottom
+        for k in range(sectors):
+            f0 = len(vertices) - 2
+            f1 = (stacks-2)*sectors + k
+            if k + 1 == sectors:
+                f2 = (stacks-2)*sectors
+            else:
+                f2 = (stacks-2)*sectors + k + 1
+            faces_bottom[k] = [f1, f2, f0]
+
+        for k in range(stacks - 2):
+            for l in range(sectors):
+                f0 = k * sectors + l
+                if l + 1 == sectors:
+                    f1 = k * sectors
+                else:
+                    f1 = k * sectors + l + 1
+                f2 = (k + 1) * (sectors) + l
+
+                if l == 0:
+                    f3 = (k + 1) * (sectors) + sectors -1
+                else:
+                    f3 = (k + 1) * (sectors) + (l-1)
+
+                faces1[f0] = [f0, f1, f2]
+
+                faces2[f0] = [f0, f2, f3]
+
+        faces = np.concatenate((faces_top, faces_bottom, faces1, faces2), axis=0)
+        tt = Mesh.compute_face_arrays(vertices, faces)
+        return tt
+
+
+    @staticmethod
+    def cone(n_faces=4):
+        """ Return a mesh for a cone with the defined number of faces
+        """
+
+
+        vertices = np.zeros((n_faces + 2, 3), np.float)
+        for k in range(n_faces):
+            x = np.sin(2 * np.pi * k / n_faces)
+            y = np.cos(2 * np.pi * k / n_faces)
+
+            vertices[k] = [x, y, 0]
+        vertices[n_faces] = [0, 0, 1]
+
+        a = np.arange(0, n_faces, 1, dtype=np.uint8)
+        b = np.roll(a, 1)
+        t_faces = np.array([
+            a, b, np.ones(n_faces) * n_faces
+        ], dtype=np.uint8).T
+
+        b_faces = np.array([
+            b, a, np.ones(n_faces) * (n_faces + 1)
+        ], dtype=np.uint8).T
+
+        faces = np.append(t_faces, b_faces, axis=0)
+
+        tt = Mesh.compute_face_arrays(vertices, faces)
+        return tt
+
+    @staticmethod
+    def compute_face_arrays(vertices, faces, wireframe_edges=None):
+        n_faces = faces.shape[0]
+
+        # compute face vertices
+        v = vertices[faces]
+
+        # face normals
+        nv = np.cross(v[:, 1] - v[:, 0], v[:, 2] - v[:, 0])
+        nvl = np.linalg.norm(nv, axis=1)
+        nv = nv / nvl.reshape(-1, 1)
+
+        norms = np.zeros((nv.shape[0], 3, 3))
+        norms[:] = nv[:, np.newaxis, :]
+
+        # debug face normal edges
+        face_centers_v = (v[:, 0] + v[:, 1] + v[:, 2]) / 3.
+        face_center_norm_v = face_centers_v + nv
+        debug_face_normals_vertices = np.append(face_centers_v, face_center_norm_v, axis=0)
+
+        debug_face_normals_edges = np.array([np.arange(0, n_faces, 1, np.int8),
+                                                np.arange(0, n_faces, 1, np.int8) + n_faces]).T
+
+        # computation for mesh grid vizu
+        face_edges = np.zeros((faces.shape[0] * 3, 2), np.int)
+        for k, f in enumerate(faces):
+            a = np.sort(f)
+            face_edges[k] = [a[0], a[1]]
+            face_edges[faces.shape[0] + k] = [a[1], a[2]]
+            face_edges[faces.shape[0] * 2 + k] = [a[0], a[2]]
+
+        face_edges = np.unique(face_edges, axis=0)
+
         md = Mesh()
 
-        md.mesh_vertices = np.array([
+        if wireframe_edges is not None :
+            md.wireframe_edges = wireframe_edges
+            md.has_wireframe = True
+
+        md.wireframe_vertices = vertices
+        md.face_vertices = v
+        md.face_normal_vectors = norms
+        md.face_edges = face_edges
+        md.debug_face_normals_vertices = debug_face_normals_vertices
+        md.debug_face_normals_edges = debug_face_normals_edges
+        return md
+
+
+
+    @staticmethod
+    def cube(edge_length=1.0):
+        vertices = np.array([
             [0, 0, 0],
             [1, 0, 0],
             [0, 1, 0],
@@ -467,6 +640,7 @@ class Mesh(object):
             [1, 1, 1],
         ])
 
+        # Every cube side is constructed of two triangles
         # be careful with culling
         faces = np.array([
             [0, 2, 1],  # ok
@@ -488,32 +662,8 @@ class Mesh(object):
             [5, 7, 6],
         ])
 
-        v = md.mesh_vertices[faces]
-        face_normals = np.cross(v[:, 1] - v[:, 0], v[:, 2] - v[:, 0])
-
-        norms = np.zeros((face_normals.shape[0], 3, 3))
-        norms[:] = face_normals[:, np.newaxis, :]
-
-        md.face_vertices = v
-        md.face_normal_vectors = norms
-
-        face_centers_v = (v[:, 0] + v[:, 1] + v[:, 2]) / 3.
-        face_center_norm_v = face_centers_v + face_normals
-        md.debug_face_normals_vertices = np.append(face_centers_v, face_center_norm_v, axis=0)
-        md.debug_face_normals_edges = np.array([np.arange(0, 12, 1, np.int8), np.arange(0, 12, 1, np.int8) + 12]).T
-
-        # computation for mesh grid vizu
-        face_edges = np.zeros((faces.shape[0] * 3, 2), np.int)
-        for k, f in enumerate(faces):
-            a = np.sort(f)
-            face_edges[k] = [a[0], a[1]]
-            face_edges[faces.shape[0] + k] = [a[1], a[2]]
-            face_edges[faces.shape[0] * 2 + k] = [a[0], a[2]]
-
-        md.face_edges = np.unique(face_edges, axis=0)
-
         # Hand constructed:
-        md.mesh_edges = np.array([
+        wireframe_edges = np.array([
             [0, 1],
             [1, 3],
             [3, 2],
@@ -528,22 +678,25 @@ class Mesh(object):
             [3, 7],
         ], np.int8)
 
-
-        return md
-
+        return Mesh.compute_face_arrays(vertices, faces, wireframe_edges)
 
 
 
-class ShaderBox(GLGraphicsItem):
 
-    def __init__(self, parentItem=None, shader=None, face_color=(0.6, 0.6, 0.6, 1.0), gloptions='opaque'):
-        super(ShaderBox, self).__init__(parentItem)
+
+
+
+class MeshItem(GLGraphicsItem):
+
+    def __init__(self, mesh_data, parentItem=None, shader=None, face_color=(0.6, 0.6, 0.6, 1.0),
+                 gloptions='opaque'):
+        super(MeshItem, self).__init__(parentItem)
 
         self.draw_faces = True
-        self.draw_edges = True
+        self.draw_wireframe = False
 
-        self.debug_face_normals = True
-        self.debug_face_edges = True
+        self.debug_face_normals = False
+        self.debug_face_edges = False
 
         self.__antialiasing = True
         self.edge_color = (1., 0.5, 0.5, 1.)
@@ -554,11 +707,11 @@ class ShaderBox(GLGraphicsItem):
         self.shader_program = self.shader_registry[shader]
         self.setGLOptions(gloptions)
 
-        self.mesh = None
+        self.mesh = mesh_data
 
     def initializeGL(self):
         _log.debug("InitializeGL")
-        self.mesh = Mesh.cube()
+        # self.mesh = Mesh.cone() # cube()
 
     def paint(self):
         self.setupGLState()
@@ -571,6 +724,7 @@ class ShaderBox(GLGraphicsItem):
             glLineWidth(1.5)
 
         if self.draw_faces:
+            # need face
             with self.shader_program:
                 glEnableClientState(GL_VERTEX_ARRAY)
 
@@ -586,33 +740,36 @@ class ShaderBox(GLGraphicsItem):
                 glDisableClientState(GL_VERTEX_ARRAY)
                 glDisableClientState(GL_COLOR_ARRAY)
 
-            if self.debug_face_normals:
-                glEnableClientState(GL_VERTEX_ARRAY)
-                glVertexPointerf(self.mesh.debug_face_normals_vertices)
-                glColor4f(*self.edge_color)
-
-                edges = self.mesh.debug_face_normals_edges.flatten()
-                glDrawElements(GL_LINES, edges.shape[0], GL_UNSIGNED_INT, edges)
-
-                glDisableClientState(GL_VERTEX_ARRAY)
-                glDisableClientState(GL_COLOR_ARRAY)
-
-            if self.debug_face_edges:
-                glEnableClientState(GL_VERTEX_ARRAY)
-                glVertexPointerf(self.mesh.mesh_vertices)
-                glColor4f(*self.edge_color)
-                edges = self.mesh.face_edges.flatten()
-                glDrawElements(GL_LINES, edges.shape[0], GL_UNSIGNED_INT, edges)
-
-                glDisableClientState(GL_VERTEX_ARRAY)
-                glDisableClientState(GL_COLOR_ARRAY)
-
-
-        if self.draw_edges:
+        if self.debug_face_normals:
+            # Visualize the face normal vectors
             glEnableClientState(GL_VERTEX_ARRAY)
-            glVertexPointerf(self.mesh.mesh_vertices)
+            glVertexPointerf(self.mesh.debug_face_normals_vertices)
+            glColor4f(*self.edge_color)
+
+            edges = self.mesh.debug_face_normals_edges.flatten()
+            glDrawElements(GL_LINES, edges.shape[0], GL_UNSIGNED_INT, edges)
+
+            glDisableClientState(GL_VERTEX_ARRAY)
+            glDisableClientState(GL_COLOR_ARRAY)
+
+        if self.debug_face_edges:
+            # visualize all face edges
+            glEnableClientState(GL_VERTEX_ARRAY)
+            glVertexPointerf(self.mesh.wireframe_vertices)
+            glColor4f(*self.edge_color)
+            edges = self.mesh.face_edges.flatten()
+            glDrawElements(GL_LINES, edges.shape[0], GL_UNSIGNED_INT, edges)
+
+            glDisableClientState(GL_VERTEX_ARRAY)
+            glDisableClientState(GL_COLOR_ARRAY)
+
+
+        if self.draw_wireframe and self.mesh.has_wireframe:
+            # draw a mash wireframe which may or may not be identical to the face edges, depending on the mesh
+            glEnableClientState(GL_VERTEX_ARRAY)
+            glVertexPointerf(self.mesh.wireframe_vertices)
             glColor4f(0,1,0,1)
-            edges = self.mesh.mesh_edges.flatten()
+            edges = self.mesh.wireframe_edges.flatten()
             glDrawElements(GL_LINES, edges.shape[0], GL_UNSIGNED_INT, edges)
 
             glDisableClientState(GL_VERTEX_ARRAY)
