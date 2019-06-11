@@ -337,27 +337,31 @@ class GLGraphicsItem(QObject):
 
 class Grid(GLGraphicsItem):
 
-    def __init__(self, parentItem=None):
+    def __init__(self, x=10, y=10, xs=1., ys=1., edge_color=(0.7, 0.7, 0.7, 1), parentItem=None):
         super(Grid, self).__init__(parentItem)
+        self.edge_color = edge_color
+
+        self.x, self.y = x, y
+        self.xs, self.ys = xs, ys
 
     def paint(self):
         super(Grid, self).paint()
 
-        # glEnable(GL_LINE_SMOOTH)
-        # glEnable(GL_POLYGON_SMOOTH)
-        # glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
-        # glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
-        # glEnable(GL_BLEND)
-        # glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+        glEnable(GL_LINE_SMOOTH)
+        glEnable(GL_POLYGON_SMOOTH)
+        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST)
+        glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST)
+        glEnable(GL_BLEND)
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
 
         glLineWidth(1.3)
         glBegin(GL_LINES)
-        x, y, z = 10, 10, 10
-        xs, ys, zs = 1, 1, 1
-        xvals = np.arange(-x / 2., x / 2. + xs * 0.001, xs)
-        yvals = np.arange(-y / 2., y / 2. + ys * 0.001, ys)
-        glColor4f(1, 1, 1, .3)
+
+        xvals = np.linspace(-self.x / 2., self.x / 2., self.x / self.xs + 1)
+        yvals = np.linspace(-self.y / 2., self.y / 2., self.y / self.ys + 1)
+
+        glColor4f(*self.edge_color)
         for x in xvals:
             glVertex3f(x, yvals[0], 0)
             glVertex3f(x, yvals[-1], 0)
@@ -456,28 +460,32 @@ class Mesh(object):
     def __init__(self, has_wireframe=False):
         self.has_wireframe = has_wireframe
 
-
+        # Array (N,3,3) of all the faces of the mesh. Where N is the number of triangles which is defined by 3 vectors in R3
         self.face_vertices = None
-        self.face_normal_vectors = None
 
-        self.debug_face_normals_vertices = None
-        self.debug_face_normals_edges = None
+        # Array (N,3,3) of the face normal vectors, Same size as face vertices.
+        # self.face_normal_vectors = None
+        self._vertix_normalized_face_normal_vectors = None
+        self._face_normalized_face_normal_vectors = None
 
+        # self.debug_face_normals_vertices = None
+        # self.debug_face_normals_edges = None
 
         self.face_edges = None
 
-        # Wireframe
+        self.smooth = False
+
+        # Wireframe array and adge mapping
         self.wireframe_vertices = None
         self.wireframe_edges = None
 
-        # def compute_face_normals(self, faces):
-    #     v = self.vertices[faces]
-    #     face_normals = np.cross(v[:, 1] - v[:, 0], v[:, 2] - v[:, 0])
-    #
-    #     norms = np.empty((face_normals.shape[0], 3, 3))
-    #     norms[:] = face_normals[:, np.newaxis, :]
-    #
-    #     self.face_normals = norms
+    @property
+    def face_normal_vectors(self):
+        if self.smooth:
+            return self._vertix_normalized_face_normal_vectors
+        else:
+            return self._face_normalized_face_normal_vectors
+
 
     @staticmethod
     def sphere(stacks=8, sectors=8, radius=1):
@@ -514,7 +522,7 @@ class Mesh(object):
                 f2 = 0
             else:
                 f2 = k + 1
-            faces_top[k] = [f0,f1,f2]
+            faces_top[k] = [f0,f2,f1]
 
         # bottom
         for k in range(sectors):
@@ -548,20 +556,19 @@ class Mesh(object):
         tt = Mesh.compute_face_arrays(vertices, faces)
         return tt
 
-
     @staticmethod
-    def cone(n_faces=4):
+    def cone(n_faces=4, radius=1, height=1):
         """ Return a mesh for a cone with the defined number of faces
         """
 
 
         vertices = np.zeros((n_faces + 2, 3), np.float)
         for k in range(n_faces):
-            x = np.sin(2 * np.pi * k / n_faces)
-            y = np.cos(2 * np.pi * k / n_faces)
+            x = np.sin(2 * np.pi * k / n_faces) * radius
+            y = np.cos(2 * np.pi * k / n_faces) * radius
 
             vertices[k] = [x, y, 0]
-        vertices[n_faces] = [0, 0, 1]
+        vertices[n_faces] = [0, 0, height]
 
         a = np.arange(0, n_faces, 1, dtype=np.uint8)
         b = np.roll(a, 1)
@@ -581,6 +588,7 @@ class Mesh(object):
     @staticmethod
     def compute_face_arrays(vertices, faces, wireframe_edges=None):
         n_faces = faces.shape[0]
+        n_vertices = vertices.shape[0]
 
         # compute face vertices
         v = vertices[faces]
@@ -590,16 +598,30 @@ class Mesh(object):
         nvl = np.linalg.norm(nv, axis=1)
         nv = nv / nvl.reshape(-1, 1)
 
+
+        # non-smoothed face normals
         norms = np.zeros((nv.shape[0], 3, 3))
         norms[:] = nv[:, np.newaxis, :]
 
-        # debug face normal edges
-        face_centers_v = (v[:, 0] + v[:, 1] + v[:, 2]) / 3.
-        face_center_norm_v = face_centers_v + nv
-        debug_face_normals_vertices = np.append(face_centers_v, face_center_norm_v, axis=0)
+        # smothed normals,
+        # make vector to compute all normals attached to a vertix
+        vertices_norms_mask = np.zeros((faces.shape[0], vertices.shape[0]), dtype=np.uint8)
+        for k, f in enumerate(faces):
+            vertices_norms_mask[k, f[0]] = 1
+            vertices_norms_mask[k, f[1]] = 1
+            vertices_norms_mask[k, f[2]] = 1
 
-        debug_face_normals_edges = np.array([np.arange(0, n_faces, 1, np.int8),
-                                                np.arange(0, n_faces, 1, np.int8) + n_faces]).T
+        vertice_norms = np.zeros(vertices.shape, np.float)
+        for v_idx in range(n_vertices):
+            f_idx, = np.where(vertices_norms_mask[:,v_idx] == 1)
+            if f_idx is None or len(f_idx) == 0:
+                continue
+
+            f_idx_u = np.unique(f_idx)
+            nn = nv[f_idx_u]
+            vertice_norms[v_idx] = np.sum(nn, axis=0) / len(f_idx_u)
+
+        norms2 = vertice_norms[faces]
 
         # computation for mesh grid vizu
         face_edges = np.zeros((faces.shape[0] * 3, 2), np.int)
@@ -619,13 +641,10 @@ class Mesh(object):
 
         md.wireframe_vertices = vertices
         md.face_vertices = v
-        md.face_normal_vectors = norms
+        md._face_normalized_face_normal_vectors = norms
+        md._vertix_normalized_face_normal_vectors = norms2
         md.face_edges = face_edges
-        md.debug_face_normals_vertices = debug_face_normals_vertices
-        md.debug_face_normals_edges = debug_face_normals_edges
         return md
-
-
 
     @staticmethod
     def cube(edge_length=1.0):
@@ -638,7 +657,8 @@ class Mesh(object):
             [1, 0, 1],
             [0, 1, 1],
             [1, 1, 1],
-        ])
+        ]) * edge_length - edge_length / 2.
+
 
         # Every cube side is constructed of two triangles
         # be careful with culling
@@ -681,15 +701,11 @@ class Mesh(object):
         return Mesh.compute_face_arrays(vertices, faces, wireframe_edges)
 
 
-
-
-
-
-
 class MeshItem(GLGraphicsItem):
 
     def __init__(self, mesh_data, parentItem=None, shader=None, face_color=(0.6, 0.6, 0.6, 1.0),
-                 gloptions='opaque'):
+                 edge_color=(1., 0.5, 0.5, 1.),
+                 smooth=False, gloptions='opaque'):
         super(MeshItem, self).__init__(parentItem)
 
         self.draw_faces = True
@@ -699,7 +715,7 @@ class MeshItem(GLGraphicsItem):
         self.debug_face_edges = False
 
         self.__antialiasing = True
-        self.edge_color = (1., 0.5, 0.5, 1.)
+        self.edge_color = edge_color
         self.face_color = face_color
 
         self.shader_registry = ShaderRegistry()
@@ -708,6 +724,7 @@ class MeshItem(GLGraphicsItem):
         self.setGLOptions(gloptions)
 
         self.mesh = mesh_data
+        self.mesh.smooth = smooth
 
     def initializeGL(self):
         _log.debug("InitializeGL")
@@ -743,11 +760,14 @@ class MeshItem(GLGraphicsItem):
         if self.debug_face_normals:
             # Visualize the face normal vectors
             glEnableClientState(GL_VERTEX_ARRAY)
-            glVertexPointerf(self.mesh.debug_face_normals_vertices)
-            glColor4f(*self.edge_color)
 
-            edges = self.mesh.debug_face_normals_edges.flatten()
-            glDrawElements(GL_LINES, edges.shape[0], GL_UNSIGNED_INT, edges)
+            N = self.mesh.face_vertices.shape[0] * 3
+            v = np.concatenate([self.mesh.face_vertices, self.mesh.face_vertices + self.mesh.face_normal_vectors])
+            e = np.array([np.arange(N), np.arange(N) + N]).T.flatten()
+
+            glColor4f(1.0,1.0,0.0,1.0)
+            glVertexPointerf(v)
+            glDrawElements(GL_LINES, e.shape[0], GL_UNSIGNED_INT, e)
 
             glDisableClientState(GL_VERTEX_ARRAY)
             glDisableClientState(GL_COLOR_ARRAY)
@@ -756,16 +776,16 @@ class MeshItem(GLGraphicsItem):
             # visualize all face edges
             glEnableClientState(GL_VERTEX_ARRAY)
             glVertexPointerf(self.mesh.wireframe_vertices)
-            glColor4f(*self.edge_color)
+
+            glColor4f(1.0,1.0,0.0,1.0)
             edges = self.mesh.face_edges.flatten()
             glDrawElements(GL_LINES, edges.shape[0], GL_UNSIGNED_INT, edges)
 
             glDisableClientState(GL_VERTEX_ARRAY)
             glDisableClientState(GL_COLOR_ARRAY)
 
-
         if self.draw_wireframe and self.mesh.has_wireframe:
-            # draw a mash wireframe which may or may not be identical to the face edges, depending on the mesh
+            # draw a mesh wireframe which may or may not be identical to the face edges, depending on the mesh
             glEnableClientState(GL_VERTEX_ARRAY)
             glVertexPointerf(self.mesh.wireframe_vertices)
             glColor4f(0,1,0,1)

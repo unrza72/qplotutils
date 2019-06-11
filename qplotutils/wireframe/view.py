@@ -14,7 +14,6 @@ import qtpy.QtCore as qc
 
 from OpenGL.GL import *
 
-from pyqtgraph.Qt import PYQT5
 from qplotutils.wireframe.cam_control import CamControl
 from qplotutils.wireframe.items import Box, CoordinateCross, Grid
 from qplotutils.wireframe.base_types import Vector3d
@@ -253,7 +252,7 @@ class ChartView3d(QGLWidget):
 
         self.frame_count += 1
         fps = self.frame_count / ( self.frame_time.elapsed()/1000.0)
-        print("FPS", fps)
+        # print("FPS", fps)
 
 
     def drawItemTree(self, item=None, useItemNames=False):

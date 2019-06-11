@@ -612,7 +612,6 @@ class ChartAxis(QGraphicsWidget):
 
         self._dbg_box_color = Qt.yellow
 
-
     def boundingRect(self):
         return QRectF(QPointF(0, 0), self.size())
 

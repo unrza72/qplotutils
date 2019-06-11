@@ -1,4 +1,4 @@
-from OpenGL.GL import shaders
+from OpenGL.GL import shaders, glUniform1fv, glGetUniformLocation
 from OpenGL.raw.GL.VERSION.GL_2_0 import GL_VERTEX_SHADER, GL_FRAGMENT_SHADER
 
 import logging
@@ -11,11 +11,17 @@ DEBUG = True
 
 class ShaderProgram(object):
 
-    def __init__(self, name=None, vertex_shader_src=None, fragment_shader_src=None):
+    def __init__(self, name=None, vertex_shader_src=None, fragment_shader_src=None,  uniforms=None):
         self._name = name
         self._vertex_shader_src = vertex_shader_src
         self._fragment_shader_src = fragment_shader_src
         self._program = 0
+        self.uniformData = {}
+
+        ## parse extra options from the shader definition
+        if uniforms is not None:
+            for k, v in uniforms.items():
+                self.uniformData[k] = v
 
     def compile(self):
         try:
@@ -41,9 +47,24 @@ class ShaderProgram(object):
     def __enter__(self):
         shaders.glUseProgram(self.program)
 
+        try:
+            ## load uniform values into program
+            for uniformName, data in self.uniformData.items():
+                loc = self.uniform(uniformName)
+                if loc == -1:
+                    raise Exception('Could not find uniform variable "%s"' % uniformName)
+
+                glUniform1fv(loc, len(data), data)
+        except:
+            shaders.glUseProgram(0)
+            raise
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         shaders.glUseProgram(0)
 
+    def uniform(self, name):
+        """Return the location integer for a uniform variable in this program"""
+        return glGetUniformLocation(self.program, name.encode('utf_8'))
 
 class ShaderRegistry(object):
     """ Global states and settings, shared as a borg object. """
@@ -93,6 +114,47 @@ class ShaderRegistry(object):
                      gl_FragColor = color;
                  }  
                                  """),
+
+        "heightColor": ShaderProgram("heightColor",
+                              """
+                               varying vec4 pos;
+                void main() {
+                    gl_FrontColor = gl_Color;
+                    gl_BackColor = gl_Color;
+                    pos = gl_Vertex;
+                    gl_Position = ftransform();
+                }
+                              """,
+                              """
+                               uniform float colorMap[9];
+                varying vec4 pos;
+                //out vec4 gl_FragColor;   // only needed for later glsl versions
+                //in vec4 gl_Color;
+                void main() {
+                    vec4 color = gl_Color;
+                    color.x = colorMap[0] * (pos.z + colorMap[1]);
+                    if (colorMap[2] != 1.0)
+                        color.x = pow(color.x, colorMap[2]);
+                    color.x = color.x < 0. ? 0. : (color.x > 1. ? 1. : color.x);
+                    
+                    color.y = colorMap[3] * (pos.z + colorMap[4]);
+                    if (colorMap[5] != 1.0)
+                        color.y = pow(color.y, colorMap[5]);
+                    color.y = color.y < 0. ? 0. : (color.y > 1. ? 1. : color.y);
+                    
+                    color.z = colorMap[6] * (pos.z + colorMap[7]);
+                    if (colorMap[8] != 1.0)
+                        color.z = pow(color.z, colorMap[8]);
+                    color.z = color.z < 0. ? 0. : (color.z > 1. ? 1. : color.z);
+                    
+                    color.w = 1.0;
+                    gl_FragColor = color;
+                }
+                              """, uniforms={'colorMap': [
+                1, 1, 1,
+                1, 0.5, 1,
+                1, 0, 1]}),
+        
 
         "edge_highlight": ShaderProgram("edge_highlight",
                                 """

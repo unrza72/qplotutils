@@ -17,7 +17,7 @@ if PKG_DIR not in sys.path:
     sys.path.append(PKG_DIR)
 
 from qplotutils.wireframe.cam_control import CamControl
-from qplotutils.wireframe.items import Box, CoordinateCross, Grid, ShaderBox
+from qplotutils.wireframe.items import Box, CoordinateCross, Grid, MeshItem, Mesh
 from qplotutils.wireframe.view import ChartView3d
 from qplotutils.wireframe.base_types import Vector3d
 
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     qapp = QApplication([])
 
     timer = QTimer()
-    timer.start(1000)  # You may change this if you wish.
+    timer.start(100)  # You may change this if you wish.
     timer.timeout.connect(lambda: None)
 
     w = ChartView3d()
@@ -53,56 +53,44 @@ if __name__ == "__main__":
     cc.setGLOptions('opaque')
     w.addItem(cc)
 
-    grid = Grid()
+    grid = Grid(20,)
     grid.setGLOptions('opaque')
     w.addItem(grid)
 
-    # import random
-    # k = 0
-    # for x in range(-10,10,2):
-    #     y = 1
-    #     for y in range(-10,10,2):
-    #         for z in range(-10, 10, 2):
-    #             b = ShaderBox()
-    #             b.translate(x, y, z)
-    #
-    #             f1 = random.random()
-    #             f2 = random.random()
-    #             f3 = random.random()
-    #             b.scale(f1, f2, f3)
-    #             b.setGLOptions('opaque')
-    #             w.addItem(b)
-    #
-    #     k += 1
-    # print(k)
+    # grid = Grid(edge_color=(0.7,0,0,1))
+    # grid.setGLOptions('opaque')
+    # grid.rotate(90, 1,0,0)
+    # w.addItem(grid)
 
-    b = ShaderBox()
-    b.translate(1.1, 1.1, 0)
-    b.scale(0.5,0.5,0.5)
-    # b.setGLOptions('translucent')
+
+    b = MeshItem(Mesh.cube(2), shader='shaded')
+    b.translate(2, 2, 0)
     b.setGLOptions('opaque')
     w.addItem(b)
 
-    b = ShaderBox(shader='balloon', face_color=(0.6, 0.1, 0.1, 0.3))
-    b.translate(2.1, 1.1, 0)
-    b.scale(0.5, 0.5, 0.5)
-    b.setGLOptions('translucent')
-    # b.setGLOptions('opaque')
-    w.addItem(b)
 
-    b = ShaderBox(shader='shaded')
-    b.translate(3.1, 1.1, 0)
-    b.scale(0.5, 0.5, 0.5)
-    # b.setGLOptions('translucent')
+    b = MeshItem(Mesh.sphere(20, 20, 1), shader='shaded', smooth=False)
+    # b = MeshItem(Mesh.cube(), shader='shaded')
+    b.translate(-2, 2, 0)
     b.setGLOptions('opaque')
     w.addItem(b)
 
-    b = ShaderBox(shader='edge_highlight')
-    b.translate(4.1, 1.1, 0)
-    b.scale(0.5, 0.5, 0.5)
-    # b.setGLOptions('translucent')
+    b = MeshItem(Mesh.sphere(20, 20, 1), shader='shaded', smooth=True)
+    # b = MeshItem(Mesh.cube(), shader='shaded')
+    b.translate(-2, -2, 0)
     b.setGLOptions('opaque')
     w.addItem(b)
 
+    b = MeshItem(Mesh.cone(20, 1, 5), shader='shaded', smooth=True)
+    # b = MeshItem(Mesh.cube(), shader='shaded')
+    b.translate(2, -2, 0)
+    b.setGLOptions('opaque')
+    w.addItem(b)
+
+    b = MeshItem(Mesh.sphere(20, 20, 1), shader='heightColor', face_color=(1,0,0,1), smooth=False)
+    # b = MeshItem(Mesh.cube(), shader='shaded')
+    b.translate(-6, -2, 0)
+    b.setGLOptions('opaque')
+    w.addItem(b)
 
     qapp.exec_()
