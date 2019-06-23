@@ -8,7 +8,6 @@ import logging
 import numpy as np
 from qtpy.QtCore import *
 from qtpy.QtGui import *
-from qtpy.QtOpenGL import *
 from qtpy.QtWidgets import *
 
 from qplotutils import CONFIG
@@ -28,9 +27,6 @@ _log = logging.getLogger(__name__)
 _log.setLevel(logging.DEBUG)
 
 
-
-
-
 class PlaybackWidget(QWidget):
     """ Playback control widget with the following button
         * toggle playback / pause
@@ -44,7 +40,7 @@ class PlaybackWidget(QWidget):
     """
 
     #: emited whenever the timestamp is changed.
-    timestamp_changed = pyqtSignal(int, float)
+    timestamp_changed = Signal(int, float)
 
     def __init__(self, parent=None):
         super(PlaybackWidget, self).__init__(parent)
@@ -146,7 +142,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     qapp = QApplication([])
 
-    _cfg.debug = True
+    CONFIG.debug = True
 
     p = PlaybackWidget()
     p.show()

@@ -11,8 +11,10 @@ import os
 import numpy as np
 import unittest
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from qtpy.QtCore import *
+from qtpy.QtGui import *
+from qtpy.QtOpenGL import *
+from qtpy.QtWidgets import *
 
 from qplotutils import CONFIG
 

@@ -6,11 +6,7 @@ __TODO__
 
 """
 import logging
-import numpy as np
-import weakref
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
 
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2015 - 2018, Philipp Baust"
