@@ -1,13 +1,12 @@
-dist: xenial   # required for Python >= 3.7
+dist: xenial
+services:
+  - xvfb
 language: python
 python:
   - "3.7"
 before_install:
   - sudo apt-get update
   - sudo apt-get install qt5-default
-  - sudo apt-get install qt5dxcb-plugin
 install:
   - pip install -r requirements.txt
-  - pip install .
-# command to run tests
 script: nosetests -v
