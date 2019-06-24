@@ -6,4 +6,4 @@ install:
   - pip install -r requirements.txt
   - pip install .
 # command to run tests
-script: nosetests -v --with-coverage --cover-package playground
+script: nosetests -v
