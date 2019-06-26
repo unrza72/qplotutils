@@ -4,15 +4,14 @@ qplotutils.chart_tests.roi
 
 Region of interest
 """
-import math
 import logging
+
+import math
 import numpy as np
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtOpenGL import *
-from qtpy.QtWidgets import *
-from qplotutils.chart.items import ChartItemGroup
-from . import LOG_LEVEL
+from qtpy.QtCore import Qt, QPointF, QRectF, QLineF
+from qtpy.QtGui import QPen, QBrush, QColor, QPainter, QPainterPath
+from qtpy.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem
+
 from .items import ChartItem
 
 __author__ = "Philipp Baust"
@@ -23,7 +22,6 @@ __version__ = "0.0.1"
 __maintainer__ = "Philipp Baust"
 __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
-
 
 _log = logging.getLogger(__name__)
 _log.setLevel(logging.DEBUG)
@@ -175,7 +173,7 @@ class RectangularRegion(ChartItem):
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange and self.__in_move:
             old_pos = self.pos()
-            new_pos = value # .toPointF()
+            new_pos = value  # .toPointF()
 
             delta = old_pos - new_pos
             _log.debug("Delta: {}".format(delta))
@@ -185,7 +183,6 @@ class RectangularRegion(ChartItem):
 
             for handle in self.handles:
                 handle.updatePosition()
-
 
         return super(RectangularRegion, self).itemChange(change, value)
 
@@ -247,10 +244,9 @@ class Vec2(object):
         # cross product to determine the turning direction
         k = np.cross(other.array, self.array)
         _log.debug("Change by {}, {}".format(delta * 180 / np.pi, k))
-        v =  np.sign(k) * delta
+        v = np.sign(k) * delta
 
         return v
-
 
     @property
     def x(self):
@@ -371,14 +367,14 @@ class HandlePosition(object):
         """
         v = Vec2()
 
-        if 2**0 & location:
+        if 2 ** 0 & location:
             v.y = 1
-        elif 2**2 & location:
+        elif 2 ** 2 & location:
             v.y = -1
 
-        if 2**1 & location:
+        if 2 ** 1 & location:
             v.x = 1
-        elif 2**3 & location:
+        elif 2 ** 3 & location:
             v.x = -1
 
         return v
@@ -395,7 +391,7 @@ class RoiHandle(ChartItem):
         """
         super(RoiHandle, self).__init__()
         # self.setParentItem(parent)
-        self.setFlags( QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIsFocusable | QGraphicsItem.ItemIsSelectable
+        self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIsFocusable | QGraphicsItem.ItemIsSelectable
                       | QGraphicsItem.ItemIgnoresTransformations | QGraphicsItem.ItemSendsGeometryChanges)
 
         self.setAcceptHoverEvents(True)
@@ -476,7 +472,7 @@ class ResizeHandle(RoiHandle):
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange and self.__in_resize:
             # old_pos = self.pos()
-            value = value # .toPointF()
+            # value = value # .toPointF()
             new_pos = value
             _log.debug("new pos: {}".format(new_pos))
 
@@ -563,7 +559,7 @@ class RotateHandle(RoiHandle):
             state = self.parentItem().state
 
             u = self.last_pos
-            v = Vec2.fromQpointF(value) # .toPointF())
+            v = Vec2.fromQpointF(value)  # .toPointF())
 
             delta = v.angle(u)
             a = state.rotation + delta

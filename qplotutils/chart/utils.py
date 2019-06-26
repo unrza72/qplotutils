@@ -6,10 +6,8 @@ Utility classes to aid proper vizualization.
 """
 import logging
 
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtOpenGL import *
-from qtpy.QtWidgets import *
+from qtpy.QtCore import Qt
+from qtpy.QtGui import QPen
 
 from . import LOG_LEVEL
 

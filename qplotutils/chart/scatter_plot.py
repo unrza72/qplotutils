@@ -5,21 +5,16 @@ __TODO__
 
 
 """
-import random
 
 import logging
-import numpy as np
 import weakref
 
+from qtpy.QtCore import Qt, QPointF, QRectF, QRect
+from qtpy.QtGui import QPen, QBrush, QColor, QPainter, QPainterPath, QFontMetrics, QFont, QPicture
+from qtpy.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QGraphicsView
 
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtOpenGL import *
-from qtpy.QtWidgets import *
-
-from qplotutils.chart import color
-from qplotutils.chart.color import Normalize, Colormap
-from qplotutils.chart.items import ChartItem, ChartItemFlags, LineChartItem
+from qplotutils.chart.color import Normalize
+from qplotutils.chart.items import ChartItem, ChartItemFlags
 from qplotutils.chart.view import ChartView
 
 __author__ = "Philipp Baust"
@@ -32,7 +27,6 @@ __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
 
 _log = logging.getLogger(__name__)
-
 
 
 # def _map_to_color(v):
@@ -54,13 +48,12 @@ class ScatterItem(ChartItem):
 
         self.w = 6
 
-        self._bRect = QRectF(-self.w, -self.w, 2*self.w, 2*self.w)
+        self._bRect = QRectF(-self.w, -self.w, 2 * self.w, 2 * self.w)
         self.setPos(self.x, self.y)
 
         self._picture = None
 
         self.color_assignment_callback = lambda v: QColor(Qt.white)
-
 
     def updatePicture(self):
         self._picture = QPicture()
@@ -95,7 +88,6 @@ class ScatterItem(ChartItem):
         self._picture.play(p)
 
 
-
 class Colorbar(ChartItem):
 
     def __init__(self, colormap, v_min, v_max, parent=None):
@@ -103,7 +95,6 @@ class Colorbar(ChartItem):
         super(Colorbar, self).__init__()  # Pycharm / pyLint inspection error. Please ignore
         self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIgnoresTransformations)
         self.chartItemFlags = ChartItemFlags.FLAG_NO_LABEL
-
 
         self._picture = None
         self._bRect = QRectF(0, 0, 200, 200)
@@ -229,4 +220,3 @@ class ScatterPlotView(ChartView):
             self.cb._updatePicture()
             for s in self.scatter_items:
                 s().updatePicture()
-

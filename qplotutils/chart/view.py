@@ -4,19 +4,20 @@ qplotutils.chart.view
 
 Base widget that provides the view for all charts including axis, legend and zooming and panning capabilities.
 """
-import math
 import logging
+
+import math
 import numpy as np
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtOpenGL import *
-from qtpy.QtWidgets import *
+from qtpy.QtCore import Signal, Qt, QPointF, QRectF, QSizeF
+from qtpy.QtGui import QPen, QBrush, QColor, QPainter, QPainterPath, QFontMetrics, QFont, QPicture, QTransform
+from qtpy.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QGraphicsWidget, QGraphicsView, QFrame, \
+    QGraphicsScene, QSizePolicy, QGraphicsGridLayout, QAction
 
 from qplotutils import QPlotUtilsException
-from .. import CONFIG
 from . import LOG_LEVEL
-from .utils import makePen
 from .items import ChartItem, ChartItemFlags
+from .utils import makePen
+from .. import CONFIG
 
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2015 - 2018, Philipp Baust"
@@ -26,7 +27,6 @@ __version__ = "0.0.1"
 __maintainer__ = "Philipp Baust"
 __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
-
 
 _log = logging.getLogger(__name__)
 _log.setLevel(LOG_LEVEL)
@@ -160,7 +160,6 @@ class ChartView(QGraphicsView):
     TOP_RIGHT = "top_right"
     BOTTOM_LEFT = "bottom_left"
     BOTTOM_RIGHT = "bottom_right"
-
 
     def __init__(self, parent=None, orientation=DEFAULT_ORIENTATION):
         super(ChartView, self).__init__(parent)
@@ -387,6 +386,7 @@ class ChartWidget(QGraphicsWidget):
 
     :param parent: the Chart view
     """
+
     def __init__(self, parent=None):
 
         super(ChartWidget, self).__init__(parent)
@@ -498,7 +498,6 @@ class ChartWidget(QGraphicsWidget):
         # self.layout().setColumnFixedWidth(3, 6)
         self.area.vAxisChange.connect(axis.axisChange)
 
-
     def boundingRect(self):
         b_rect = QRectF(0, 0, self.size().width(), self.size().height())
         return b_rect
@@ -593,11 +592,12 @@ class ChartAxis(QGraphicsWidget):
 
      :param parent: a chart widget.
      """
+
     def __init__(self, parent=None):
 
         super(ChartAxis, self).__init__(parent)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
-        self.setFlags(QGraphicsItem.ItemClipsChildrenToShape) #  | QGraphicsItem.ItemIsFocusable)
+        self.setFlags(QGraphicsItem.ItemClipsChildrenToShape)  # | QGraphicsItem.ItemIsFocusable)
 
         self.font = QFont("Helvetica [Cronyx]", 9, QFont.Normal)
         self.flags = Qt.TextDontClip | Qt.AlignRight | Qt.AlignVCenter
@@ -740,7 +740,7 @@ class VerticalAxis(ChartAxis):
         if self._areaTransform is None:
             return
 
-        parent_w = self.parentWidget().area.size().width() + self.size().width() - 2 # self.parentWidget().size().width()
+        parent_w = self.parentWidget().area.size().width() + self.size().width() - 2  # self.parentWidget().size().width()
         parent_h = self.parentWidget().size().height()
 
         translation = self._areaTransform.m32()
@@ -779,7 +779,7 @@ class HorizontalAxis(ChartAxis):
         parent = self.parentWidget().area.size()
         v_axis = self.parentWidget().main_vertical_axis.size()
         s = self.size()
-        b_rect = QRectF(-v_axis.width(), -parent.height(), s.width()+v_axis.width(), parent.height() + s.height())
+        b_rect = QRectF(-v_axis.width(), -parent.height(), s.width() + v_axis.width(), parent.height() + s.height())
         return b_rect
 
     def _generatePicture(self, p=QPainter()):
@@ -806,7 +806,7 @@ class HorizontalAxis(ChartAxis):
         p.drawLine(0, 0, self.size().width(), 0)
         for pos, tickString in ticks:
             if 0 < pos < self.size().width() - 30:
-                p.drawLine(round(pos), 5,  round(pos), -parent_h)
+                p.drawLine(round(pos), 5, round(pos), -parent_h)
 
                 tickRect = QRectF(pos - rw, 8, run_width, 10)
                 p.drawText(tickRect, self.flags, tickString)
@@ -839,7 +839,7 @@ class SecondaryHorizontalAxis(HorizontalAxis):
         area = self.parentWidget().area.size()
         v_axis = self.parentWidget().main_vertical_axis.size()
         s = self.size()
-        b_rect = QRectF(-v_axis.width(), 0, s.width()+v_axis.width(), area.height() + s.height())
+        b_rect = QRectF(-v_axis.width(), 0, s.width() + v_axis.width(), area.height() + s.height())
         return b_rect
 
     def _generatePicture(self, p=QPainter()):
@@ -851,10 +851,9 @@ class SecondaryHorizontalAxis(HorizontalAxis):
 
         p.drawLine(0, self.size().height(), self.size().width(), self.size().height())
 
-        pen = QPen(QBrush(QColor(188, 136, 184, 255)), 1.0, style = Qt.DotLine)
+        pen = QPen(QBrush(QColor(188, 136, 184, 255)), 1.0, style=Qt.DotLine)
         pen.setCosmetic(True)
         p.setPen(pen)
-
 
         if self._areaTransform is None:
             return
@@ -868,10 +867,9 @@ class SecondaryHorizontalAxis(HorizontalAxis):
         ticks, run_width = self.calcTicks(shift, scaling, displayRange, maxGridSpace=100, minGridSpace=80)
         rw = run_width / 2.
 
-
         for pos, tickString in ticks:
             if 0 < pos < self.size().width() - 30:
-                p.drawLine(round(pos), self.size().height() - 5,  round(pos), parent_h + self.size().height())
+                p.drawLine(round(pos), self.size().height() - 5, round(pos), parent_h + self.size().height())
 
                 tickRect = QRectF(pos - rw, self.size().height() - 18, run_width, 10)
                 p.drawText(tickRect, self.flags, tickString)
@@ -934,6 +932,7 @@ class SecondaryHorizontalAxis(HorizontalAxis):
 
 class SecondaryVerticalAxis(VerticalAxis):
     """ Vertical chart axis. """
+
     def __init__(self, main_axis_values, secondary_axis_values, parent=None):
         """ Due to free zooming and ranging on the
 
@@ -958,7 +957,7 @@ class SecondaryVerticalAxis(VerticalAxis):
     def boundingRect(self):
         parent = self.parentWidget().size()
         s = self.size()
-        b_rect = QRectF(-10, 0, parent.width(), s.height() + 20 )
+        b_rect = QRectF(-10, 0, parent.width(), s.height() + 20)
         return b_rect
 
     def _generatePicture(self, p=QPainter()):
@@ -1000,7 +999,6 @@ class SecondaryVerticalAxis(VerticalAxis):
             tickRect = QRectF(10, pos - 4, run_width + 2, 10)
             p.drawText(tickRect, self.flags, tickString)
 
-
     def calcTicks(self, shift, scaling, displayRange, maxGridSpace=80, minGridSpace=40):
         """ Calculates the axis ticks.
          The ticks are calculated along the logarithm of the base 10 of the displayed value range.
@@ -1022,7 +1020,6 @@ class SecondaryVerticalAxis(VerticalAxis):
 
         if maxNumberOfGridLines == 0:
             return [], 0
-
 
         # Calculate the up most and lowest value on axis
         upperValue = -shift / scaling
@@ -1057,6 +1054,7 @@ class SecondaryVerticalAxis(VerticalAxis):
 
         return zip(positions, labels), required_tick_width
 
+
 class ScaleBox(QGraphicsItem):
 
     def __init__(self, parent=None):
@@ -1085,7 +1083,6 @@ class ScaleBox(QGraphicsItem):
 
 
 class ChartArea(QGraphicsWidget):
-
     # Used to update axis,
     hAxisChange = Signal(object)
     vAxisChange = Signal(object)
@@ -1138,7 +1135,7 @@ class ChartArea(QGraphicsWidget):
 
     def boundingRect(self):
         # Override
-        b_rect = QRectF(0, 0, self.size().width()-1, self.size().height()-1)
+        b_rect = QRectF(0, 0, self.size().width() - 1, self.size().height() - 1)
         return b_rect
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
@@ -1492,4 +1489,3 @@ class ChartArea(QGraphicsWidget):
 
     def __del__(self):
         _log.debug("Finalizing: {}".format(self))
-

@@ -5,13 +5,7 @@ __TODO__
 
 
 """
-import os
-import sys
 import logging
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtOpenGL import *
-from qtpy.QtWidgets import *
 
 import numpy as np
 
@@ -33,12 +27,12 @@ class Vector3d(np.ndarray):
     def fromiter(cls, v):
         return Vector3d(v[0], v[1], v[2])
 
-    def __new__(cls, x,y,z): # , info=None):
+    def __new__(cls, x, y, z):  # , info=None):
         obj = np.asarray([x, y, z]).view(cls)
         return obj
 
     def __init__(self, x, y, z):
-        super(Vector3d, self).__init__() # x,y,z)
+        super(Vector3d, self).__init__()  # x,y,z)
 
     # def __array_finalize__(self, obj):
     #     print('In __array_finalize__:')

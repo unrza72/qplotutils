@@ -6,9 +6,6 @@ __TODO__
 
 """
 import logging
-import numpy as np
-import weakref
-
 
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2015 - 2018, Philipp Baust"

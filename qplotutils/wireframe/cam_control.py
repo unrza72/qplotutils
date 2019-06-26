@@ -1,7 +1,8 @@
 import logging
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtWidgets import *
+
+from qtpy.QtCore import Qt
+from qtpy.QtWidgets import QWidget
+
 from qplotutils.ui.cam_control import Ui_CamControl
 
 _log = logging.getLogger(__name__)
@@ -49,7 +50,6 @@ class CamControl(QWidget):
             self.cam_properties.distance = f
         except Exception as ex:
             _log.exception(ex)
-            pass
 
     def dial_distance_changed(self, value):
         self.cam_properties.distance = value / 1000.

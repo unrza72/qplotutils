@@ -6,12 +6,13 @@ Item can be changed from the UI.
 
 """
 import logging
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtWidgets import *
+
+from qtpy.QtCore import Signal, Qt, QPointF, QRectF, QLineF
+from qtpy.QtGui import QPen, QBrush, QColor, QPainter
+from qtpy.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem
+from qplotutils.chart.items import ChartItemFlags, ChartWidgetItem
 
 from .. import CONFIG
-from qplotutils.chart.items import ChartItemFlags, ChartWidgetItem
 
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2017, Philipp Baust"
@@ -38,7 +39,7 @@ class InteractiveVerticalLine(ChartWidgetItem):
 
     def __init__(self, parent=None):
         super(InteractiveVerticalLine, self).__init__(parent)
-        self.setFlags(QGraphicsItem.ItemIsMovable| QGraphicsItem.ItemSendsGeometryChanges)
+        self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemSendsGeometryChanges)
         self.chartItemFlags = ChartItemFlags.FLAG_NO_AUTO_RANGE
         self.setZValue(1e6)
 
@@ -80,7 +81,6 @@ class InteractiveVerticalLine(ChartWidgetItem):
         bb = 4 / t.m11()
         _log.debug("{}, {} -> {}".format(rect.bottom(), rect.height(), bb))
 
-
         b = min(rect.bottom(), rect.top())
         self.b_rect = QRectF(-bb, b, 2 * bb, rect.height())
         self.prepareGeometryChange()
@@ -90,7 +90,7 @@ class InteractiveVerticalLine(ChartWidgetItem):
         p.setPen(self._pen)
         p.setBrush(self._brush)
 
-        p.drawLine(QLineF(QPointF(0,self.b_rect.bottom()), QPointF(0, self.b_rect.top())))
+        p.drawLine(QLineF(QPointF(0, self.b_rect.bottom()), QPointF(0, self.b_rect.top())))
 
         p.setPen(Qt.transparent)
         p.drawRect(self.b_rect)
@@ -102,7 +102,7 @@ class InteractiveVerticalLine(ChartWidgetItem):
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange:
             old_pos = self.pos()
-            value = value #.toPointF()
+            # value = value #.toPointF()
 
             e = InteractiveChangeEvent()
             e.position = value

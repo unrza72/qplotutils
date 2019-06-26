@@ -16,10 +16,8 @@ __maintainer__ = "Philipp Baust"
 __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
 
-
 #: Default logging level for all modules.
 LOG_LEVEL = logging.DEBUG
-
 
 # MIME_TYPE = 'application/x-dockbench'
 # """ MIME type for drag and drop of docks. """

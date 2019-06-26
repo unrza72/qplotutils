@@ -6,6 +6,7 @@ Color and gradient definitions as well as colormap and normalization
 generic to all qplotutils chart_tests types.
 """
 import logging
+
 import numpy as np
 
 __author__ = "Philipp Baust"
@@ -18,7 +19,6 @@ __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
 
 _log = logging.getLogger(__name__)
-
 
 # Format is compatible with the one from matplotlib
 _autumn_data = {
@@ -57,9 +57,9 @@ _test_data = {
     )
 }
 
-_jet_data = {'red':   ((0., 0, 0), (0.35, 0, 0), (0.66, 1, 1), (0.89, 1, 1), (1, 0.5, 0.5)),
+_jet_data = {'red': ((0., 0, 0), (0.35, 0, 0), (0.66, 1, 1), (0.89, 1, 1), (1, 0.5, 0.5)),
              'green': ((0., 0, 0), (0.125, 0, 0), (0.375, 1, 1), (0.64, 1, 1), (0.91, 0, 0), (1, 0, 0)),
-             'blue':  ((0., 0.5, 0.5), (0.11, 1, 1), (0.34, 1, 1), (0.65, 0, 0), (1, 0, 0))}
+             'blue': ((0., 0.5, 0.5), (0.11, 1, 1), (0.34, 1, 1), (0.65, 0, 0), (1, 0, 0))}
 
 
 class Colormap(object):
@@ -115,7 +115,7 @@ class Colormap(object):
 
     @classmethod
     def lut_index(cls, v):
-        if not 0 <= 0 <= 1:
+        if not 0 <= v <= 1:
             raise Exception("Value not normalized")
         return int(np.round(v * (cls.N - 1), 0))
 
@@ -144,7 +144,7 @@ class Normalize(object):
                                  np.ma.getmask(out_of_bounds_greater))
 
         valid = np.ma.array(values, mask=invalids,
-                             dtype=dtype, copy=True)
+                            dtype=dtype, copy=True)
 
         if self.value_max == self.value_min:
             return 0.5

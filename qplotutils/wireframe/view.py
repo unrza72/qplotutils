@@ -1,28 +1,25 @@
-import os
-import sys
 import logging
+import logging
+
 import numpy as np
-import signal
+from OpenGL.GL import GL_DEPTH_TEST, glEnable, GL_LEQUAL, \
+    glLight, GL_LIGHT0, GL_POSITION, glMaterialfv, GL_SPECULAR, GL_FRONT, GL_SHININESS, glDepthFunc, \
+    glMaterialf, glViewport, glMatrixMode, GL_PROJECTION, glLoadIdentity, glMultMatrixf, GL_MODELVIEW, \
+    glSelectBuffer, glRenderMode, GL_SELECT, glInitNames, glPushName, GL_RENDER, glClearColor, \
+    glClear, GL_DEPTH_BUFFER_BIT, GL_COLOR_BUFFER_BIT, glPushAttrib, GL_ALL_ATTRIB_BITS, glLoadName, \
+    glGetString, GL_VERSION, glPopAttrib, glPushMatrix, glPopMatrix
+from qtpy.QtCore import Signal, Qt, QObject, QTime
+# from qtpy.QtWidgets import QVector3D
+from qtpy.QtGui import QMatrix4x4, QVector3D
+from qtpy.QtOpenGL import QGLWidget
 
-from OpenGL.GL.WIN.specular_fog import glInitSpecularFogWIN
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtOpenGL import *
-from qtpy.QtWidgets import *
-
-import qtpy.QtCore as qc
-
-from OpenGL.GL import *
-
-from qplotutils.wireframe.cam_control import CamControl
-from qplotutils.wireframe.items import Box, CoordinateCross, Grid
 from qplotutils.wireframe.base_types import Vector3d
+from qplotutils.wireframe.cam_control import CamControl
 
 _log = logging.getLogger(__name__)
 
 
 class ViewProperties(QObject):
-
     changed = Signal()
 
     def __init__(self, parent=None):
@@ -121,7 +118,7 @@ class ChartView3d(QGLWidget):
             self.makeCurrent()
             item.initializeGL()
 
-        item.view =self
+        item.view = self
         self.update()
 
     def removeItem(self, item):
@@ -130,7 +127,6 @@ class ChartView3d(QGLWidget):
         self.update()
 
     def initializeGL(self):
-
 
         self.resizeGL(self.width(), self.height())
 
@@ -153,7 +149,7 @@ class ChartView3d(QGLWidget):
     def resizeGL(self, w, h):
         print("Resize called")
         glViewport(*self.getViewport())
-        self.setProjection() # region=region)
+        self.setProjection()  # region=region)
         self.setModelview()
 
     def setProjection(self, region=None):
@@ -251,9 +247,8 @@ class ChartView3d(QGLWidget):
         self.drawItemTree(useItemNames=useItemNames)
 
         self.frame_count += 1
-        fps = self.frame_count / ( self.frame_time.elapsed()/1000.0)
+        fps = self.frame_count / (self.frame_time.elapsed() / 1000.0)
         # print("FPS", fps)
-
 
     def drawItemTree(self, item=None, useItemNames=False):
         if item is None:
@@ -301,7 +296,6 @@ class ChartView3d(QGLWidget):
                     glPopMatrix()
 
         # print("Campos: elevation {}; azimuth {}".format(self.props.elevation_angle, self.props.azimuth_angle))
-
 
     def setCameraPosition(self, pos=None, distance=None, elevation=None, azimuth=None):
         if distance is not None:
@@ -363,7 +357,7 @@ class ChartView3d(QGLWidget):
             # xVec = QVector3D.crossProduct(zVec, cVec).normalized()
             # yVec = QVector3D.crossProduct(xVec, zVec).normalized()
 
-            zVec = Vector3d(0,0,1)
+            zVec = Vector3d(0, 0, 1)
             xVec = np.cross(zVec, cVec)
             xVec /= np.linalg.norm(xVec)
             yVec = np.cross(xVec, zVec)
@@ -403,29 +397,17 @@ class ChartView3d(QGLWidget):
             else:
                 self.pan(-diff.x(), -diff.y(), 0, relative=True)
 
-
     def wheelEvent(self, ev):
-        if qc.PYQT5:
-            delta = ev.angleDelta()
 
-            if ev.modifiers() & Qt.ControlModifier:
-                self.props.fov *= 0.999 ** (delta.y() / 1.)
-            else:
-                self.props.distance *= 0.999 ** (delta.y() / 1.)
+        delta = ev.angleDelta()
 
-                # self.cam_ctrl.distance = self.props.distance
-                print(self.props.distance)
+        if ev.modifiers() & Qt.ControlModifier:
+            self.props.fov *= 0.999 ** (delta.y() / 1.)
+        else:
+            self.props.distance *= 0.999 ** (delta.y() / 1.)
 
-        if qc.PYQT4:
-            delta = ev.delta()
-
-            if ev.modifiers() & Qt.ControlModifier:
-                self.props.fov *= 0.999 ** (delta / 1.)
-            else:
-                self.props.distance *= 0.999 ** (delta / 1.)
-
-                # self.cam_ctrl.distance = self.props.distance
-                print(self.props.distance)
+            # self.cam_ctrl.distance = self.props.distance
+            print(self.props.distance)
 
         self.camera_update()
 
@@ -496,6 +478,3 @@ class ChartView3d(QGLWidget):
         #         msg + " The original exception is printed above; however, pyqtgraph requires OpenGL version 2.0 or greater for many of its 3D features and your OpenGL version is %s. Installing updated display drivers may resolve this issue." % ver)
         # else:
         #     raise
-        pass
-
-

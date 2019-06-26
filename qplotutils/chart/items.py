@@ -4,17 +4,18 @@ qplotutils.chart_tests.items
 
 Charts and and other items that can be added to view.
 """
-import numpy as np
-import logging
 import itertools
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtOpenGL import *
-from qtpy.QtWidgets import *
+import logging
 
-from .. import CONFIG
+import numpy as np
+from qtpy.QtCore import Qt, QPointF, QRectF, QLineF, QSizeF
+from qtpy.QtGui import QPen, QBrush, QColor, QPainter, QPainterPath, QFont, QStaticText
+from qtpy.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QGraphicsItemGroup, QGraphicsWidget
+
 from . import LOG_LEVEL
 from .utils import makePen
+from .. import CONFIG
+
 
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2015, 2017, Philipp Baust"
@@ -24,7 +25,6 @@ __version__ = "0.0.1"
 __maintainer__ = "Philipp Baust"
 __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
-
 
 #: Module level logger
 _log = logging.getLogger(__name__)
@@ -240,6 +240,7 @@ class LineChartItem(ChartItem):
 
         self._ordinate = None
         self._abscissa = None
+
     #     self._column = None
     #
     # @property
@@ -410,7 +411,6 @@ class RectMarker(ChartItem):
         return QRectF(-2, -2, 4, 4)
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-
         p.setPen(QPen(Qt.white))
         p.drawRect(QRectF(-2, -2, 4, 4))
 
@@ -534,7 +534,7 @@ class HLine(ChartItem):
 
     def visibleRangeChanged(self, rect):
         b = min(rect.left(), rect.right())
-        self.b_rect = QRectF(b - 10, 0,  rect.width() + 20, 0)
+        self.b_rect = QRectF(b - 10, 0, rect.width() + 20, 0)
         self.prepareGeometryChange()
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
@@ -603,7 +603,6 @@ class VLine(ChartItem):
         p.drawLine(QLineF(QPointF(0, self.b_rect.bottom()), QPointF(0, self.b_rect.top())))
 
         super(VLine, self).paint(p, o, widget)
-
 
     def __del__(self):
         _log.debug("Finalize VLine {}".format(self))

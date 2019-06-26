@@ -1,38 +1,18 @@
 import logging
+
 import numpy as np
-
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtWidgets import *
-
-from OpenGL.GL import *
 from OpenGL import GL
+from OpenGL.GL import GL_DEPTH_TEST, GL_BLEND, GL_ALPHA_TEST, GL_CULL_FACE, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, \
+    glEnable, glDisable, GL_ONE, GL_LINE_SMOOTH, GL_POLYGON_SMOOTH, GL_LINE_SMOOTH_HINT, GL_NICEST, glHint, \
+    GL_POLYGON_SMOOTH_HINT, glBlendFunc, glLineWidth, glBegin, GL_LINES, glColor4f, glVertex3f, glEnd, \
+    glVertexPointerf, glEnableClientState, glNormalPointerf, glDrawArrays, GL_TRIANGLES, \
+    glDisableClientState, GL_NORMAL_ARRAY, GL_VERTEX_ARRAY, GL_COLOR_ARRAY, \
+    glDrawElements, GL_UNSIGNED_INT
+from qtpy.QtCore import QObject
+from qtpy.QtGui import QMatrix4x4
 
-# from OpenGLContext.arrays import *
 from qplotutils.wireframe.shader import ShaderRegistry
 
-# GLOptions = {
-#     'opaque': {
-#         GL_DEPTH_TEST: True,
-#         GL_BLEND: False,
-#         GL_ALPHA_TEST: False,
-#         GL_CULL_FACE: False,
-#     },
-#     'translucent': {
-#         GL_DEPTH_TEST: True,
-#         GL_BLEND: True,
-#         GL_ALPHA_TEST: False,
-#         GL_CULL_FACE: False,
-#         'glBlendFunc': (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA),
-#     },
-#     'additive': {
-#         GL_DEPTH_TEST: False,
-#         GL_BLEND: True,
-#         GL_ALPHA_TEST: False,
-#         GL_CULL_FACE: False,
-#         'glBlendFunc': (GL_SRC_ALPHA, GL_ONE),
-#     },
-# }
 GLOptions = {
     'opaque': {
         GL_DEPTH_TEST: True,
@@ -56,9 +36,7 @@ GLOptions = {
     },
 }
 
-
 _log = logging.getLogger(__name__)
-
 
 DEBUG = True
 
@@ -178,7 +156,7 @@ class GLGraphicsItem(QObject):
         Must be a :class:`Transform3D <pyqtgraph.Transform3D>` instance. This transform
         determines how the local coordinate system of the item is mapped to the coordinate
         system of its parent."""
-        self.__transform = tr # Transform3D(tr)
+        self.__transform = tr  # Transform3D(tr)
         self.update()
 
     def resetTransform(self):
@@ -223,7 +201,7 @@ class GLGraphicsItem(QObject):
         Translate the object by (*dx*, *dy*, *dz*) in its parent's coordinate system.
         If *local* is True, then translation takes place in local coordinates.
         """
-        tr = QMatrix4x4() # Transform3D()
+        tr = QMatrix4x4()  # Transform3D()
         tr.translate(dx, dy, dz)
         self.applyTransform(tr, local=local)
 
@@ -354,9 +332,8 @@ class Grid(GLGraphicsItem):
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
-
         glLineWidth(1.3)
-        glBegin(GL_LINES)
+        glBegin(GL_LINES)  # lgtm [py/call/wrong-arguments]
 
         xvals = np.linspace(-self.x / 2., self.x / 2., self.x / self.xs + 1)
         yvals = np.linspace(-self.y / 2., self.y / 2., self.y / self.ys + 1)
@@ -368,7 +345,7 @@ class Grid(GLGraphicsItem):
         for y in yvals:
             glVertex3f(xvals[0], y, 0)
             glVertex3f(xvals[-1], y, 0)
-        glEnd()
+        glEnd()  # lgtm [py/call/wrong-arguments]
 
 
 class CoordinateCross(GLGraphicsItem):
@@ -379,7 +356,7 @@ class CoordinateCross(GLGraphicsItem):
     def paint(self):
         super(CoordinateCross, self).paint()
         glLineWidth(20.0)
-        glBegin(GL_LINES)
+        glBegin(GL_LINES)  # lgtm [py/call/wrong-arguments]
         # X
         glColor4f(1, 0, 0, .3)
         glVertex3f(0, 0, 0)
@@ -393,7 +370,7 @@ class CoordinateCross(GLGraphicsItem):
         glVertex3f(0, 0, 0)
         glVertex3f(0, 0, 1)
 
-        glEnd()
+        glEnd()  # lgtm [py/call/wrong-arguments]
 
 
 class Box(GLGraphicsItem):
@@ -410,7 +387,7 @@ class Box(GLGraphicsItem):
 
         l = self.length
         wh = self.width / 2.
-        h = self.height
+        # h = self.height
 
         p = [
             [0, wh, 0],
@@ -434,25 +411,17 @@ class Box(GLGraphicsItem):
             [0, 0, 0, 0, 0, 0, 0, 0],
         ]
 
-
-
         glLineWidth(2.0)
-        glBegin(GL_LINES)
+        glBegin(GL_LINES)  # lgtm [py/call/wrong-arguments]
 
         glColor4f(1, 0, 0, 1)
         for k in range(8):
-            for j in range(k+1, 8):
+            for j in range(k + 1, 8):
                 if m[k][j] == 1:
                     glVertex3f(*p[k])
                     glVertex3f(*p[j])
 
-        glEnd()
-
-
-
-
-
-
+        glEnd()  # lgtm [py/call/wrong-arguments]
 
 
 class Mesh(object):
@@ -486,11 +455,10 @@ class Mesh(object):
         else:
             return self._face_normalized_face_normal_vectors
 
-
     @staticmethod
     def sphere(stacks=8, sectors=8, radius=1):
 
-        vertices = np.zeros(shape=((stacks-1)*sectors + 2,3), dtype=np.float)
+        vertices = np.zeros(shape=((stacks - 1) * sectors + 2, 3), dtype=np.float)
 
         sh = np.pi / (1. * stacks)
         thetas = np.linspace(0 + sh, np.pi - sh, stacks - 1, endpoint=True, dtype=np.float)
@@ -504,10 +472,10 @@ class Mesh(object):
                 x = xy * np.sin(phi)
                 y = xy * np.cos(phi)
 
-                vertices[k*sectors+j] = [x, y, z]
+                vertices[k * sectors + j] = [x, y, z]
 
         vertices[-2] = [0, 0, -1 * radius]
-        vertices[-1] = [0,0,1 * radius]
+        vertices[-1] = [0, 0, 1 * radius]
 
         faces_top = np.zeros((sectors, 3), np.int)
         faces_bottom = np.zeros((sectors, 3), np.int)
@@ -522,16 +490,16 @@ class Mesh(object):
                 f2 = 0
             else:
                 f2 = k + 1
-            faces_top[k] = [f0,f2,f1]
+            faces_top[k] = [f0, f2, f1]
 
         # bottom
         for k in range(sectors):
             f0 = len(vertices) - 2
-            f1 = (stacks-2)*sectors + k
+            f1 = (stacks - 2) * sectors + k
             if k + 1 == sectors:
-                f2 = (stacks-2)*sectors
+                f2 = (stacks - 2) * sectors
             else:
-                f2 = (stacks-2)*sectors + k + 1
+                f2 = (stacks - 2) * sectors + k + 1
             faces_bottom[k] = [f1, f2, f0]
 
         for k in range(stacks - 2):
@@ -544,9 +512,9 @@ class Mesh(object):
                 f2 = (k + 1) * (sectors) + l
 
                 if l == 0:
-                    f3 = (k + 1) * (sectors) + sectors -1
+                    f3 = (k + 1) * (sectors) + sectors - 1
                 else:
-                    f3 = (k + 1) * (sectors) + (l-1)
+                    f3 = (k + 1) * (sectors) + (l - 1)
 
                 faces1[f0] = [f0, f1, f2]
 
@@ -560,7 +528,6 @@ class Mesh(object):
     def cone(n_faces=4, radius=1, height=1):
         """ Return a mesh for a cone with the defined number of faces
         """
-
 
         vertices = np.zeros((n_faces + 2, 3), np.float)
         for k in range(n_faces):
@@ -587,7 +554,7 @@ class Mesh(object):
 
     @staticmethod
     def compute_face_arrays(vertices, faces, wireframe_edges=None):
-        n_faces = faces.shape[0]
+        # n_faces = faces.shape[0]
         n_vertices = vertices.shape[0]
 
         # compute face vertices
@@ -597,7 +564,6 @@ class Mesh(object):
         nv = np.cross(v[:, 1] - v[:, 0], v[:, 2] - v[:, 0])
         nvl = np.linalg.norm(nv, axis=1)
         nv = nv / nvl.reshape(-1, 1)
-
 
         # non-smoothed face normals
         norms = np.zeros((nv.shape[0], 3, 3))
@@ -613,7 +579,7 @@ class Mesh(object):
 
         vertice_norms = np.zeros(vertices.shape, np.float)
         for v_idx in range(n_vertices):
-            f_idx, = np.where(vertices_norms_mask[:,v_idx] == 1)
+            f_idx, = np.where(vertices_norms_mask[:, v_idx] == 1)
             if f_idx is None or len(f_idx) == 0:
                 continue
 
@@ -635,7 +601,7 @@ class Mesh(object):
 
         md = Mesh()
 
-        if wireframe_edges is not None :
+        if wireframe_edges is not None:
             md.wireframe_edges = wireframe_edges
             md.has_wireframe = True
 
@@ -658,7 +624,6 @@ class Mesh(object):
             [0, 1, 1],
             [1, 1, 1],
         ]) * edge_length - edge_length / 2.
-
 
         # Every cube side is constructed of two triangles
         # be careful with culling
@@ -765,7 +730,7 @@ class MeshItem(GLGraphicsItem):
             v = np.concatenate([self.mesh.face_vertices, self.mesh.face_vertices + self.mesh.face_normal_vectors])
             e = np.array([np.arange(N), np.arange(N) + N]).T.flatten()
 
-            glColor4f(1.0,1.0,0.0,1.0)
+            glColor4f(1.0, 1.0, 0.0, 1.0)
             glVertexPointerf(v)
             glDrawElements(GL_LINES, e.shape[0], GL_UNSIGNED_INT, e)
 
@@ -777,7 +742,7 @@ class MeshItem(GLGraphicsItem):
             glEnableClientState(GL_VERTEX_ARRAY)
             glVertexPointerf(self.mesh.wireframe_vertices)
 
-            glColor4f(1.0,1.0,0.0,1.0)
+            glColor4f(1.0, 1.0, 0.0, 1.0)
             edges = self.mesh.face_edges.flatten()
             glDrawElements(GL_LINES, edges.shape[0], GL_UNSIGNED_INT, edges)
 
@@ -788,19 +753,9 @@ class MeshItem(GLGraphicsItem):
             # draw a mesh wireframe which may or may not be identical to the face edges, depending on the mesh
             glEnableClientState(GL_VERTEX_ARRAY)
             glVertexPointerf(self.mesh.wireframe_vertices)
-            glColor4f(0,1,0,1)
+            glColor4f(0, 1, 0, 1)
             edges = self.mesh.wireframe_edges.flatten()
             glDrawElements(GL_LINES, edges.shape[0], GL_UNSIGNED_INT, edges)
 
             glDisableClientState(GL_VERTEX_ARRAY)
             glDisableClientState(GL_COLOR_ARRAY)
-
-
-
-
-
-
-
-
-
-

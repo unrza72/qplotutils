@@ -3,7 +3,6 @@
 """
 import logging
 
-
 import qplotutils.ui.resources_rc
 
 __author__ = "Philipp Baust"
@@ -15,10 +14,8 @@ __maintainer__ = "Philipp Baust"
 __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
 
-
-#. Default logging level for all modules.
+# . Default logging level for all modules.
 LOG_LEVEL = logging.INFO
-
 
 #: MIME type for drag and drop of docks.
 MIME_TYPE = 'application/x-dockbench'

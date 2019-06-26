@@ -6,17 +6,18 @@ Widgets to create IDE like workbenches with dock widgets that can be rearanged a
 """
 import json
 import logging
-import uuid
 import pickle
-import math
+import uuid
 
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtWidgets import *
+import math
+from qtpy.QtCore import Qt, QPointF, QRectF, QRect, Signal, QPoint, QLine, QMargins, Property, QMimeData, QByteArray
+from qtpy.QtGui import QPen, QBrush, QColor, QPainter, QPainterPath, QTransform, QPixmap, QDrag
+from qtpy.QtWidgets import QWidget, QStyleOption, QHBoxLayout, QStyle, QVBoxLayout, QSplitter, QStackedLayout, \
+    QPushButton, QSizePolicy, QLabel, QMenu, QDialog, \
+    QAction, QApplication
 
 from . import LOG_LEVEL, MIME_TYPE, CONFIG
 from .ui.dock_properties import Ui_DialogDockProperties
-
 
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2015, 2017, Philipp Baust"
@@ -29,6 +30,7 @@ __status__ = "Development"
 
 _log = logging.getLogger(__name__)
 _log.setLevel(LOG_LEVEL)
+
 
 # TODO:  Equal sized adding
 # TODO: Min Sizes configurable
@@ -347,7 +349,6 @@ class Bench(QWidget):
 
 
 class Dock(BenchItem):
-
     closing = Signal(object)
     """ Signal that is emited when the dock is about to be closed. """
 
@@ -406,7 +407,6 @@ class Dock(BenchItem):
 
 
 class AbstractContainer(BenchItem):
-
     closing = Signal(object)
     contentModified = Signal()
 
@@ -595,7 +595,6 @@ class SplitterContainer(AbstractContainer):
 
 
 class TabContainer(AbstractContainer):
-
     dockMove = Signal(object, object, object)
 
     class Point(object):
@@ -608,7 +607,6 @@ class TabContainer(AbstractContainer):
 
         def y(self):
             return self.__y
-
 
     def __init__(self, bench, parent_container):
         """ Container which layouts its child items on stacked layout and provides a tab bar.
@@ -680,7 +678,6 @@ class TabContainer(AbstractContainer):
     @property
     def docks(self):
         return self.flatDockList
-
 
     def addItem(self, index, item):
 
@@ -859,7 +856,6 @@ class TabContainer(AbstractContainer):
 
 
 class DropOverlay(QWidget):
-
     Blue = QColor(77, 137, 247)
     BlueAccent = QColor(43, 109, 231)
     BlueDim = QColor(77, 137, 247, 128)

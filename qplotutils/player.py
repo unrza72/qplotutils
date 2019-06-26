@@ -5,6 +5,7 @@ User controls for interactivity.
 
 """
 import logging
+
 import numpy as np
 from qtpy.QtCore import *
 from qtpy.QtGui import *
@@ -12,7 +13,6 @@ from qtpy.QtWidgets import *
 
 from qplotutils import CONFIG
 from .ui.playback import Ui_PlaybackControl
-
 
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2015-2018, Philipp Baust"
