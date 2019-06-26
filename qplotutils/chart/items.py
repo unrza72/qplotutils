@@ -44,12 +44,12 @@ class ChartItemFlags(object):
 class BaseMixin(object):
     """ Base mixin for all items that are placed on the chart_tests view. """
 
-    def __init__(self, parent=None):
+    def __init__(self, *args, **kwargs):
         """ Constructor.
 
         :param parent: Parent QGraphicsItem, QGraphicsItemGroup or QGraphicsItemWidget
         """
-        super(BaseMixin, self).__init__(parent=parent)
+        super(BaseMixin, self).__init__(**kwargs)
         self.__flags = 0
         self._color = QColor("#FFFFFF")
 
