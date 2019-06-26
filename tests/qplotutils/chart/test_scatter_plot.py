@@ -20,6 +20,7 @@ from qtpy.QtGui import *
 from qtpy.QtOpenGL import *
 from qtpy.QtWidgets import *
 
+from qplotutils.chart.color import Colormap
 from qplotutils.chart.scatter_plot import *
 
 __author__ = "Philipp Baust"
