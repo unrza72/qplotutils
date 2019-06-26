@@ -9,7 +9,6 @@ _log = logging.getLogger(__name__)
 
 
 class CamControl(QWidget):
-
     def __init__(self, cam_properties, parent=None):
         super(CamControl, self).__init__(parent)
 
@@ -38,11 +37,17 @@ class CamControl(QWidget):
 
     def cam_changed(self):
         self._ui.dial_distance.setValue(self.cam_properties.distance * 1000)
-        self._ui.lineEdit_distance.setText("{0:2.2f}".format(self.cam_properties.distance))
+        self._ui.lineEdit_distance.setText(
+            "{0:2.2f}".format(self.cam_properties.distance)
+        )
         self._ui.dial_azimuth.setValue(self.cam_properties.azimuth_angle)
-        self._ui.lineEdit_azimuth.setText("{0:2.2f}".format(self.cam_properties.azimuth_angle))
+        self._ui.lineEdit_azimuth.setText(
+            "{0:2.2f}".format(self.cam_properties.azimuth_angle)
+        )
         self._ui.dial_elevation.setValue(self.cam_properties.elevation_angle)
-        self._ui.lineEdit_elevation.setText("{0:2.2f}".format(self.cam_properties.elevation_angle))
+        self._ui.lineEdit_elevation.setText(
+            "{0:2.2f}".format(self.cam_properties.elevation_angle)
+        )
 
     def edit_distance_changed(self):
         try:
@@ -52,7 +57,7 @@ class CamControl(QWidget):
             _log.exception(ex)
 
     def dial_distance_changed(self, value):
-        self.cam_properties.distance = value / 1000.
+        self.cam_properties.distance = value / 1000.0
 
     def dial_azimuth_changed(self, value):
         self.cam_properties.azimuth_angle = value

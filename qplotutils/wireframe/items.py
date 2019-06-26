@@ -2,37 +2,66 @@ import logging
 
 import numpy as np
 from OpenGL import GL
-from OpenGL.GL import GL_DEPTH_TEST, GL_BLEND, GL_ALPHA_TEST, GL_CULL_FACE, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, \
-    glEnable, glDisable, GL_ONE, GL_LINE_SMOOTH, GL_POLYGON_SMOOTH, GL_LINE_SMOOTH_HINT, GL_NICEST, glHint, \
-    GL_POLYGON_SMOOTH_HINT, glBlendFunc, glLineWidth, glBegin, GL_LINES, glColor4f, glVertex3f, glEnd, \
-    glVertexPointerf, glEnableClientState, glNormalPointerf, glDrawArrays, GL_TRIANGLES, \
-    glDisableClientState, GL_NORMAL_ARRAY, GL_VERTEX_ARRAY, GL_COLOR_ARRAY, \
-    glDrawElements, GL_UNSIGNED_INT
+from OpenGL.GL import (
+    GL_DEPTH_TEST,
+    GL_BLEND,
+    GL_ALPHA_TEST,
+    GL_CULL_FACE,
+    GL_SRC_ALPHA,
+    GL_ONE_MINUS_SRC_ALPHA,
+    glEnable,
+    glDisable,
+    GL_ONE,
+    GL_LINE_SMOOTH,
+    GL_POLYGON_SMOOTH,
+    GL_LINE_SMOOTH_HINT,
+    GL_NICEST,
+    glHint,
+    GL_POLYGON_SMOOTH_HINT,
+    glBlendFunc,
+    glLineWidth,
+    glBegin,
+    GL_LINES,
+    glColor4f,
+    glVertex3f,
+    glEnd,
+    glVertexPointerf,
+    glEnableClientState,
+    glNormalPointerf,
+    glDrawArrays,
+    GL_TRIANGLES,
+    glDisableClientState,
+    GL_NORMAL_ARRAY,
+    GL_VERTEX_ARRAY,
+    GL_COLOR_ARRAY,
+    glDrawElements,
+    GL_UNSIGNED_INT,
+)
 from qtpy.QtCore import QObject
 from qtpy.QtGui import QMatrix4x4
 
 from qplotutils.wireframe.shader import ShaderRegistry
 
 GLOptions = {
-    'opaque': {
+    "opaque": {
         GL_DEPTH_TEST: True,
         GL_BLEND: False,
         GL_ALPHA_TEST: False,
         GL_CULL_FACE: False,
     },
-    'translucent': {
+    "translucent": {
         GL_DEPTH_TEST: True,
         GL_BLEND: True,
         GL_ALPHA_TEST: False,
         GL_CULL_FACE: False,
-        'glBlendFunc': (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA),
+        "glBlendFunc": (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA),
     },
-    'additive': {
+    "additive": {
         GL_DEPTH_TEST: False,
         GL_BLEND: True,
         GL_ALPHA_TEST: False,
         GL_CULL_FACE: False,
-        'glBlendFunc': (GL_SRC_ALPHA, GL_ONE),
+        "glBlendFunc": (GL_SRC_ALPHA, GL_ONE),
     },
 }
 
@@ -314,8 +343,9 @@ class GLGraphicsItem(QObject):
 
 
 class Grid(GLGraphicsItem):
-
-    def __init__(self, x=10, y=10, xs=1., ys=1., edge_color=(0.7, 0.7, 0.7, 1), parentItem=None):
+    def __init__(
+        self, x=10, y=10, xs=1.0, ys=1.0, edge_color=(0.7, 0.7, 0.7, 1), parentItem=None
+    ):
         super(Grid, self).__init__(parentItem)
         self.edge_color = edge_color
 
@@ -335,8 +365,8 @@ class Grid(GLGraphicsItem):
         glLineWidth(1.3)
         glBegin(GL_LINES)  # lgtm [py/call/wrong-arguments]
 
-        xvals = np.linspace(-self.x / 2., self.x / 2., self.x / self.xs + 1)
-        yvals = np.linspace(-self.y / 2., self.y / 2., self.y / self.ys + 1)
+        xvals = np.linspace(-self.x / 2.0, self.x / 2.0, self.x / self.xs + 1)
+        yvals = np.linspace(-self.y / 2.0, self.y / 2.0, self.y / self.ys + 1)
 
         glColor4f(*self.edge_color)
         for x in xvals:
@@ -349,7 +379,6 @@ class Grid(GLGraphicsItem):
 
 
 class CoordinateCross(GLGraphicsItem):
-
     def __init__(self, parentItem=None):
         super(CoordinateCross, self).__init__(parentItem)
 
@@ -358,15 +387,15 @@ class CoordinateCross(GLGraphicsItem):
         glLineWidth(20.0)
         glBegin(GL_LINES)  # lgtm [py/call/wrong-arguments]
         # X
-        glColor4f(1, 0, 0, .3)
+        glColor4f(1, 0, 0, 0.3)
         glVertex3f(0, 0, 0)
         glVertex3f(1, 0, 0)
 
-        glColor4f(0, 1, 0, .3)
+        glColor4f(0, 1, 0, 0.3)
         glVertex3f(0, 0, 0)
         glVertex3f(0, 1, 0)
 
-        glColor4f(0, 0, 1, .3)
+        glColor4f(0, 0, 1, 0.3)
         glVertex3f(0, 0, 0)
         glVertex3f(0, 0, 1)
 
@@ -374,7 +403,6 @@ class CoordinateCross(GLGraphicsItem):
 
 
 class Box(GLGraphicsItem):
-
     def __init__(self, parentItem=None):
         super(Box, self).__init__(parentItem)
 
@@ -386,7 +414,7 @@ class Box(GLGraphicsItem):
         super(Box, self).paint()
 
         l = self.length
-        wh = self.width / 2.
+        wh = self.width / 2.0
         # h = self.height
 
         p = [
@@ -425,7 +453,6 @@ class Box(GLGraphicsItem):
 
 
 class Mesh(object):
-
     def __init__(self, has_wireframe=False):
         self.has_wireframe = has_wireframe
 
@@ -460,8 +487,10 @@ class Mesh(object):
 
         vertices = np.zeros(shape=((stacks - 1) * sectors + 2, 3), dtype=np.float)
 
-        sh = np.pi / (1. * stacks)
-        thetas = np.linspace(0 + sh, np.pi - sh, stacks - 1, endpoint=True, dtype=np.float)
+        sh = np.pi / (1.0 * stacks)
+        thetas = np.linspace(
+            0 + sh, np.pi - sh, stacks - 1, endpoint=True, dtype=np.float
+        )
         phis = np.linspace(0, 2 * np.pi, sectors, endpoint=False, dtype=np.float)
 
         for k, theta in enumerate(thetas):
@@ -539,13 +568,9 @@ class Mesh(object):
 
         a = np.arange(0, n_faces, 1, dtype=np.uint8)
         b = np.roll(a, 1)
-        t_faces = np.array([
-            a, b, np.ones(n_faces) * n_faces
-        ], dtype=np.uint8).T
+        t_faces = np.array([a, b, np.ones(n_faces) * n_faces], dtype=np.uint8).T
 
-        b_faces = np.array([
-            b, a, np.ones(n_faces) * (n_faces + 1)
-        ], dtype=np.uint8).T
+        b_faces = np.array([b, a, np.ones(n_faces) * (n_faces + 1)], dtype=np.uint8).T
 
         faces = np.append(t_faces, b_faces, axis=0)
 
@@ -571,7 +596,9 @@ class Mesh(object):
 
         # smothed normals,
         # make vector to compute all normals attached to a vertix
-        vertices_norms_mask = np.zeros((faces.shape[0], vertices.shape[0]), dtype=np.uint8)
+        vertices_norms_mask = np.zeros(
+            (faces.shape[0], vertices.shape[0]), dtype=np.uint8
+        )
         for k, f in enumerate(faces):
             vertices_norms_mask[k, f[0]] = 1
             vertices_norms_mask[k, f[1]] = 1
@@ -614,63 +641,75 @@ class Mesh(object):
 
     @staticmethod
     def cube(edge_length=1.0):
-        vertices = np.array([
-            [0, 0, 0],
-            [1, 0, 0],
-            [0, 1, 0],
-            [1, 1, 0],
-            [0, 0, 1],
-            [1, 0, 1],
-            [0, 1, 1],
-            [1, 1, 1],
-        ]) * edge_length - edge_length / 2.
+        vertices = (
+            np.array(
+                [
+                    [0, 0, 0],
+                    [1, 0, 0],
+                    [0, 1, 0],
+                    [1, 1, 0],
+                    [0, 0, 1],
+                    [1, 0, 1],
+                    [0, 1, 1],
+                    [1, 1, 1],
+                ]
+            )
+            * edge_length
+            - edge_length / 2.0
+        )
 
         # Every cube side is constructed of two triangles
         # be careful with culling
-        faces = np.array([
-            [0, 2, 1],  # ok
-            [2, 3, 1],
-
-            [0, 1, 4],  # ok
-            [1, 5, 4],
-
-            [1, 3, 5],  # ok
-            [3, 7, 5],
-
-            [2, 7, 3],  # ok
-            [2, 6, 7],
-
-            [0, 6, 2],  # ok
-            [0, 4, 6],
-
-            [4, 5, 6],  # ok
-            [5, 7, 6],
-        ])
+        faces = np.array(
+            [
+                [0, 2, 1],  # ok
+                [2, 3, 1],
+                [0, 1, 4],  # ok
+                [1, 5, 4],
+                [1, 3, 5],  # ok
+                [3, 7, 5],
+                [2, 7, 3],  # ok
+                [2, 6, 7],
+                [0, 6, 2],  # ok
+                [0, 4, 6],
+                [4, 5, 6],  # ok
+                [5, 7, 6],
+            ]
+        )
 
         # Hand constructed:
-        wireframe_edges = np.array([
-            [0, 1],
-            [1, 3],
-            [3, 2],
-            [2, 0],
-            [4, 5],
-            [5, 7],
-            [7, 6],
-            [6, 4],
-            [0, 4],
-            [1, 5],
-            [2, 6],
-            [3, 7],
-        ], np.int8)
+        wireframe_edges = np.array(
+            [
+                [0, 1],
+                [1, 3],
+                [3, 2],
+                [2, 0],
+                [4, 5],
+                [5, 7],
+                [7, 6],
+                [6, 4],
+                [0, 4],
+                [1, 5],
+                [2, 6],
+                [3, 7],
+            ],
+            np.int8,
+        )
 
         return Mesh.compute_face_arrays(vertices, faces, wireframe_edges)
 
 
 class MeshItem(GLGraphicsItem):
-
-    def __init__(self, mesh_data, parentItem=None, shader=None, face_color=(0.6, 0.6, 0.6, 1.0),
-                 edge_color=(1., 0.5, 0.5, 1.),
-                 smooth=False, gloptions='opaque'):
+    def __init__(
+        self,
+        mesh_data,
+        parentItem=None,
+        shader=None,
+        face_color=(0.6, 0.6, 0.6, 1.0),
+        edge_color=(1.0, 0.5, 0.5, 1.0),
+        smooth=False,
+        gloptions="opaque",
+    ):
         super(MeshItem, self).__init__(parentItem)
 
         self.draw_faces = True
@@ -716,7 +755,9 @@ class MeshItem(GLGraphicsItem):
                 glEnableClientState(GL_NORMAL_ARRAY)
                 glNormalPointerf(self.mesh.face_normal_vectors)
 
-                glDrawArrays(GL_TRIANGLES, 0, np.product(self.mesh.face_vertices.shape[:-1]))
+                glDrawArrays(
+                    GL_TRIANGLES, 0, np.product(self.mesh.face_vertices.shape[:-1])
+                )
 
                 glDisableClientState(GL_NORMAL_ARRAY)
                 glDisableClientState(GL_VERTEX_ARRAY)
@@ -727,7 +768,12 @@ class MeshItem(GLGraphicsItem):
             glEnableClientState(GL_VERTEX_ARRAY)
 
             N = self.mesh.face_vertices.shape[0] * 3
-            v = np.concatenate([self.mesh.face_vertices, self.mesh.face_vertices + self.mesh.face_normal_vectors])
+            v = np.concatenate(
+                [
+                    self.mesh.face_vertices,
+                    self.mesh.face_vertices + self.mesh.face_normal_vectors,
+                ]
+            )
             e = np.array([np.arange(N), np.arange(N) + N]).T.flatten()
 
             glColor4f(1.0, 1.0, 0.0, 1.0)

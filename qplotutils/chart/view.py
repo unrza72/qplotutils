@@ -9,9 +9,28 @@ import logging
 import math
 import numpy as np
 from qtpy.QtCore import Signal, Qt, QPointF, QRectF, QSizeF
-from qtpy.QtGui import QPen, QBrush, QColor, QPainter, QPainterPath, QFontMetrics, QFont, QPicture, QTransform
-from qtpy.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QGraphicsWidget, QGraphicsView, QFrame, \
-    QGraphicsScene, QSizePolicy, QGraphicsGridLayout, QAction
+from qtpy.QtGui import (
+    QPen,
+    QBrush,
+    QColor,
+    QPainter,
+    QPainterPath,
+    QFontMetrics,
+    QFont,
+    QPicture,
+    QTransform,
+)
+from qtpy.QtWidgets import (
+    QGraphicsItem,
+    QStyleOptionGraphicsItem,
+    QGraphicsWidget,
+    QGraphicsView,
+    QFrame,
+    QGraphicsScene,
+    QSizePolicy,
+    QGraphicsGridLayout,
+    QAction,
+)
 
 from qplotutils import QPlotUtilsException
 from . import LOG_LEVEL
@@ -37,6 +56,7 @@ class Style(object):
 
     TODO: Not yet implemented
     """
+
     __shared_state = {}
 
     def __init__(self):
@@ -49,8 +69,12 @@ class ChartLegend(ChartItem):
 
     def __init__(self):
         """ Displays the chart item in a legend table. """
-        super(ChartLegend, self).__init__()  # Pycharm / pyLint inspection error. Please ignore
-        self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIgnoresTransformations)
+        super(
+            ChartLegend, self
+        ).__init__()  # Pycharm / pyLint inspection error. Please ignore
+        self.setFlags(
+            QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIgnoresTransformations
+        )
 
         self._picture = None
         self._bRect = QRectF(0, 0, 200, 50)
@@ -274,12 +298,9 @@ class ChartView(QGraphicsView):
         # parent_w = self.size().width()
         # legend.setPos(parent_w - legend.boundingRect().width() - 15, 40)
         # return legend
-        self._map_keys.append({
-            "corner": self.TOP_RIGHT,
-            "x": 10,
-            "y": 10,
-            "Item": legend,
-        })
+        self._map_keys.append(
+            {"corner": self.TOP_RIGHT, "x": 10, "y": 10, "Item": legend}
+        )
 
     def autoRange(self):
         self.centralWidget.area.autoRange()
@@ -315,12 +336,7 @@ class ChartView(QGraphicsView):
 
     def add_chart_key(self, key_item, corner):
         self.scene().addItem(key_item)
-        self._map_keys.append({
-            "corner": corner,
-            "x": 10,
-            "y": 10,
-            "Item": key_item,
-        })
+        self._map_keys.append({"corner": corner, "x": 10, "y": 10, "Item": key_item})
         self.__layout_map_keys()
 
     # @property
@@ -520,11 +536,12 @@ class ChartWidget(QGraphicsWidget):
 
 
 class ChartLabel(QGraphicsWidget):
-
     def __init__(self, label="", parent=None):
         super(ChartLabel, self).__init__(parent)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
-        self.setFlags(QGraphicsItem.ItemClipsChildrenToShape)  # | QGraphicsItem.ItemIsFocusable)
+        self.setFlags(
+            QGraphicsItem.ItemClipsChildrenToShape
+        )  # | QGraphicsItem.ItemIsFocusable)
 
         self.font = QFont("Helvetica [Cronyx]", 11, QFont.Normal)
         self.font_flags = Qt.TextDontClip | Qt.AlignHCenter | Qt.AlignVCenter
@@ -567,7 +584,6 @@ class ChartLabel(QGraphicsWidget):
 
 
 class VerticalChartLabel(ChartLabel):
-
     def __init__(self, label="", parent=None):
         super(VerticalChartLabel, self).__init__(label, parent)
 
@@ -597,7 +613,9 @@ class ChartAxis(QGraphicsWidget):
 
         super(ChartAxis, self).__init__(parent)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
-        self.setFlags(QGraphicsItem.ItemClipsChildrenToShape)  # | QGraphicsItem.ItemIsFocusable)
+        self.setFlags(
+            QGraphicsItem.ItemClipsChildrenToShape
+        )  # | QGraphicsItem.ItemIsFocusable)
 
         self.font = QFont("Helvetica [Cronyx]", 9, QFont.Normal)
         self.flags = Qt.TextDontClip | Qt.AlignRight | Qt.AlignVCenter
@@ -740,11 +758,15 @@ class VerticalAxis(ChartAxis):
         if self._areaTransform is None:
             return
 
-        parent_w = self.parentWidget().area.size().width() + self.size().width() - 2  # self.parentWidget().size().width()
+        parent_w = (
+            self.parentWidget().area.size().width() + self.size().width() - 2
+        )  # self.parentWidget().size().width()
         parent_h = self.parentWidget().size().height()
 
         translation = self._areaTransform.m32()
-        scaling = self._areaTransform.m12() + self._areaTransform.m22()  # only for rotations along 90 degrees
+        scaling = (
+            self._areaTransform.m12() + self._areaTransform.m22()
+        )  # only for rotations along 90 degrees
 
         if scaling == 0:
             _log.debug("????")
@@ -779,7 +801,12 @@ class HorizontalAxis(ChartAxis):
         parent = self.parentWidget().area.size()
         v_axis = self.parentWidget().main_vertical_axis.size()
         s = self.size()
-        b_rect = QRectF(-v_axis.width(), -parent.height(), s.width() + v_axis.width(), parent.height() + s.height())
+        b_rect = QRectF(
+            -v_axis.width(),
+            -parent.height(),
+            s.width() + v_axis.width(),
+            parent.height() + s.height(),
+        )
         return b_rect
 
     def _generatePicture(self, p=QPainter()):
@@ -800,8 +827,10 @@ class HorizontalAxis(ChartAxis):
         scaling = self._areaTransform.m11() + self._areaTransform.m21()
         displayRange = self.size().width()
 
-        ticks, run_width = self.calcTicks(shift, scaling, displayRange, maxGridSpace=100, minGridSpace=80)
-        rw = run_width / 2.
+        ticks, run_width = self.calcTicks(
+            shift, scaling, displayRange, maxGridSpace=100, minGridSpace=80
+        )
+        rw = run_width / 2.0
 
         p.drawLine(0, 0, self.size().width(), 0)
         for pos, tickString in ticks:
@@ -839,7 +868,9 @@ class SecondaryHorizontalAxis(HorizontalAxis):
         area = self.parentWidget().area.size()
         v_axis = self.parentWidget().main_vertical_axis.size()
         s = self.size()
-        b_rect = QRectF(-v_axis.width(), 0, s.width() + v_axis.width(), area.height() + s.height())
+        b_rect = QRectF(
+            -v_axis.width(), 0, s.width() + v_axis.width(), area.height() + s.height()
+        )
         return b_rect
 
     def _generatePicture(self, p=QPainter()):
@@ -864,12 +895,19 @@ class SecondaryHorizontalAxis(HorizontalAxis):
         scaling = self._areaTransform.m11() + self._areaTransform.m21()
         displayRange = self.size().width()
 
-        ticks, run_width = self.calcTicks(shift, scaling, displayRange, maxGridSpace=100, minGridSpace=80)
-        rw = run_width / 2.
+        ticks, run_width = self.calcTicks(
+            shift, scaling, displayRange, maxGridSpace=100, minGridSpace=80
+        )
+        rw = run_width / 2.0
 
         for pos, tickString in ticks:
             if 0 < pos < self.size().width() - 30:
-                p.drawLine(round(pos), self.size().height() - 5, round(pos), parent_h + self.size().height())
+                p.drawLine(
+                    round(pos),
+                    self.size().height() - 5,
+                    round(pos),
+                    parent_h + self.size().height(),
+                )
 
                 tickRect = QRectF(pos - rw, self.size().height() - 18, run_width, 10)
                 p.drawText(tickRect, self.flags, tickString)
@@ -900,7 +938,11 @@ class SecondaryHorizontalAxis(HorizontalAxis):
         lowerValue = -shift / scaling
         upperValue = (displayRange - shift) / scaling
 
-        idx, = np.where(np.logical_and(self.main_axis_values <= upperValue, self.main_axis_values >= lowerValue))
+        idx, = np.where(
+            np.logical_and(
+                self.main_axis_values <= upperValue, self.main_axis_values >= lowerValue
+            )
+        )
 
         required_tick_width = 0
         metrics = QFontMetrics(self.font)
@@ -974,7 +1016,9 @@ class SecondaryVerticalAxis(VerticalAxis):
         parent_w = self.parentWidget().area.size().width() - 2
 
         shift = self._areaTransform.m32()
-        scaling = self._areaTransform.m12() + self._areaTransform.m22()  # only for rotations along 90 degrees
+        scaling = (
+            self._areaTransform.m12() + self._areaTransform.m22()
+        )  # only for rotations along 90 degrees
         displayRange = self.size().height()
 
         if scaling == 0:
@@ -1025,7 +1069,11 @@ class SecondaryVerticalAxis(VerticalAxis):
         upperValue = -shift / scaling
         lowerValue = (displayRange - shift) / scaling
 
-        idx, = np.where(np.logical_and(self.main_axis_values <= upperValue, self.main_axis_values >= lowerValue))
+        idx, = np.where(
+            np.logical_and(
+                self.main_axis_values <= upperValue, self.main_axis_values >= lowerValue
+            )
+        )
 
         required_tick_width = 0
         metrics = QFontMetrics(self.font)
@@ -1056,7 +1104,6 @@ class SecondaryVerticalAxis(VerticalAxis):
 
 
 class ScaleBox(QGraphicsItem):
-
     def __init__(self, parent=None):
         """ Overlay tha is visible when a zooming operation is in progress to give the user feedback
         about the region that is zoomed in to.
@@ -1101,7 +1148,9 @@ class ChartArea(QGraphicsWidget):
         """
         super(ChartArea, self).__init__(parent)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
-        self.setFlags(QGraphicsItem.ItemClipsChildrenToShape | QGraphicsItem.ItemIsFocusable)
+        self.setFlags(
+            QGraphicsItem.ItemClipsChildrenToShape | QGraphicsItem.ItemIsFocusable
+        )
 
         self.__rootItem = ChartItem(self)  # invisible root item
 
@@ -1231,9 +1280,7 @@ class ChartArea(QGraphicsWidget):
 
         t = self.__rootItem.transform()
         n = QTransform(
-            t.m11(), t.m12(),
-            t.m21(), t.m22(),
-            t.m31() + dif.x(), t.m32() + dif.y()
+            t.m11(), t.m12(), t.m21(), t.m22(), t.m31() + dif.x(), t.m32() + dif.y()
         )
 
         # Limit to boundries
@@ -1247,10 +1294,12 @@ class ChartArea(QGraphicsWidget):
 
             visibleRange = invTransform.mapRect(r)
 
-            if (visibleRange.top() < self.__maxVisibleRange.top() or
-                    visibleRange.bottom() > self.__maxVisibleRange.bottom() or
-                    visibleRange.left() < self.__maxVisibleRange.left() or
-                    visibleRange.right() > self.__maxVisibleRange.right()):
+            if (
+                visibleRange.top() < self.__maxVisibleRange.top()
+                or visibleRange.bottom() > self.__maxVisibleRange.bottom()
+                or visibleRange.left() < self.__maxVisibleRange.left()
+                or visibleRange.right() > self.__maxVisibleRange.right()
+            ):
                 return
 
         # self._logTransform(n, desc="Pan")
@@ -1303,7 +1352,11 @@ class ChartArea(QGraphicsWidget):
         pct_left = (coords.x() - bbox.left()) / bbox.width()
         pct_top = (coords.y() - bbox.top()) / bbox.height()
 
-        _log.debug("Percentage from x/y: {:2.2f}/{:2.2f}".format(pct_left * 100.0, pct_top * 100.0))
+        _log.debug(
+            "Percentage from x/y: {:2.2f}/{:2.2f}".format(
+                pct_left * 100.0, pct_top * 100.0
+            )
+        )
 
         if not 0 <= pct_left <= 1.0 or not 0 <= pct_top <= 1.0:
             _log.error("Percentages OUT of bounds...")
@@ -1324,7 +1377,9 @@ class ChartArea(QGraphicsWidget):
         newLeft = coords.x() - new_width * pct_left
         newTop = coords.y() - new_height * pct_top
 
-        newBbox = QRectF(QPointF(newLeft, newTop), QSizeF(new_width, new_height)).normalized()
+        newBbox = QRectF(
+            QPointF(newLeft, newTop), QSizeF(new_width, new_height)
+        ).normalized()
         _log.debug("New Visible Range: {}".format(newBbox))
 
         self.__visibleRange = newBbox
@@ -1367,7 +1422,7 @@ class ChartArea(QGraphicsWidget):
         bbox = None
         for c in children:
             if int(c.flags()) & int(QGraphicsItem.ItemIgnoresTransformations):
-                rect = QRectF(-.5e-8, -.5e-8, 1e-8, 1e-8)
+                rect = QRectF(-0.5e-8, -0.5e-8, 1e-8, 1e-8)
             else:
                 rect = c.boundingRect()
 
@@ -1387,7 +1442,7 @@ class ChartArea(QGraphicsWidget):
             return
 
         if bbox.height() == 0:
-            bbox.adjust(0, -.5, 0, .5)
+            bbox.adjust(0, -0.5, 0, 0.5)
 
         h_pad = bbox.height() * 0.005  # add 0.5 % to the visible range.
         w_pad = bbox.width() * 0.005
@@ -1436,16 +1491,28 @@ class ChartArea(QGraphicsWidget):
 
         t = self.__rootItem.transform()
 
-        _log.debug("Area Aspect: {} / {} = 1:{}".format(area.width(), area.height(), area.height() / area.width()))
-        _log.debug("View Aspect: {} / {} = 1:{}".format(bbox.width(), bbox.height(), bbox.width() / bbox.height()))
+        _log.debug(
+            "Area Aspect: {} / {} = 1:{}".format(
+                area.width(), area.height(), area.height() / area.width()
+            )
+        )
+        _log.debug(
+            "View Aspect: {} / {} = 1:{}".format(
+                bbox.width(), bbox.height(), bbox.width() / bbox.height()
+            )
+        )
 
         # Enforce fixed aspect ratio
         if self.__aspectRatio is not None:
             if t.m12() != 0:
                 # AUTOSAR width and height flipped
-                bbox.setWidth(self.__aspectRatio * area.height() / area.width() * bbox.height())
+                bbox.setWidth(
+                    self.__aspectRatio * area.height() / area.width() * bbox.height()
+                )
             else:
-                bbox.setWidth(self.__aspectRatio * area.width() / area.height() * bbox.height())
+                bbox.setWidth(
+                    self.__aspectRatio * area.width() / area.height() * bbox.height()
+                )
 
         s11 = (area.width()) / bbox.width() * sign(t.m11())
         s12 = (area.height()) / bbox.width() * sign(t.m12())
@@ -1468,11 +1535,7 @@ class ChartArea(QGraphicsWidget):
 
         # Update and apply the new transform to the chart items.
         n = QTransform()
-        n.setMatrix(
-            s11, s12, 0,
-            s21, s22, 0,
-            dx, dy, 1
-        )
+        n.setMatrix(s11, s12, 0, s21, s22, 0, dx, dy, 1)
 
         self.__rootItem.setTransform(n)
         self.axisChange()

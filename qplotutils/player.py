@@ -70,7 +70,9 @@ class PlaybackWidget(QWidget):
             idx, = np.where(self.timestamps == ts)
             self.ui.slider_index.setValue(idx[0])
         except Exception as ex:
-            _log.info("Could not set timestamp. Format no recognized or out of interval.")
+            _log.info(
+                "Could not set timestamp. Format no recognized or out of interval."
+            )
             _log.debug("Exception %s", ex)
 
     def debug_slider(self, index, timestamp):
@@ -105,13 +107,17 @@ class PlaybackWidget(QWidget):
     def pause(self):
         if not self.__is_playing:
             return
-        self.ui.button_play_pause.setIcon(QIcon(":/player/icons/media-playback-start.svg"))
+        self.ui.button_play_pause.setIcon(
+            QIcon(":/player/icons/media-playback-start.svg")
+        )
         self.__is_playing = False
 
     def play(self):
         if self.__is_playing:
             return
-        self.ui.button_play_pause.setIcon(QIcon(":/player/icons/media-playback-pause.svg"))
+        self.ui.button_play_pause.setIcon(
+            QIcon(":/player/icons/media-playback-pause.svg")
+        )
         self.__is_playing = True
         self.advance()
 

@@ -10,7 +10,16 @@ import logging
 import weakref
 
 from qtpy.QtCore import Qt, QPointF, QRectF, QRect
-from qtpy.QtGui import QPen, QBrush, QColor, QPainter, QPainterPath, QFontMetrics, QFont, QPicture
+from qtpy.QtGui import (
+    QPen,
+    QBrush,
+    QColor,
+    QPainter,
+    QPainterPath,
+    QFontMetrics,
+    QFont,
+    QPicture,
+)
 from qtpy.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QGraphicsView
 
 from qplotutils.chart.color import Normalize
@@ -34,7 +43,6 @@ _log = logging.getLogger(__name__)
 
 
 class ScatterItem(ChartItem):
-
     def __init__(self, x, y, z=None, parent=None):
         super(ScatterItem, self).__init__(parent)
         self.setFlags(self.flags() | QGraphicsItem.ItemIgnoresTransformations)
@@ -89,11 +97,14 @@ class ScatterItem(ChartItem):
 
 
 class Colorbar(ChartItem):
-
     def __init__(self, colormap, v_min, v_max, parent=None):
         """ Displays the chart_tests item in a legend table. """
-        super(Colorbar, self).__init__()  # Pycharm / pyLint inspection error. Please ignore
-        self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIgnoresTransformations)
+        super(
+            Colorbar, self
+        ).__init__()  # Pycharm / pyLint inspection error. Please ignore
+        self.setFlags(
+            QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIgnoresTransformations
+        )
         self.chartItemFlags = ChartItemFlags.FLAG_NO_LABEL
 
         self._picture = None
@@ -130,7 +141,7 @@ class Colorbar(ChartItem):
         p.drawRoundedRect(self._bRect, 2, 2)
 
         for n in range(0, 180, 1):
-            v = n / 180.
+            v = n / 180.0
             a = self.cm(v)
             color = QColor.fromRgbF(a[0], a[1], a[2])
 
@@ -191,8 +202,14 @@ class ScatterPlotView(ChartView):
         return color
 
     def addItem(self, item=ChartItem()):
-        if self.lower_bound_dynamic or self.upper_bound_dynamic and len(self.scatter_items) > 50:
-            _log.warning("Depending on the ordering of your data adding scatter items might be very slow. O(n**2)")
+        if (
+            self.lower_bound_dynamic
+            or self.upper_bound_dynamic
+            and len(self.scatter_items) > 50
+        ):
+            _log.warning(
+                "Depending on the ordering of your data adding scatter items might be very slow. O(n**2)"
+            )
         self.addItems([item])
 
     def addItems(self, items):
@@ -203,11 +220,19 @@ class ScatterPlotView(ChartView):
                 r = weakref.ref(item)
                 self.scatter_items.append(r)
 
-                if self.normalize.value_min is None or self.lower_bound_dynamic and item.z < self.normalize.value_min:
+                if (
+                    self.normalize.value_min is None
+                    or self.lower_bound_dynamic
+                    and item.z < self.normalize.value_min
+                ):
                     self.normalize.value_min = item.z
                     force_update_all = True
 
-                if self.normalize.value_max is None or self.upper_bound_dynamic and item.z > self.normalize.value_max:
+                if (
+                    self.normalize.value_max is None
+                    or self.upper_bound_dynamic
+                    and item.z > self.normalize.value_max
+                ):
                     self.normalize.value_max = item.z
                     force_update_all = True
 

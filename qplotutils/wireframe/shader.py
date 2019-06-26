@@ -1,6 +1,12 @@
 import logging
 
-from OpenGL.GL import shaders, glUniform1fv, glGetUniformLocation, GL_VERTEX_SHADER, GL_FRAGMENT_SHADER
+from OpenGL.GL import (
+    shaders,
+    glUniform1fv,
+    glGetUniformLocation,
+    GL_VERTEX_SHADER,
+    GL_FRAGMENT_SHADER,
+)
 
 # from OpenGL.raw.GL.VERSION.GL_2_0 import GL_VERTEX_SHADER, GL_FRAGMENT_SHADER
 
@@ -10,8 +16,9 @@ DEBUG = True
 
 
 class ShaderProgram(object):
-
-    def __init__(self, name=None, vertex_shader_src=None, fragment_shader_src=None, uniforms=None):
+    def __init__(
+        self, name=None, vertex_shader_src=None, fragment_shader_src=None, uniforms=None
+    ):
         self._name = name
         self._vertex_shader_src = vertex_shader_src
         self._fragment_shader_src = fragment_shader_src
@@ -26,8 +33,12 @@ class ShaderProgram(object):
     def compile(self):
         try:
             if self._vertex_shader_src and self._fragment_shader_src:
-                vertex_shader = shaders.compileShader(self._vertex_shader_src, GL_VERTEX_SHADER)
-                fragment_shader = shaders.compileShader(self._fragment_shader_src, GL_FRAGMENT_SHADER)
+                vertex_shader = shaders.compileShader(
+                    self._vertex_shader_src, GL_VERTEX_SHADER
+                )
+                fragment_shader = shaders.compileShader(
+                    self._fragment_shader_src, GL_FRAGMENT_SHADER
+                )
                 self._program = shaders.compileProgram(vertex_shader, fragment_shader)
         except Exception as ex:
             _log.error("Failed to compile vertex/fragment shader.", ex)
@@ -52,7 +63,9 @@ class ShaderProgram(object):
             for uniformName, data in self.uniformData.items():
                 loc = self.uniform(uniformName)
                 if loc == -1:
-                    raise Exception('Could not find uniform variable "%s"' % uniformName)
+                    raise Exception(
+                        'Could not find uniform variable "%s"' % uniformName
+                    )
 
                 glUniform1fv(loc, len(data), data)
         except:
@@ -64,7 +77,7 @@ class ShaderProgram(object):
 
     def uniform(self, name):
         """Return the location integer for a uniform variable in this program"""
-        return glGetUniformLocation(self.program, name.encode('utf_8'))
+        return glGetUniformLocation(self.program, name.encode("utf_8"))
 
 
 class ShaderRegistry(object):
@@ -73,8 +86,9 @@ class ShaderRegistry(object):
     __shared_state = None
 
     __default_shader = {
-        "balloon": ShaderProgram("balloon",
-                                 """
+        "balloon": ShaderProgram(
+            "balloon",
+            """
                                  varying vec3 normal;
                                  void main() {
                                     // compute here for use in fragment shader
@@ -84,17 +98,18 @@ class ShaderRegistry(object):
                                     gl_Position = ftransform();
                                  }
                                  """,
-                                 """
+            """
                                  varying vec3 normal;
                                  void main() {
                                     vec4 color = gl_Color;
                                     color.w = min(color.w + 2.0 * color.w * pow(normal.x*normal.x + normal.y*normal.y, 5.0), 1.0);
                                     gl_FragColor = color;
                                  }
-                                 """),
-
-        "shaded": ShaderProgram("shaded",
-                                """
+                                 """,
+        ),
+        "shaded": ShaderProgram(
+            "shaded",
+            """
                      varying vec3 normal;
                 void main() {
                     // compute here for use in fragment shader
@@ -104,7 +119,7 @@ class ShaderRegistry(object):
                     gl_Position = ftransform();
                 }               
                                 """,
-                                """
+            """
                                  varying vec3 normal;
                 void main() {
                     vec4 color = gl_Color;
@@ -114,10 +129,11 @@ class ShaderRegistry(object):
                     color.z = color.z + s * (1.0-color.z);
                     gl_FragColor = color;
                 }  
-                                """),
-
-        "heightColor": ShaderProgram("heightColor",
-                                     """
+                                """,
+        ),
+        "heightColor": ShaderProgram(
+            "heightColor",
+            """
                                       varying vec4 pos;
                        void main() {
                            gl_FrontColor = gl_Color;
@@ -126,7 +142,7 @@ class ShaderRegistry(object):
                            gl_Position = ftransform();
                        }
                                      """,
-                                     """
+            """
                                       uniform float colorMap[9];
                        varying vec4 pos;
                        //out vec4 gl_FragColor;   // only needed for later glsl versions
@@ -151,13 +167,12 @@ class ShaderRegistry(object):
                            color.w = 1.0;
                            gl_FragColor = color;
                        }
-                                     """, uniforms={'colorMap': [
-                1, 1, 1,
-                1, 0.5, 1,
-                1, 0, 1]}),
-
-        "edge_highlight": ShaderProgram("edge_highlight",
-                                        """
+                                     """,
+            uniforms={"colorMap": [1, 1, 1, 1, 0.5, 1, 1, 0, 1]},
+        ),
+        "edge_highlight": ShaderProgram(
+            "edge_highlight",
+            """
            varying vec3 normal;
                         void main() {
                             // compute here for use in fragment shader
@@ -167,7 +182,7 @@ class ShaderRegistry(object):
                             gl_Position = ftransform();
                         }
                                         """,
-                                        """
+            """
           varying vec3 normal;
                         void main() {
                             vec4 color = gl_Color;
@@ -177,10 +192,11 @@ class ShaderRegistry(object):
                             color.z = color.z + s * (1.0-color.z);
                             gl_FragColor = color;
                         }
-                                        """),
-
-        "directional_lighting": ShaderProgram("directional_lighting",
-                                              """
+                                        """,
+        ),
+        "directional_lighting": ShaderProgram(
+            "directional_lighting",
+            """
                                              void main()
              {
                  vec3 normal, lightDir, viewVector, halfVector;
@@ -225,12 +241,13 @@ class ShaderRegistry(object):
                  
              }  
                                               """,
-                                              """
+            """
                                                void main()
              {
                  gl_FragColor = gl_Color;
              }
-                                              """),
+                                              """,
+        ),
     }
 
     def __init__(self):

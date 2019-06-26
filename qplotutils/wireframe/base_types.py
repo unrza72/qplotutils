@@ -22,7 +22,6 @@ _log = logging.getLogger(__name__)
 
 
 class Vector3d(np.ndarray):
-
     @classmethod
     def fromiter(cls, v):
         return Vector3d(v[0], v[1], v[2])

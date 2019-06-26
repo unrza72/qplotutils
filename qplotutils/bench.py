@@ -10,11 +10,45 @@ import pickle
 import uuid
 
 import math
-from qtpy.QtCore import Qt, QPointF, QRectF, QRect, Signal, QPoint, QLine, QMargins, Property, QMimeData, QByteArray
-from qtpy.QtGui import QPen, QBrush, QColor, QPainter, QPainterPath, QTransform, QPixmap, QDrag
-from qtpy.QtWidgets import QWidget, QStyleOption, QHBoxLayout, QStyle, QVBoxLayout, QSplitter, QStackedLayout, \
-    QPushButton, QSizePolicy, QLabel, QMenu, QDialog, \
-    QAction, QApplication
+from qtpy.QtCore import (
+    Qt,
+    QPointF,
+    QRectF,
+    QRect,
+    Signal,
+    QPoint,
+    QLine,
+    QMargins,
+    Property,
+    QMimeData,
+    QByteArray,
+)
+from qtpy.QtGui import (
+    QPen,
+    QBrush,
+    QColor,
+    QPainter,
+    QPainterPath,
+    QTransform,
+    QPixmap,
+    QDrag,
+)
+from qtpy.QtWidgets import (
+    QWidget,
+    QStyleOption,
+    QHBoxLayout,
+    QStyle,
+    QVBoxLayout,
+    QSplitter,
+    QStackedLayout,
+    QPushButton,
+    QSizePolicy,
+    QLabel,
+    QMenu,
+    QDialog,
+    QAction,
+    QApplication,
+)
 
 from . import LOG_LEVEL, MIME_TYPE, CONFIG
 from .ui.dock_properties import Ui_DialogDockProperties
@@ -95,7 +129,9 @@ class BenchItem(QWidget, object):
             painter.drawText(QPointF(5, 12), str(self))
 
     def __repr__(self):
-        return "<{}.{}: uid='{}'>".format(self.__module__, self.__class__.__name__, self.uid)
+        return "<{}.{}: uid='{}'>".format(
+            self.__module__, self.__class__.__name__, self.uid
+        )
 
     def __del__(self):
         if CONFIG.debug_layout:
@@ -124,6 +160,7 @@ class BenchItem(QWidget, object):
 
 class Placement(object):
     """ Enum of the available Placement options for docks. """
+
     LEFT, TOP, RIGHT, BOTTOM, TAB = ["Left", "Top", "Right", "Bottom", "Tab"]
 
 
@@ -182,8 +219,10 @@ class Bench(QWidget):
             if placement in [Placement.TAB, None]:
                 raise BenchException("Cannot add tab without reference")
 
-            if (self.root_container.orientation == self.__widgetOrientation(placement) or
-                    len(self.root_container.flatDockList) == 0):
+            if (
+                self.root_container.orientation == self.__widgetOrientation(placement)
+                or len(self.root_container.flatDockList) == 0
+            ):
                 # root container orientation is as needed to add the new dock to the
                 # outer border of the bench.
                 # Get the index from the requested placement and add the dock to
@@ -195,7 +234,9 @@ class Bench(QWidget):
                 tab_container.closing.connect(self.root_container.closeChild)
                 tab_container.addItem(-1, dock)
 
-                self.root_container.addItem(self.__widgetIndex(placement), tab_container)
+                self.root_container.addItem(
+                    self.__widgetIndex(placement), tab_container
+                )
 
             else:
                 # Need to replace root container, orientation is different from
@@ -205,7 +246,9 @@ class Bench(QWidget):
                 temp_container = self.root_container
 
                 # Add a new one
-                self.root_container = SplitterContainer(self, None, self.__widgetOrientation(placement))
+                self.root_container = SplitterContainer(
+                    self, None, self.__widgetOrientation(placement)
+                )
                 self.root_container.contentModified.connect(self.__contentModified)
                 self.layout.addWidget(self.root_container)
 
@@ -216,7 +259,9 @@ class Bench(QWidget):
                 tab_container.contentModified.connect(self.__contentModified)
                 tab_container.closing.connect(self.root_container.closeChild)
                 tab_container.addItem(-1, dock)
-                self.root_container.addItem(self.__widgetIndex(placement), tab_container)
+                self.root_container.addItem(
+                    self.__widgetIndex(placement), tab_container
+                )
 
         elif ref is not None and placement == Placement.TAB:
             # Adding tab to existing container, super simple
@@ -233,7 +278,9 @@ class Bench(QWidget):
             tab_container.setParent(None)
 
             # Add new splitter, and add it in the location of the previous tab container
-            container = SplitterContainer(self, parent_container, self.__widgetOrientation(placement))
+            container = SplitterContainer(
+                self, parent_container, self.__widgetOrientation(placement)
+            )
             container.contentModified.connect(self.__contentModified)
             parent_container.addItem(c_index, container)
 
@@ -311,7 +358,7 @@ class Bench(QWidget):
         layout = self.root_container.saveLayout()
 
         if filename is not None:
-            with open(filename, 'w') as fh:
+            with open(filename, "w") as fh:
                 json.dump(layout, fh, indent=4)
 
         return layout
@@ -325,7 +372,7 @@ class Bench(QWidget):
         self.root_container.setParent(None)
         self.root_container.close()
 
-        with open(filename, 'r') as fh:
+        with open(filename, "r") as fh:
             layout = json.load(fh)
 
             module_str = layout["module"]
@@ -458,7 +505,6 @@ class AbstractContainer(BenchItem):
 
 
 class SplitterContainer(AbstractContainer):
-
     def __init__(self, bench, parent_container, orientation=Qt.Horizontal):
         """ A container which layouts all child items on a splitter layout with the given orientation.
 
@@ -590,7 +636,7 @@ class SplitterContainer(AbstractContainer):
 
             child_obj.loadLayout(child)
 
-        self.orientation = layout['orientation']
+        self.orientation = layout["orientation"]
         self._splitter.setSizes(layout["item_sizes"])
 
 
@@ -673,7 +719,9 @@ class TabContainer(AbstractContainer):
 
     @property
     def flatDockList(self):
-        return [self._dockstack.itemAt(k).widget() for k in range(self._dockstack.count())]
+        return [
+            self._dockstack.itemAt(k).widget() for k in range(self._dockstack.count())
+        ]
 
     @property
     def docks(self):
@@ -739,8 +787,8 @@ class TabContainer(AbstractContainer):
             rect = QRect(pos.x(), pos.y(), w.width(), w.height())
             self.overlay.setGeometry(rect)
 
-            xc = pos.x() + w.width() / 2.
-            yc = pos.y() + w.height() / 2.
+            xc = pos.x() + w.width() / 2.0
+            yc = pos.y() + w.height() / 2.0
 
             self.refDropRegions = {
                 TabContainer.Point(xc - 34, yc): Placement.LEFT,
@@ -887,8 +935,8 @@ class DropOverlay(QWidget):
             painter.drawText(QPointF(5, 12), str(self))
 
         # Relative drop cross and icons
-        dock_center_x = self.width() / 2.
-        dock_center_y = self.height() / 2.
+        dock_center_x = self.width() / 2.0
+        dock_center_y = self.height() / 2.0
         d_transform = QTransform()
         transform = d_transform.fromTranslate(dock_center_x, dock_center_y)
         painter.setTransform(transform)
@@ -1063,7 +1111,7 @@ class DropOverlay(QWidget):
             Placement.RIGHT: QLine(0, -5, 0, 9),
             Placement.TOP: QLine(-9, 2, 9, 2),
             Placement.BOTTOM: QLine(-9, 2, 9, 2),
-            Placement.TAB: None
+            Placement.TAB: None,
         }
 
         l = splitter_line[placement]
@@ -1113,7 +1161,6 @@ class DropOverlay(QWidget):
 
 
 class TabHeader(QWidget):
-
     def __init__(self):
         super(TabHeader, self).__init__()  # QWidget.__init__(self)
 
@@ -1168,7 +1215,9 @@ class Tab(QWidget):
         size_policy_1 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         size_policy_1.setHorizontalStretch(0)
         size_policy_1.setVerticalStretch(0)
-        size_policy_1.setHeightForWidth(self.titleLabel.sizePolicy().hasHeightForWidth())
+        size_policy_1.setHeightForWidth(
+            self.titleLabel.sizePolicy().hasHeightForWidth()
+        )
         self.titleLabel.setSizePolicy(size_policy_1)
         self.layout.addWidget(self.titleLabel)
 
@@ -1176,7 +1225,9 @@ class Tab(QWidget):
         size_policy_2 = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
         size_policy_2.setHorizontalStretch(0)
         size_policy_2.setVerticalStretch(0)
-        size_policy_2.setHeightForWidth(self.close_button.sizePolicy().hasHeightForWidth())
+        size_policy_2.setHeightForWidth(
+            self.close_button.sizePolicy().hasHeightForWidth()
+        )
         self.close_button.setSizePolicy(size_policy_2)
         self.layout.addWidget(self.close_button)
 
@@ -1304,8 +1355,11 @@ class Tab(QWidget):
             self._clickPos = event.pos()
 
     def mouseMoveEvent(self, event):
-        if (self._clickPos is None or
-                (event.pos() - self._clickPos).manhattanLength() < QApplication.startDragDistance()):
+        if (
+            self._clickPos is None
+            or (event.pos() - self._clickPos).manhattanLength()
+            < QApplication.startDragDistance()
+        ):
             return
 
         # _log.debug("Drag move")
@@ -1336,4 +1390,5 @@ class Tab(QWidget):
 
 class BenchException(Exception):
     """ Wrapper for all exceptions. """
+
     pass

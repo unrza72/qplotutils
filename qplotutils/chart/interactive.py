@@ -39,7 +39,9 @@ class InteractiveVerticalLine(ChartWidgetItem):
 
     def __init__(self, parent=None):
         super(InteractiveVerticalLine, self).__init__(parent)
-        self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemSendsGeometryChanges)
+        self.setFlags(
+            QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemSendsGeometryChanges
+        )
         self.chartItemFlags = ChartItemFlags.FLAG_NO_AUTO_RANGE
         self.setZValue(1e6)
 
@@ -90,7 +92,9 @@ class InteractiveVerticalLine(ChartWidgetItem):
         p.setPen(self._pen)
         p.setBrush(self._brush)
 
-        p.drawLine(QLineF(QPointF(0, self.b_rect.bottom()), QPointF(0, self.b_rect.top())))
+        p.drawLine(
+            QLineF(QPointF(0, self.b_rect.bottom()), QPointF(0, self.b_rect.top()))
+        )
 
         p.setPen(Qt.transparent)
         p.drawRect(self.b_rect)

@@ -10,7 +10,12 @@ import logging
 import numpy as np
 from qtpy.QtCore import Qt, QPointF, QRectF, QLineF, QSizeF
 from qtpy.QtGui import QPen, QBrush, QColor, QPainter, QPainterPath, QFont, QStaticText
-from qtpy.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem, QGraphicsItemGroup, QGraphicsWidget
+from qtpy.QtWidgets import (
+    QGraphicsItem,
+    QStyleOptionGraphicsItem,
+    QGraphicsItemGroup,
+    QGraphicsWidget,
+)
 
 from . import LOG_LEVEL
 from .utils import makePen
@@ -176,7 +181,6 @@ class TextItem(ChartItem):
 
 
 class WireItem(ChartItem):
-
     def __init__(self, parent=None):
         super(WireItem, self).__init__(parent)
 
@@ -306,8 +310,10 @@ class LineChartItem(ChartItem):
 
         self._color = color
 
-        self._bRect = QRectF(QPointF(np.min(self._xData), np.min(self._yData)),
-                             QPointF(np.max(self._xData), np.max(self._yData)))
+        self._bRect = QRectF(
+            QPointF(np.min(self._xData), np.min(self._yData)),
+            QPointF(np.max(self._xData), np.max(self._yData)),
+        )
         # _log.debug("Plot BB: {}".format(self._bRect))
         #
         # # TODO: Public access
@@ -361,11 +367,12 @@ class LineChartItem(ChartItem):
         _log.debug("Visible range changed to: {}".format(rect))
         self._visible_range = rect
 
-        visible_indices = np.where(np.logical_and(
-            np.logical_and(self._xData >= rect.left(),
-                           self._xData <= rect.right()),
-            np.logical_and(self._yData >= rect.top(),
-                           self._yData <= rect.bottom())))[0]
+        visible_indices = np.where(
+            np.logical_and(
+                np.logical_and(self._xData >= rect.left(), self._xData <= rect.right()),
+                np.logical_and(self._yData >= rect.top(), self._yData <= rect.bottom()),
+            )
+        )[0]
 
         # _log.debug("Visible plot points idx: {}".format(visible_indices))
 
@@ -423,71 +430,79 @@ class ColorSet(object):
     @classmethod
     def Default(cls):
         """ Default set: 9 colors should be printer friendly """
-        return itertools.cycle([
-            QColor(228, 26, 28),
-            QColor(55, 126, 184),
-            QColor(77, 175, 74),
-            QColor(152, 78, 163),
-            QColor(255, 127, 0),
-            QColor(255, 255, 51),
-            QColor(166, 86, 40),
-            QColor(247, 129, 191),
-            QColor(153, 153, 153),
-        ])
+        return itertools.cycle(
+            [
+                QColor(228, 26, 28),
+                QColor(55, 126, 184),
+                QColor(77, 175, 74),
+                QColor(152, 78, 163),
+                QColor(255, 127, 0),
+                QColor(255, 255, 51),
+                QColor(166, 86, 40),
+                QColor(247, 129, 191),
+                QColor(153, 153, 153),
+            ]
+        )
 
     @classmethod
     def QualitativePaired(cls):
         """ Set with 12 colors """
-        return itertools.cycle([
-            QColor(166, 206, 227),
-            QColor(31, 120, 180),
-            QColor(178, 223, 138),
-            QColor(51, 160, 44),
-            QColor(251, 154, 153),
-            QColor(227, 26, 28),
-            QColor(253, 191, 111),
-            QColor(255, 127, 0),
-            QColor(202, 178, 214),
-            QColor(106, 61, 154),
-            QColor(255, 255, 153),
-            QColor(177, 89, 40),
-        ])
+        return itertools.cycle(
+            [
+                QColor(166, 206, 227),
+                QColor(31, 120, 180),
+                QColor(178, 223, 138),
+                QColor(51, 160, 44),
+                QColor(251, 154, 153),
+                QColor(227, 26, 28),
+                QColor(253, 191, 111),
+                QColor(255, 127, 0),
+                QColor(202, 178, 214),
+                QColor(106, 61, 154),
+                QColor(255, 255, 153),
+                QColor(177, 89, 40),
+            ]
+        )
 
     @classmethod
     def Qualitative(cls):
         """ Another set with 12 colors """
-        return itertools.cycle([
-            QColor(166, 206, 227),
-            QColor(31, 120, 180),
-            QColor(178, 223, 138),
-            QColor(51, 160, 44),
-            QColor(251, 154, 153),
-            QColor(227, 26, 28),
-            QColor(253, 191, 111),
-            QColor(255, 127, 0),
-            QColor(202, 178, 214),
-            QColor(106, 61, 154),
-            QColor(255, 255, 153),
-            QColor(177, 89, 40),
-        ])
+        return itertools.cycle(
+            [
+                QColor(166, 206, 227),
+                QColor(31, 120, 180),
+                QColor(178, 223, 138),
+                QColor(51, 160, 44),
+                QColor(251, 154, 153),
+                QColor(227, 26, 28),
+                QColor(253, 191, 111),
+                QColor(255, 127, 0),
+                QColor(202, 178, 214),
+                QColor(106, 61, 154),
+                QColor(255, 255, 153),
+                QColor(177, 89, 40),
+            ]
+        )
 
     @classmethod
     def Stupid(cls):
         """ First try not the best, since sequential. """
-        return itertools.cycle([
-            QColor("#a6cee3"),
-            QColor("#1f78b4"),
-            QColor("#b2df8a"),
-            QColor("#33a02c"),
-            QColor("#fb9a99"),
-            QColor("#e31a1c"),
-            QColor("#fdbf6f"),
-            QColor("#ff7f00"),
-            QColor("#cab2d6"),
-            QColor("#6a3d9a"),
-            QColor("#ffff99"),
-            QColor("#b15928"),
-        ])
+        return itertools.cycle(
+            [
+                QColor("#a6cee3"),
+                QColor("#1f78b4"),
+                QColor("#b2df8a"),
+                QColor("#33a02c"),
+                QColor("#fb9a99"),
+                QColor("#e31a1c"),
+                QColor("#fdbf6f"),
+                QColor("#ff7f00"),
+                QColor("#cab2d6"),
+                QColor("#6a3d9a"),
+                QColor("#ffff99"),
+                QColor("#b15928"),
+            ]
+        )
 
 
 class HLine(ChartItem):
@@ -508,7 +523,7 @@ class HLine(ChartItem):
         self._brush = QBrush(QColor(255, 255, 255, 0))
 
         finfo = np.finfo(np.float32)
-        self.b_rect = QRectF(finfo.min / 2., 0, finfo.max, 0)
+        self.b_rect = QRectF(finfo.min / 2.0, 0, finfo.max, 0)
 
     @property
     def label(self):
@@ -541,7 +556,9 @@ class HLine(ChartItem):
         # p.setRenderHint(QPainter.N)
         p.setPen(self._pen)
         p.setBrush(self._brush)
-        p.drawLine(QLineF(QPointF(self.b_rect.left(), 0), QPointF(self.b_rect.right(), 0)))
+        p.drawLine(
+            QLineF(QPointF(self.b_rect.left(), 0), QPointF(self.b_rect.right(), 0))
+        )
         super(HLine, self).paint(p, o, widget)
 
     def __del__(self):
@@ -566,7 +583,7 @@ class VLine(ChartItem):
         self._brush = QBrush(QColor(255, 255, 255, 0))
 
         finfo = np.finfo(np.float32)
-        self.b_rect = QRectF(0, finfo.min / 2., 0, finfo.max)
+        self.b_rect = QRectF(0, finfo.min / 2.0, 0, finfo.max)
 
     @property
     def label(self):
@@ -600,7 +617,9 @@ class VLine(ChartItem):
         p.setPen(self._pen)
         p.setBrush(self._brush)
 
-        p.drawLine(QLineF(QPointF(0, self.b_rect.bottom()), QPointF(0, self.b_rect.top())))
+        p.drawLine(
+            QLineF(QPointF(0, self.b_rect.bottom()), QPointF(0, self.b_rect.top()))
+        )
 
         super(VLine, self).paint(p, o, widget)
 

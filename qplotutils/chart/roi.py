@@ -69,8 +69,11 @@ class RectangularRegion(ChartItem):
         """
         super(RectangularRegion, self).__init__(parent)
 
-        self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIsFocusable
-                      | QGraphicsItem.ItemSendsGeometryChanges)
+        self.setFlags(
+            QGraphicsItem.ItemIsMovable
+            | QGraphicsItem.ItemIsFocusable
+            | QGraphicsItem.ItemSendsGeometryChanges
+        )
 
         # self.setHandlesChildEvents(False)
         # self.setFiltersChildEvents(True)
@@ -157,9 +160,9 @@ class RectangularRegion(ChartItem):
         p.drawPath(self._path)
 
         p.setBrush(Qt.transparent)
-        p.drawLine(QLineF(-.5, 0, .5, 0))
-        p.drawLine(QLineF(0, -.5, 0, .5))
-        p.drawEllipse(QPointF(0, 0), .25, .25)
+        p.drawLine(QLineF(-0.5, 0, 0.5, 0))
+        p.drawLine(QLineF(0, -0.5, 0, 0.5))
+        p.drawEllipse(QPointF(0, 0), 0.25, 0.25)
 
     def mousePressEvent(self, e):
         # !!!Fucking leason learned, call super to avoid weird jumps in position!!!
@@ -198,7 +201,7 @@ class RectangularRegion(ChartItem):
 
         :param degree: Rotation in degrees
         """
-        self.state.rotation = (degree % 360) * np.pi / 180.
+        self.state.rotation = (degree % 360) * np.pi / 180.0
 
         for h in self.handles:
             h.updatePosition()
@@ -218,8 +221,9 @@ class Vec2(object):
         :param a: rotation in radians
         :return: rotated point as Vec2
         """
-        rotation_matrix = np.array([[math.cos(a), -math.sin(a)],
-                                    [math.sin(a), math.cos(a)], ])
+        rotation_matrix = np.array(
+            [[math.cos(a), -math.sin(a)], [math.sin(a), math.cos(a)]]
+        )
 
         result = Vec2()
         result._v = np.dot(rotation_matrix, self._v)
@@ -232,7 +236,9 @@ class Vec2(object):
         :return: rotation in radians with directionality
         """
         try:
-            v = np.dot(self.array, other.array) / (np.linalg.norm(self.array) * np.linalg.norm(other.array))
+            v = np.dot(self.array, other.array) / (
+                np.linalg.norm(self.array) * np.linalg.norm(other.array)
+            )
             if not -1 <= v <= 1:
                 return 0
 
@@ -391,8 +397,13 @@ class RoiHandle(ChartItem):
         """
         super(RoiHandle, self).__init__()
         # self.setParentItem(parent)
-        self.setFlags(QGraphicsItem.ItemIsMovable | QGraphicsItem.ItemIsFocusable | QGraphicsItem.ItemIsSelectable
-                      | QGraphicsItem.ItemIgnoresTransformations | QGraphicsItem.ItemSendsGeometryChanges)
+        self.setFlags(
+            QGraphicsItem.ItemIsMovable
+            | QGraphicsItem.ItemIsFocusable
+            | QGraphicsItem.ItemIsSelectable
+            | QGraphicsItem.ItemIgnoresTransformations
+            | QGraphicsItem.ItemSendsGeometryChanges
+        )
 
         self.setAcceptHoverEvents(True)
 
@@ -455,11 +466,11 @@ class ResizeHandle(RoiHandle):
         # self.updatePosition()
 
     def boundingRect(self):
-        return QRectF(-self._size / 2, -self._size / 2., self._size, self._size)
+        return QRectF(-self._size / 2, -self._size / 2.0, self._size, self._size)
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
         super(ResizeHandle, self).paint(p, o, widget)
-        p.drawRect(QRectF(-self._size / 2, -self._size / 2., self._size, self._size))
+        p.drawRect(QRectF(-self._size / 2, -self._size / 2.0, self._size, self._size))
 
     def mousePressEvent(self, e):
         super(ResizeHandle, self).mousePressEvent(e)
@@ -524,12 +535,16 @@ class ResizeHandle(RoiHandle):
 
 
 class RotateHandle(RoiHandle):
-
     def __init__(self, position=HandlePosition.TOP | HandlePosition.RIGHT):
         super(RotateHandle, self).__init__(position)
         self.__in_rotate = False
         self.handle_radius = 6
-        self.__r = QRectF(-self.handle_radius, -self.handle_radius, 2 * self.handle_radius, 2 * self.handle_radius)
+        self.__r = QRectF(
+            -self.handle_radius,
+            -self.handle_radius,
+            2 * self.handle_radius,
+            2 * self.handle_radius,
+        )
         self.last_pos = Vec2(0, 0)
         # self.updatePosition()
 

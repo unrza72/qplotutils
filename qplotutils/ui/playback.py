@@ -8,6 +8,7 @@
 
 from qtpy import QtCore, QtGui, QtWidgets
 
+
 class Ui_PlaybackControl(object):
     def setupUi(self, PlaybackControl):
         PlaybackControl.setObjectName("PlaybackControl")
@@ -18,7 +19,9 @@ class Ui_PlaybackControl(object):
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.button_back = QtWidgets.QPushButton(PlaybackControl)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.button_back.sizePolicy().hasHeightForWidth())
@@ -26,30 +29,44 @@ class Ui_PlaybackControl(object):
         self.button_back.setMaximumSize(QtCore.QSize(32, 32))
         self.button_back.setText("")
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/player/icons/media-seek-backward.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(
+            QtGui.QPixmap(":/player/icons/media-seek-backward.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.button_back.setIcon(icon)
         self.button_back.setIconSize(QtCore.QSize(32, 32))
         self.button_back.setFlat(True)
         self.button_back.setObjectName("button_back")
         self.horizontalLayout.addWidget(self.button_back)
         self.button_play_pause = QtWidgets.QPushButton(PlaybackControl)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.button_play_pause.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.button_play_pause.sizePolicy().hasHeightForWidth()
+        )
         self.button_play_pause.setSizePolicy(sizePolicy)
         self.button_play_pause.setMinimumSize(QtCore.QSize(36, 32))
         self.button_play_pause.setMaximumSize(QtCore.QSize(36, 32))
         self.button_play_pause.setText("")
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(":/player/icons/media-playback-start.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(
+            QtGui.QPixmap(":/player/icons/media-playback-start.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.button_play_pause.setIcon(icon1)
         self.button_play_pause.setIconSize(QtCore.QSize(24, 24))
         self.button_play_pause.setFlat(True)
         self.button_play_pause.setObjectName("button_play_pause")
         self.horizontalLayout.addWidget(self.button_play_pause)
         self.button_next = QtWidgets.QPushButton(PlaybackControl)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.button_next.sizePolicy().hasHeightForWidth())
@@ -57,7 +74,11 @@ class Ui_PlaybackControl(object):
         self.button_next.setMaximumSize(QtCore.QSize(32, 32))
         self.button_next.setText("")
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(":/player/icons/media-seek-forward.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(
+            QtGui.QPixmap(":/player/icons/media-seek-forward.svg"),
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.Off,
+        )
         self.button_next.setIcon(icon2)
         self.button_next.setIconSize(QtCore.QSize(32, 32))
         self.button_next.setFlat(True)
@@ -72,10 +93,14 @@ class Ui_PlaybackControl(object):
         self.slider_index.setObjectName("slider_index")
         self.horizontalLayout_2.addWidget(self.slider_index)
         self.edit_timestamp = QtWidgets.QLineEdit(PlaybackControl)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.edit_timestamp.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.edit_timestamp.sizePolicy().hasHeightForWidth()
+        )
         self.edit_timestamp.setSizePolicy(sizePolicy)
         self.edit_timestamp.setMaximumSize(QtCore.QSize(90, 16777215))
         self.edit_timestamp.setObjectName("edit_timestamp")
@@ -87,5 +112,6 @@ class Ui_PlaybackControl(object):
     def retranslateUi(self, PlaybackControl):
         _translate = QtCore.QCoreApplication.translate
         PlaybackControl.setWindowTitle(_translate("PlaybackControl", "Form"))
+
 
 from . import resources_rc

@@ -2,13 +2,46 @@ import logging
 import logging
 
 import numpy as np
-from OpenGL.GL import GL_DEPTH_TEST, glEnable, GL_LEQUAL, \
-    glLight, GL_LIGHT0, GL_POSITION, glMaterialfv, GL_SPECULAR, GL_FRONT, GL_SHININESS, glDepthFunc, \
-    glMaterialf, glViewport, glMatrixMode, GL_PROJECTION, glLoadIdentity, glMultMatrixf, GL_MODELVIEW, \
-    glSelectBuffer, glRenderMode, GL_SELECT, glInitNames, glPushName, GL_RENDER, glClearColor, \
-    glClear, GL_DEPTH_BUFFER_BIT, GL_COLOR_BUFFER_BIT, glPushAttrib, GL_ALL_ATTRIB_BITS, glLoadName, \
-    glGetString, GL_VERSION, glPopAttrib, glPushMatrix, glPopMatrix
+from OpenGL.GL import (
+    GL_DEPTH_TEST,
+    glEnable,
+    GL_LEQUAL,
+    glLight,
+    GL_LIGHT0,
+    GL_POSITION,
+    glMaterialfv,
+    GL_SPECULAR,
+    GL_FRONT,
+    GL_SHININESS,
+    glDepthFunc,
+    glMaterialf,
+    glViewport,
+    glMatrixMode,
+    GL_PROJECTION,
+    glLoadIdentity,
+    glMultMatrixf,
+    GL_MODELVIEW,
+    glSelectBuffer,
+    glRenderMode,
+    GL_SELECT,
+    glInitNames,
+    glPushName,
+    GL_RENDER,
+    glClearColor,
+    glClear,
+    GL_DEPTH_BUFFER_BIT,
+    GL_COLOR_BUFFER_BIT,
+    glPushAttrib,
+    GL_ALL_ATTRIB_BITS,
+    glLoadName,
+    glGetString,
+    GL_VERSION,
+    glPopAttrib,
+    glPushMatrix,
+    glPopMatrix,
+)
 from qtpy.QtCore import Signal, Qt, QObject, QTime
+
 # from qtpy.QtWidgets import QVector3D
 from qtpy.QtGui import QMatrix4x4, QVector3D
 from qtpy.QtOpenGL import QGLWidget
@@ -31,7 +64,7 @@ class ViewProperties(QObject):
         self._elevation_angle = 45
 
         self.viewport = None
-        self.background_color = (37.3 / 100., 40 / 100., 45.9 / 100., 0)  # (0,0,0,0)
+        self.background_color = (37.3 / 100.0, 40 / 100.0, 45.9 / 100.0, 0)  # (0,0,0,0)
 
     @property
     def center(self):
@@ -114,7 +147,7 @@ class ChartView3d(QGLWidget):
 
     def addItem(self, item):
         self.items.append(item)
-        if hasattr(item, 'initializeGL'):
+        if hasattr(item, "initializeGL"):
             self.makeCurrent()
             item.initializeGL()
 
@@ -134,10 +167,10 @@ class ChartView3d(QGLWidget):
         glDepthFunc(GL_LEQUAL)
 
         # lighting
-        light_position = [1., 1., 2., 0.]
+        light_position = [1.0, 1.0, 2.0, 0.0]
         glLight(GL_LIGHT0, GL_POSITION, light_position)
-        glMaterialfv(GL_FRONT, GL_SPECULAR, [1., 1., 1., 1.])
-        glMaterialf(GL_FRONT, GL_SHININESS, 100.)
+        glMaterialfv(GL_FRONT, GL_SPECULAR, [1.0, 1.0, 1.0, 1.0])
+        glMaterialf(GL_FRONT, GL_SHININESS, 100.0)
 
     def getViewport(self):
         vp = self.props.viewport
@@ -168,9 +201,9 @@ class ChartView3d(QGLWidget):
         dist = self.props.distance
         fov = self.props.fov
         nearClip = dist * 0.001
-        farClip = dist * 1000.
+        farClip = dist * 1000.0
 
-        r = nearClip * np.tan(fov * 0.5 * np.pi / 180.)
+        r = nearClip * np.tan(fov * 0.5 * np.pi / 180.0)
         t = r * h / w
 
         # convert screen coordinates (region) to normalized device coordinates
@@ -211,7 +244,12 @@ class ChartView3d(QGLWidget):
         Return a list of the items displayed in the region (x, y, w, h)
         relative to the widget.
         """
-        region = (region[0], self.height() - (region[1] + region[3]), region[2], region[3])
+        region = (
+            region[0],
+            self.height() - (region[1] + region[3]),
+            region[2],
+            region[3],
+        )
 
         # buf = np.zeros(100000, dtype=np.uint)
         buf = glSelectBuffer(100000)
@@ -275,9 +313,12 @@ class ChartView3d(QGLWidget):
                     ver = glGetString(GL_VERSION)
                     if ver is not None:
                         ver = ver.split()[0]
-                        if int(ver.split(b'.')[0]) < 2:
+                        if int(ver.split(b".")[0]) < 2:
                             print(
-                                msg + " The original exception is printed above; however, pyqtgraph requires OpenGL version 2.0 or greater for many of its 3D features and your OpenGL version is %s. Installing updated display drivers may resolve this issue." % ver)
+                                msg
+                                + " The original exception is printed above; however, pyqtgraph requires OpenGL version 2.0 or greater for many of its 3D features and your OpenGL version is %s. Installing updated display drivers may resolve this issue."
+                                % ver
+                            )
                         else:
                             print(msg)
 
@@ -314,13 +355,13 @@ class ChartView3d(QGLWidget):
         """Return current position of camera based on center, dist, elevation, and azimuth"""
         center = self.props.center
         dist = self.props.distance
-        elev = self.props.elevation_angle * np.pi / 180.
-        azim = self.props.azimuth_angle * np.pi / 180.
+        elev = self.props.elevation_angle * np.pi / 180.0
+        azim = self.props.azimuth_angle * np.pi / 180.0
 
         pos = Vector3d(
             center.x + dist * np.cos(elev) * np.cos(azim),
             center.y + dist * np.cos(elev) * np.sin(azim),
-            center.z + dist * np.sin(elev)
+            center.z + dist * np.sin(elev),
         )
 
         return pos
@@ -350,8 +391,9 @@ class ChartView3d(QGLWidget):
             cVec = self.props.center - cPos
             dist = np.linalg.norm(cVec)
 
-            xDist = dist * 2. * np.tan(
-                0.5 * self.props.fov * np.pi / 180.)  ## approx. width of view at distance of center point
+            xDist = (
+                dist * 2.0 * np.tan(0.5 * self.props.fov * np.pi / 180.0)
+            )  ## approx. width of view at distance of center point
             xScale = xDist / self.width()
             # zVec = QVector3D(0, 0, 1)
             # xVec = QVector3D.crossProduct(zVec, cVec).normalized()
@@ -363,7 +405,12 @@ class ChartView3d(QGLWidget):
             yVec = np.cross(xVec, zVec)
             yVec /= np.linalg.norm(yVec)
 
-            self.props.center = self.props.center + xVec * xScale * dx + yVec * xScale * dy + zVec * xScale * dz
+            self.props.center = (
+                self.props.center
+                + xVec * xScale * dx
+                + yVec * xScale * dy
+                + zVec * xScale * dz
+            )
         # self.update()
         self.camera_update()
 
@@ -378,7 +425,7 @@ class ChartView3d(QGLWidget):
             dist = ((pos - cam) ** 2).sum(axis=-1) ** 0.5
         else:
             dist = (pos - cam).length()
-        xDist = dist * 2. * np.tan(0.5 * self.props.fov * np.pi / 180.)
+        xDist = dist * 2.0 * np.tan(0.5 * self.props.fov * np.pi / 180.0)
         return xDist / self.width()
 
     def mousePressEvent(self, ev):
@@ -392,7 +439,7 @@ class ChartView3d(QGLWidget):
             self.orbit(-diff.x(), diff.y())
             # print self.opts['azimuth'], self.opts['elevation']
         elif ev.buttons() == Qt.MidButton:
-            if (ev.modifiers() & Qt.ControlModifier):
+            if ev.modifiers() & Qt.ControlModifier:
                 self.pan(diff.x(), 0, diff.y(), relative=True)
             else:
                 self.pan(-diff.x(), -diff.y(), 0, relative=True)
@@ -402,9 +449,9 @@ class ChartView3d(QGLWidget):
         delta = ev.angleDelta()
 
         if ev.modifiers() & Qt.ControlModifier:
-            self.props.fov *= 0.999 ** (delta.y() / 1.)
+            self.props.fov *= 0.999 ** (delta.y() / 1.0)
         else:
-            self.props.distance *= 0.999 ** (delta.y() / 1.)
+            self.props.distance *= 0.999 ** (delta.y() / 1.0)
 
             # self.cam_ctrl.distance = self.props.distance
             print(self.props.distance)

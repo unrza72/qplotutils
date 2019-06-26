@@ -18,7 +18,7 @@ __status__ = "Development"
 LOG_LEVEL = logging.INFO
 
 #: MIME type for drag and drop of docks.
-MIME_TYPE = 'application/x-dockbench'
+MIME_TYPE = "application/x-dockbench"
 
 
 # DEBUG = False
