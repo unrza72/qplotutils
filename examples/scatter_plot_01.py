@@ -12,10 +12,9 @@ import os
 import random
 import signal
 import sys
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtOpenGL import *
-from qtpy.QtWidgets import *
+from qtpy.QtCore import QTimer
+from qtpy.QtWidgets import QApplication
+
 
 
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))

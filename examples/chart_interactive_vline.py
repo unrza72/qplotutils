@@ -8,10 +8,9 @@ import os
 import signal
 import sys
 import numpy as np
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtOpenGL import *
-from qtpy.QtWidgets import *
+from qtpy.QtCore import QTimer, QObject, Qt
+from qtpy.QtWidgets import QApplication
+
 import logging
 
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))

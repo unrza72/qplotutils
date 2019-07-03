@@ -8,10 +8,7 @@ import os
 import sys
 import numpy as np
 import pandas as pd
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtOpenGL import *
-from qtpy.QtWidgets import *
+
 import logging
 
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
@@ -20,9 +17,6 @@ print(PKG_DIR)
 if PKG_DIR not in sys.path:
     sys.path.append(PKG_DIR)
 
-from qplotutils.chart.interactive import InteractiveVerticalLine, InteractiveChangeEvent
-from qplotutils.chart.view import ChartView
-from qplotutils.chart.items import LineChartItem
 
 
 __author__ = "Philipp Baust"
