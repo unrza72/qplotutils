@@ -1,4 +1,10 @@
-import logging
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Wireframe view widget to display 3D visualizations.
+
+
+"""
 import logging
 
 import numpy as np
@@ -21,12 +27,6 @@ from OpenGL.GL import (
     glLoadIdentity,
     glMultMatrixf,
     GL_MODELVIEW,
-    glSelectBuffer,
-    glRenderMode,
-    GL_SELECT,
-    glInitNames,
-    glPushName,
-    GL_RENDER,
     glClearColor,
     glClear,
     GL_DEPTH_BUFFER_BIT,
@@ -34,18 +34,17 @@ from OpenGL.GL import (
     glPushAttrib,
     GL_ALL_ATTRIB_BITS,
     glLoadName,
-    glGetString,
-    GL_VERSION,
     glPopAttrib,
     glPushMatrix,
     glPopMatrix,
 )
+from OpenGL.error import GLError
 from qtpy.QtCore import Signal, Qt, QObject, QTime
 
-# from qtpy.QtWidgets import QVector3D
 from qtpy.QtGui import QMatrix4x4, QVector3D
 from qtpy.QtOpenGL import QGLWidget
 
+from qplotutils import CONFIG
 from qplotutils.wireframe.base_types import Vector3d
 from qplotutils.wireframe.cam_control import CamControl
 
@@ -57,14 +56,14 @@ class ViewProperties(QObject):
 
     def __init__(self, parent=None):
         super(ViewProperties, self).__init__(parent)
-        self._center = Vector3d(0, 0, 0)  # np.array([0, 0, 0])
+        self._center = Vector3d(0, 0, 0)
         self._distance = 10
         self._fov = 60
         self._azimuth_angle = 60
         self._elevation_angle = 45
 
         self.viewport = None
-        self.background_color = (37.3 / 100.0, 40 / 100.0, 45.9 / 100.0, 0)  # (0,0,0,0)
+        self.background_color = (37.3 / 100.0, 40 / 100.0, 45.9 / 100.0, 0)
 
     @property
     def center(self):
@@ -113,12 +112,7 @@ class ViewProperties(QObject):
 
 
 class ChartView3d(QGLWidget):
-    """
-    Basic widget for displaying 3D data
-        - Rotation/scale controls
-        - Axis/grid display
-        - Export options
-
+    """ Widget to display openGL items.
     """
 
     def __init__(self, parent=None):
@@ -175,14 +169,13 @@ class ChartView3d(QGLWidget):
     def getViewport(self):
         vp = self.props.viewport
         if vp is None:
-            return (0, 0, self.width(), self.height())
+            return 0, 0, self.width(), self.height()
         else:
             return vp
 
     def resizeGL(self, w, h):
-        print("Resize called")
         glViewport(*self.getViewport())
-        self.setProjection()  # region=region)
+        self.setProjection()
         self.setModelview()
 
     def setProjection(self, region=None):
@@ -226,7 +219,7 @@ class ChartView3d(QGLWidget):
         glMultMatrixf(a.transpose())
 
     def viewMatrix(self):
-        tr = QMatrix4x4()  # TODO: In numpy
+        tr = QMatrix4x4()
         ntr = np.eye(4, dtype=np.float)
 
         tr.translate(0.0, 0.0, -self.props.distance)
@@ -239,33 +232,35 @@ class ChartView3d(QGLWidget):
         tr.translate(-center[0], -center[1], -center[2])
         return tr
 
-    def itemsAt(self, region=None):
-        """
-        Return a list of the items displayed in the region (x, y, w, h)
-        relative to the widget.
-        """
-        region = (
-            region[0],
-            self.height() - (region[1] + region[3]),
-            region[2],
-            region[3],
-        )
-
-        # buf = np.zeros(100000, dtype=np.uint)
-        buf = glSelectBuffer(100000)
-        try:
-            glRenderMode(GL_SELECT)
-            glInitNames()
-            glPushName(0)
-            self._itemNames = {}
-            self.paintGL(region=region, useItemNames=True)
-
-        finally:
-            hits = glRenderMode(GL_RENDER)
-
-        items = [(h.near, h.names[0]) for h in hits]
-        items.sort(key=lambda i: i[0])
-        return [self._itemNames[i[1]] for i in items]
+    # def itemsAt(self, region=None):
+    #     """
+    #     Return a list of the items displayed in the region (x, y, w, h)
+    #     relative to the widget.
+    #     """
+    #
+    #     #TODO: Check if it works
+    #     region = (
+    #         region[0],
+    #         self.height() - (region[1] + region[3]),
+    #         region[2],
+    #         region[3],
+    #     )
+    #
+    #     # buf = np.zeros(100000, dtype=np.uint)
+    #     # buf = glSelectBuffer(100000)
+    #     try:
+    #         glRenderMode(GL_SELECT)
+    #         glInitNames()
+    #         glPushName(0)
+    #         self._itemNames = {}
+    #         self.paintGL(region=region, useItemNames=True)
+    #
+    #     finally:
+    #         hits = glRenderMode(GL_RENDER)
+    #
+    #     items = [(h.near, h.names[0]) for h in hits]
+    #     items.sort(key=lambda i: i[0])
+    #     return [self._itemNames[i[1]] for i in items]
 
     def paintGL(self, region=None, viewport=None, useItemNames=False):
         """
@@ -277,8 +272,7 @@ class ChartView3d(QGLWidget):
             glViewport(*self.getViewport())
         else:
             glViewport(*viewport)
-        # self.setProjection(region=region)
-        # self.setModelview()
+
         bgcolor = self.props.background_color
         glClearColor(*bgcolor)
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT)
@@ -286,15 +280,22 @@ class ChartView3d(QGLWidget):
 
         self.frame_count += 1
         fps = self.frame_count / (self.frame_time.elapsed() / 1000.0)
-        # print("FPS", fps)
+        if CONFIG.debug:
+            _log.debug("FPS: {}".format(fps))
 
     def drawItemTree(self, item=None, useItemNames=False):
+        """
+
+        :param item:
+        :param useItemNames:
+        :return:
+        """
         if item is None:
             items = [x for x in self.items if x.parentItem() is None]
         else:
             items = item.childItems()
             items.append(item)
-        items.sort(key=lambda a: a.depthValue())
+
         for i in items:
             if not i.visible():
                 continue
@@ -305,23 +306,11 @@ class ChartView3d(QGLWidget):
                         glLoadName(i._id)
                         self._itemNames[i._id] = i
                     i.paint()
-                except Exception as ex:
-                    print(ex)
-                    # from .. import debug
-                    # debug.printExc()
-                    msg = "Error while drawing item %s." % str(item)
-                    ver = glGetString(GL_VERSION)
-                    if ver is not None:
-                        ver = ver.split()[0]
-                        if int(ver.split(b".")[0]) < 2:
-                            print(
-                                msg
-                                + " The original exception is printed above; however, pyqtgraph requires OpenGL version 2.0 or greater for many of its 3D features and your OpenGL version is %s. Installing updated display drivers may resolve this issue."
-                                % ver
-                            )
-                        else:
-                            print(msg)
+                except GLError as ex:
+                    _log.info("Error while drawing items: {}".format(ex))
 
+                    if CONFIG.debug:
+                        raise
                 finally:
                     glPopAttrib()
             else:
@@ -336,9 +325,13 @@ class ChartView3d(QGLWidget):
                     glMatrixMode(GL_MODELVIEW)
                     glPopMatrix()
 
-        # print("Campos: elevation {}; azimuth {}".format(self.props.elevation_angle, self.props.azimuth_angle))
+    def setCameraPosition(self, distance=None, elevation=None, azimuth=None):
+        """ Sets the camera parameters.
 
-    def setCameraPosition(self, pos=None, distance=None, elevation=None, azimuth=None):
+        :param distance: distance to (0,0,0)
+        :param elevation: elevation angle
+        :param azimuth: azimuth angle
+        """
         if distance is not None:
             self.props.distance = distance
         if elevation is not None:
@@ -346,9 +339,6 @@ class ChartView3d(QGLWidget):
         if azimuth is not None:
             self.props.azimuth_angle = azimuth
 
-        # self.setProjection()  # region=region)
-        # self.setModelview()
-        # self.update()
         self.camera_update()
 
     def cameraPosition(self):
@@ -411,7 +401,7 @@ class ChartView3d(QGLWidget):
                 + yVec * xScale * dy
                 + zVec * xScale * dz
             )
-        # self.update()
+
         self.camera_update()
 
     def pixelSize(self, pos):
@@ -429,11 +419,15 @@ class ChartView3d(QGLWidget):
         return xDist / self.width()
 
     def mousePressEvent(self, ev):
-        self.mousePos = ev.pos()
+        self._mousePos = ev.pos()
 
     def mouseMoveEvent(self, ev):
-        diff = ev.pos() - self.mousePos
-        self.mousePos = ev.pos()
+        """ Mouse move event handler
+
+        :param ev:
+        """
+        diff = ev.pos() - self._mousePos
+        self._mousePos = ev.pos()
 
         if ev.buttons() == Qt.LeftButton:
             self.orbit(-diff.x(), diff.y())
@@ -445,7 +439,11 @@ class ChartView3d(QGLWidget):
                 self.pan(-diff.x(), -diff.y(), 0, relative=True)
 
     def wheelEvent(self, ev):
+        """
 
+        :param ev:
+        :return:
+        """
         delta = ev.angleDelta()
 
         if ev.modifiers() & Qt.ControlModifier:
@@ -453,22 +451,20 @@ class ChartView3d(QGLWidget):
         else:
             self.props.distance *= 0.999 ** (delta.y() / 1.0)
 
-            # self.cam_ctrl.distance = self.props.distance
-            print(self.props.distance)
-
         self.camera_update()
 
     def camera_update(self):
-        self.setProjection()  # region=region)
+        """ Applies the updated camera view position and angles.
+        """
+        self.setProjection()
         self.setModelview()
         self.update()
 
-    def keyPressEvent(self, ev):
-        pass
-
     def keyReleaseEvent(self, ev):
-        print(ev.key())
+        """ Overrides key release to plug-in default view shortcuts
 
+        :param ev: Key press event
+        """
         if ev.key() == Qt.Key_1:
             self.setCameraPosition(elevation=90, azimuth=-90)
         elif ev.key() == Qt.Key_2:
@@ -484,44 +480,3 @@ class ChartView3d(QGLWidget):
                 self.cam_ctrl.close()
             else:
                 self.cam_ctrl.show()
-        # if ev.key() in self.noRepeatKeys:
-        #     ev.accept()
-        #     if ev.isAutoRepeat():
-        #         return
-        #     try:
-        #         del self.keysPressed[ev.key()]
-        #     except:
-        #         self.keysPressed = {}
-        #     self.evalKeyState()
-
-    # def evalKeyState(self):
-    #     speed = 2.0
-    #     if len(self.keysPressed) > 0:
-    #         for key in self.keysPressed:
-    #             if key == Qt.Key_Right:
-    #                 self.orbit(azim=-speed, elev=0)
-    #             elif key == Qt.Key_Left:
-    #                 self.orbit(azim=speed, elev=0)
-    #             elif key == Qt.Key_Up:
-    #                 self.orbit(azim=0, elev=-speed)
-    #             elif key == Qt.Key_Down:
-    #                 self.orbit(azim=0, elev=speed)
-    #             elif key == Qt.Key_PageUp:
-    #                 pass
-    #             elif key == Qt.Key_PageDown:
-    #                 pass
-    #             self.keyTimer.start(16)
-    #     else:
-    #         self.keyTimer.stop()
-
-    def checkOpenGLVersion(self, msg):
-        ## Only to be called from within exception handler.
-        ver = glGetString(GL_VERSION).split()[0]
-        # if int(ver.split('.')[0]) < 2:
-        print(ver)
-        #     from .. import debug
-        #     pyqtgraph.debug.printExc()
-        #     raise Exception(
-        #         msg + " The original exception is printed above; however, pyqtgraph requires OpenGL version 2.0 or greater for many of its 3D features and your OpenGL version is %s. Installing updated display drivers may resolve this issue." % ver)
-        # else:
-        #     raise

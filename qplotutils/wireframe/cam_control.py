@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Cam COntorl widget.
+
+"""
 import logging
 
 from qtpy.QtCore import Qt

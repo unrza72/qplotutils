@@ -8,6 +8,15 @@ __TODO__
 import logging
 
 import numpy as np
+from OpenGL.raw.GL.VERSION.GL_1_1 import (
+    GL_DEPTH_TEST,
+    GL_BLEND,
+    GL_ALPHA_TEST,
+    GL_CULL_FACE,
+    GL_SRC_ALPHA,
+    GL_ONE_MINUS_SRC_ALPHA,
+    GL_ONE,
+)
 
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2015 - 2018, Philipp Baust"
@@ -88,3 +97,26 @@ class Vector3d(np.ndarray):
 
     def cross(self, b):
         return self.fromiter(np.cross(self, b))
+
+
+class DefaultGlOptions(object):
+    OPAQUE = {
+        GL_DEPTH_TEST: True,
+        GL_BLEND: False,
+        GL_ALPHA_TEST: False,
+        GL_CULL_FACE: True,
+    }
+    TRANSLUCENT = {
+        GL_DEPTH_TEST: True,
+        GL_BLEND: True,
+        GL_ALPHA_TEST: False,
+        GL_CULL_FACE: True,
+        "glBlendFunc": (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA),
+    }
+    ADDITIVE = {
+        GL_DEPTH_TEST: True,
+        GL_BLEND: True,
+        GL_ALPHA_TEST: False,
+        GL_CULL_FACE: True,
+        "glBlendFunc": (GL_SRC_ALPHA, GL_ONE),
+    }

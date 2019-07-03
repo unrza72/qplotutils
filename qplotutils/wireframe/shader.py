@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Shader programs and infrastructure for wireframe items
+
+
+"""
 import logging
 
 from OpenGL.GL import (
@@ -8,27 +15,36 @@ from OpenGL.GL import (
     GL_FRAGMENT_SHADER,
 )
 
-# from OpenGL.raw.GL.VERSION.GL_2_0 import GL_VERTEX_SHADER, GL_FRAGMENT_SHADER
+from qplotutils import CONFIG
+from qplotutils.wireframe.base_types import DefaultGlOptions
 
 _log = logging.getLogger(__name__)
-
-DEBUG = True
 
 
 class ShaderProgram(object):
     def __init__(
-        self, name=None, vertex_shader_src=None, fragment_shader_src=None, uniforms=None
+        self,
+        name=None,
+        vertexShaderSrc=None,
+        fragmentShaderSrc=None,
+        uniforms=None,
+        glOptions=DefaultGlOptions.OPAQUE,
     ):
         self._name = name
-        self._vertex_shader_src = vertex_shader_src
-        self._fragment_shader_src = fragment_shader_src
+        self._vertex_shader_src = vertexShaderSrc
+        self._fragment_shader_src = fragmentShaderSrc
         self._program = 0
         self.uniformData = {}
+        self.__glOptions = glOptions
 
         ## parse extra options from the shader definition
         if uniforms is not None:
             for k, v in uniforms.items():
                 self.uniformData[k] = v
+
+    @property
+    def glOptions(self):
+        return self.__glOptions
 
     def compile(self):
         try:
@@ -44,7 +60,7 @@ class ShaderProgram(object):
             _log.error("Failed to compile vertex/fragment shader.", ex)
             self._program = 0
 
-            if DEBUG:
+            if CONFIG.debug:
                 raise
 
     @property
