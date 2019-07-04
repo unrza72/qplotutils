@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Shader programs and infrastructure for wireframe items
+Shader programs and infrastructure for wire frame items
 
 
 """
@@ -105,164 +105,160 @@ class ShaderRegistry(object):
         "balloon": ShaderProgram(
             "balloon",
             """
-                                 varying vec3 normal;
-                                 void main() {
-                                    // compute here for use in fragment shader
-                                    normal = normalize(gl_NormalMatrix * gl_Normal);
-                                    gl_FrontColor = gl_Color;
-                                    gl_BackColor = gl_Color;
-                                    gl_Position = ftransform();
-                                 }
-                                 """,
+            varying vec3 normal;
+            void main() {
+                // compute here for use in fragment shader
+                normal = normalize(gl_NormalMatrix * gl_Normal);
+                gl_FrontColor = gl_Color;
+                gl_BackColor = gl_Color;
+                gl_Position = ftransform();
+            }
+            """,
             """
-                                 varying vec3 normal;
-                                 void main() {
-                                    vec4 color = gl_Color;
-                                    color.w = min(color.w + 2.0 * color.w * pow(normal.x*normal.x + normal.y*normal.y, 5.0), 1.0);
-                                    gl_FragColor = color;
-                                 }
-                                 """,
+            varying vec3 normal;
+            void main() {
+                vec4 color = gl_Color;
+                color.w = min(color.w + 2.0 * color.w * pow(normal.x*normal.x + normal.y*normal.y, 5.0), 1.0);
+                gl_FragColor = color;
+            }
+            """,
+            glOptions=DefaultGlOptions.TRANSLUCENT
         ),
         "shaded": ShaderProgram(
             "shaded",
             """
-                     varying vec3 normal;
-                void main() {
-                    // compute here for use in fragment shader
-                    normal = normalize(gl_NormalMatrix * gl_Normal);
-                    gl_FrontColor = gl_Color;
-                    gl_BackColor = gl_Color;
-                    gl_Position = ftransform();
-                }               
-                                """,
+            varying vec3 normal;
+            void main() {
+                // compute here for use in fragment shader
+                normal = normalize(gl_NormalMatrix * gl_Normal);
+                gl_FrontColor = gl_Color;
+                gl_BackColor = gl_Color;
+                gl_Position = ftransform();
+            }               
+            """,
             """
-                                 varying vec3 normal;
-                void main() {
-                    vec4 color = gl_Color;
-                    float s = pow(normal.x*normal.x + normal.y*normal.y, 2.0);
-                    color.x = color.x + s * (1.0-color.x);
-                    color.y = color.y + s * (1.0-color.y);
-                    color.z = color.z + s * (1.0-color.z);
-                    gl_FragColor = color;
-                }  
-                                """,
+            varying vec3 normal;
+            void main() {
+                vec4 color = gl_Color;
+                float s = pow(normal.x*normal.x + normal.y*normal.y, 2.0);
+                color.x = color.x + s * (1.0-color.x);
+                color.y = color.y + s * (1.0-color.y);
+                color.z = color.z + s * (1.0-color.z);
+                gl_FragColor = color;
+            }  
+            """,
         ),
         "heightColor": ShaderProgram(
             "heightColor",
             """
-                                      varying vec4 pos;
-                       void main() {
-                           gl_FrontColor = gl_Color;
-                           gl_BackColor = gl_Color;
-                           pos = gl_Vertex;
-                           gl_Position = ftransform();
-                       }
-                                     """,
+            varying vec4 pos;
+            void main() {
+                gl_FrontColor = gl_Color;
+                gl_BackColor = gl_Color;
+                pos = gl_Vertex;
+                gl_Position = ftransform();
+            }
+            """,
             """
-                                      uniform float colorMap[9];
-                       varying vec4 pos;
-                       //out vec4 gl_FragColor;   // only needed for later glsl versions
-                       //in vec4 gl_Color;
-                       void main() {
-                           vec4 color = gl_Color;
-                           color.x = colorMap[0] * (pos.z + colorMap[1]);
-                           if (colorMap[2] != 1.0)
-                               color.x = pow(color.x, colorMap[2]);
-                           color.x = color.x < 0. ? 0. : (color.x > 1. ? 1. : color.x);
-                           
-                           color.y = colorMap[3] * (pos.z + colorMap[4]);
-                           if (colorMap[5] != 1.0)
-                               color.y = pow(color.y, colorMap[5]);
-                           color.y = color.y < 0. ? 0. : (color.y > 1. ? 1. : color.y);
-                           
-                           color.z = colorMap[6] * (pos.z + colorMap[7]);
-                           if (colorMap[8] != 1.0)
-                               color.z = pow(color.z, colorMap[8]);
-                           color.z = color.z < 0. ? 0. : (color.z > 1. ? 1. : color.z);
-                           
-                           color.w = 1.0;
-                           gl_FragColor = color;
-                       }
-                                     """,
+            uniform float colorMap[9];
+            varying vec4 pos;
+            //out vec4 gl_FragColor;   // only needed for later glsl versions
+            //in vec4 gl_Color;
+            void main() {
+                vec4 color = gl_Color;
+                color.x = colorMap[0] * (pos.z + colorMap[1]);
+                if (colorMap[2] != 1.0)
+                color.x = pow(color.x, colorMap[2]);
+                color.x = color.x < 0. ? 0. : (color.x > 1. ? 1. : color.x);
+                
+                color.y = colorMap[3] * (pos.z + colorMap[4]);
+                if (colorMap[5] != 1.0)
+                color.y = pow(color.y, colorMap[5]);
+                color.y = color.y < 0. ? 0. : (color.y > 1. ? 1. : color.y);
+                
+                color.z = colorMap[6] * (pos.z + colorMap[7]);
+                if (colorMap[8] != 1.0)
+                color.z = pow(color.z, colorMap[8]);
+                color.z = color.z < 0. ? 0. : (color.z > 1. ? 1. : color.z);
+                
+                color.w = 1.0;
+                gl_FragColor = color;
+            }
+            """,
             uniforms={"colorMap": [1, 1, 1, 1, 0.5, 1, 1, 0, 1]},
         ),
         "edge_highlight": ShaderProgram(
             "edge_highlight",
             """
-           varying vec3 normal;
-                        void main() {
-                            // compute here for use in fragment shader
-                            normal = normalize(gl_NormalMatrix * gl_Normal);
-                            gl_FrontColor = gl_Color;
-                            gl_BackColor = gl_Color;
-                            gl_Position = ftransform();
-                        }
-                                        """,
+            varying vec3 normal;
+            void main() {
+                // compute here for use in fragment shader
+                normal = normalize(gl_NormalMatrix * gl_Normal);
+                gl_FrontColor = gl_Color;
+                gl_BackColor = gl_Color;
+                gl_Position = ftransform();
+            }
+            """,
             """
-          varying vec3 normal;
-                        void main() {
-                            vec4 color = gl_Color;
-                            float s = pow(normal.x*normal.x + normal.y*normal.y, 2.0);
-                            color.x = color.x + s * (1.0-color.x);
-                            color.y = color.y + s * (1.0-color.y);
-                            color.z = color.z + s * (1.0-color.z);
-                            gl_FragColor = color;
-                        }
-                                        """,
+            varying vec3 normal;
+            void main() {
+                vec4 color = gl_Color;
+                float s = pow(normal.x*normal.x + normal.y*normal.y, 2.0);
+                color.x = color.x + s * (1.0-color.x);
+                color.y = color.y + s * (1.0-color.y);
+                color.z = color.z + s * (1.0-color.z);
+                gl_FragColor = color;
+            }
+            """,
         ),
         "directional_lighting": ShaderProgram(
             "directional_lighting",
             """
-                                             void main()
-             {
-                 vec3 normal, lightDir, viewVector, halfVector;
-                 vec4 diffuse, ambient, globalAmbient, specular = vec4(0.0);
-                 float NdotL,NdotHV;
-                 
-                 /* first transform the normal into eye space and normalize the result */
-                 normal = normalize(gl_NormalMatrix * gl_Normal);
-                 
-                 /* now normalize the light's direction. Note that according to the
-                 OpenGL specification, the light is stored in eye space. Also since 
-                 we're talking about a directional light, the position field is actually 
-                 direction */
-                 lightDir = normalize(vec3(gl_LightSource[0].position));
-                 
-                 /* compute the cos of the angle between the normal and lights direction. 
-                 The light is directional so the direction is constant for every vertex.
-                 Since these two are normalized the cosine is the dot product. We also 
-                 need to clamp the result to the [0,1] range. */
-                 
-                 NdotL = max(dot(normal, lightDir), 0.0);
-                 
-                 /* Compute the diffuse, ambient and globalAmbient terms */
-                 diffuse = gl_FrontMaterial.diffuse * gl_LightSource[0].diffuse;
-                 ambient = gl_FrontMaterial.ambient * gl_LightSource[0].ambient;
-                 globalAmbient = gl_LightModel.ambient * gl_FrontMaterial.ambient;
-                 
-                 /* compute the specular term if NdotL is  larger than zero */
-                 if (NdotL > 0.0) {
-             
-                     NdotHV = max(dot(normal, normalize(gl_LightSource[0].halfVector.xyz)),0.0);
-                     specular = gl_FrontMaterial.specular * gl_LightSource[0].specular * pow(NdotHV,gl_FrontMaterial.shininess);
-                 }
-                 
-                 gl_FrontColor = globalAmbient + NdotL * diffuse + ambient + specular;
-                 
-                 gl_Position = ftransform();
-                 
-                 
-                 
-                 
-                 
-             }  
-                                              """,
+            void main()
+            {
+                vec3 normal, lightDir, viewVector, halfVector;
+                vec4 diffuse, ambient, globalAmbient, specular = vec4(0.0);
+                float NdotL,NdotHV;
+                
+                /* first transform the normal into eye space and normalize the result */
+                normal = normalize(gl_NormalMatrix * gl_Normal);
+                
+                /* now normalize the light's direction. Note that according to the
+                OpenGL specification, the light is stored in eye space. Also since 
+                we're talking about a directional light, the position field is actually 
+                direction */
+                lightDir = normalize(vec3(gl_LightSource[0].position));
+                
+                /* compute the cos of the angle between the normal and lights direction. 
+                The light is directional so the direction is constant for every vertex.
+                Since these two are normalized the cosine is the dot product. We also 
+                need to clamp the result to the [0,1] range. */
+                
+                NdotL = max(dot(normal, lightDir), 0.0);
+                
+                /* Compute the diffuse, ambient and globalAmbient terms */
+                diffuse = gl_FrontMaterial.diffuse * gl_LightSource[0].diffuse;
+                ambient = gl_FrontMaterial.ambient * gl_LightSource[0].ambient;
+                globalAmbient = gl_LightModel.ambient * gl_FrontMaterial.ambient;
+                
+                /* compute the specular term if NdotL is  larger than zero */
+                if (NdotL > 0.0) {
+                
+                NdotHV = max(dot(normal, normalize(gl_LightSource[0].halfVector.xyz)),0.0);
+                specular = gl_FrontMaterial.specular * gl_LightSource[0].specular * pow(NdotHV,gl_FrontMaterial.shininess);
+                }
+                
+                gl_FrontColor = globalAmbient + NdotL * diffuse + ambient + specular;
+                
+                gl_Position = ftransform();            
+            }  
+            """,
             """
-                                               void main()
-             {
-                 gl_FragColor = gl_Color;
-             }
-                                              """,
+            void main()
+            {
+                gl_FragColor = gl_Color;
+            }
+            """,
         ),
     }
 
