@@ -1,6 +1,6 @@
 """
 qplotutils.chart_tests.roi
----------------------
+--------------------------
 
 Region of interest
 """

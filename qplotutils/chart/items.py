@@ -1,6 +1,6 @@
 """
 qplotutils.chart_tests.items
-----------------------
+----------------------------
 
 Charts and and other items that can be added to view.
 """
