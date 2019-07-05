@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Region of interest
 ------------------
@@ -10,10 +11,9 @@ import logging
 import os
 import signal
 import sys
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtOpenGL import *
-from qtpy.QtWidgets import *
+from qtpy.QtCore import QTimer
+from qtpy.QtWidgets import QApplication
+
 
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
 print(PKG_DIR)
@@ -25,7 +25,7 @@ from qplotutils.chart.view import ChartView
 
 
 __author__ = "Philipp Baust"
-__copyright__ = "Copyright 2015, 2017, Philipp Baust"
+__copyright__ = "Copyright 2019, Philipp Baust"
 __credits__ = []
 __license__ = "MIT"
 __version__ = "0.0.1"

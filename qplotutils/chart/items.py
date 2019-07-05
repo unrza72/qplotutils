@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 qplotutils.chart_tests.items
-----------------------
+----------------------------
 
 Charts and and other items that can be added to view.
 """
@@ -23,7 +25,7 @@ from .. import CONFIG
 
 
 __author__ = "Philipp Baust"
-__copyright__ = "Copyright 2015, 2017, Philipp Baust"
+__copyright__ = "Copyright 2019, Philipp Baust"
 __credits__ = []
 __license__ = "MIT"
 __version__ = "0.0.1"

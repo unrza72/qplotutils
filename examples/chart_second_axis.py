@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Chart with two horizontal axes
 ------------------------------
@@ -8,10 +9,9 @@ import os
 import signal
 import sys
 import numpy as np
-from qtpy.QtCore import *
-from qtpy.QtGui import *
-from qtpy.QtOpenGL import *
-from qtpy.QtWidgets import *
+from qtpy.QtCore import QTimer
+from qtpy.QtWidgets import QApplication
+
 import logging
 
 from qplotutils import CONFIG
@@ -25,7 +25,7 @@ from qplotutils.chart.view import ChartView, SecondaryHorizontalAxis, SecondaryV
 from qplotutils.chart.items import LineChartItem, HLine, VLine
 
 __author__ = "Philipp Baust"
-__copyright__ = "Copyright 2017, Philipp Baust"
+__copyright__ = "Copyright 2019, Philipp Baust"
 __credits__ = []
 __license__ = "MIT"
 __version__ = "0.0.1"

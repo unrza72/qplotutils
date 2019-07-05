@@ -1,17 +1,20 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Items for the wireframe view
+
+
+"""
 import logging
 
 import numpy as np
 from OpenGL import GL
 from OpenGL.GL import (
-    GL_DEPTH_TEST,
     GL_BLEND,
-    GL_ALPHA_TEST,
-    GL_CULL_FACE,
     GL_SRC_ALPHA,
     GL_ONE_MINUS_SRC_ALPHA,
     glEnable,
     glDisable,
-    GL_ONE,
     GL_LINE_SMOOTH,
     GL_POLYGON_SMOOTH,
     GL_LINE_SMOOTH_HINT,
@@ -40,32 +43,20 @@ from OpenGL.GL import (
 from qtpy.QtCore import QObject
 from qtpy.QtGui import QMatrix4x4
 
+from qplotutils.wireframe.base_types import DefaultGlOptions
 from qplotutils.wireframe.shader import ShaderRegistry
 
-GLOptions = {
-    "opaque": {
-        GL_DEPTH_TEST: True,
-        GL_BLEND: False,
-        GL_ALPHA_TEST: False,
-        GL_CULL_FACE: False,
-    },
-    "translucent": {
-        GL_DEPTH_TEST: True,
-        GL_BLEND: True,
-        GL_ALPHA_TEST: False,
-        GL_CULL_FACE: False,
-        "glBlendFunc": (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA),
-    },
-    "additive": {
-        GL_DEPTH_TEST: False,
-        GL_BLEND: True,
-        GL_ALPHA_TEST: False,
-        GL_CULL_FACE: False,
-        "glBlendFunc": (GL_SRC_ALPHA, GL_ONE),
-    },
-}
-
 _log = logging.getLogger(__name__)
+
+__author__ = "Philipp Baust"
+__copyright__ = "Copyright 2019, Philipp Baust"
+__credits__ = []
+__license__ = "MIT"
+__version__ = "0.0.1"
+__maintainer__ = "Philipp Baust"
+__email__ = "philipp.baust@gmail.com"
+__status__ = "Development"
+
 
 DEBUG = True
 
@@ -73,7 +64,9 @@ DEBUG = True
 class GLGraphicsItem(QObject):
     _nextId = 0
 
-    def __init__(self, parentItem=None):
+    def __init__(
+        self, *args, glOptions=DefaultGlOptions.OPAQUE, parentItem=None, **kwargs
+    ):
         super(GLGraphicsItem, self).__init__()
         self._id = GLGraphicsItem._nextId
         GLGraphicsItem._nextId += 1
@@ -84,8 +77,8 @@ class GLGraphicsItem(QObject):
         self.__transform = QMatrix4x4()
         self.__visible = True
         self.setParentItem(parentItem)
-        self.setDepthValue(0)
-        self.__glOpts = {}
+        # self.setDepthValue(0)
+        self.__glOpts = glOptions
 
     def setParentItem(self, item):
         """Set this item's parent in the scenegraph hierarchy."""
@@ -101,39 +94,6 @@ class GLGraphicsItem(QObject):
             self.__parent.view().addItem(self)
 
     def setGLOptions(self, opts):
-        """
-        Set the OpenGL state options to use immediately before drawing this item.
-        (Note that subclasses must call setupGLState before painting for this to work)
-
-        The simplest way to invoke this method is to pass in the name of
-        a predefined set of options (see the GLOptions variable):
-
-        ============= ======================================================
-        opaque        Enables depth testing and disables blending
-        translucent   Enables depth testing and blending
-                      Elements must be drawn sorted back-to-front for
-                      translucency to work correctly.
-        additive      Disables depth testing, enables blending.
-                      Colors are added together, so sorting is not required.
-        ============= ======================================================
-
-        It is also possible to specify any arbitrary settings as a dictionary.
-        This may consist of {'functionName': (args...)} pairs where functionName must
-        be a callable attribute of OpenGL.GL, or {GL_STATE_VAR: bool} pairs
-        which will be interpreted as calls to glEnable or glDisable(GL_STATE_VAR).
-
-        For example::
-
-            {
-                GL_ALPHA_TEST: True,
-                GL_CULL_FACE: False,
-                'glBlendFunc': (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA),
-            }
-
-
-        """
-        if isinstance(opts, str):
-            opts = GLOptions[opts]
         self.__glOpts = opts.copy()
         self.update()
 
@@ -166,19 +126,19 @@ class GLGraphicsItem(QObject):
     def view(self, value):
         self.__view = value
 
-    def setDepthValue(self, value):
-        """
-        Sets the depth value of this item. Default is 0.
-        This controls the order in which items are drawn--those with a greater depth value will be drawn later.
-        Items with negative depth values are drawn before their parent.
-        (This is analogous to QGraphicsItem.zValue)
-        The depthValue does NOT affect the position of the item or the values it imparts to the GL depth buffer.
-        """
-        self.__depthValue = value
-
-    def depthValue(self):
-        """Return the depth value of this item. See setDepthValue for more information."""
-        return self.__depthValue
+    # def setDepthValue(self, value):
+    #     """
+    #     Sets the depth value of this item. Default is 0.
+    #     This controls the order in which items are drawn--those with a greater depth value will be drawn later.
+    #     Items with negative depth values are drawn before their parent.
+    #     (This is analogous to QGraphicsItem.zValue)
+    #     The depthValue does NOT affect the position of the item or the values it imparts to the GL depth buffer.
+    #     """
+    #     self.__depthValue = value
+    #
+    # def depthValue(self):
+    #     """Return the depth value of this item. See setDepthValue for more information."""
+    #     return self.__depthValue
 
     def setTransform(self, tr):
         """Set the local transform for this object.
@@ -282,7 +242,7 @@ class GLGraphicsItem(QObject):
         """
         pass
 
-    def setupGLState(self):
+    def _applyGLOptions(self):
         """
         This method is responsible for preparing the GL state options needed to render
         this item (blending, depth testing, etc). The method is called immediately before painting the item.
@@ -305,7 +265,7 @@ class GLGraphicsItem(QObject):
         It is the responsibility of the item to set up its own modelview matrix,
         but the caller will take care of pushing/popping.
         """
-        self.setupGLState()
+        self._applyGLOptions()
 
     def update(self):
         """
@@ -380,12 +340,12 @@ class Grid(GLGraphicsItem):
 
 class CoordinateCross(GLGraphicsItem):
     def __init__(self, parentItem=None):
-        super(CoordinateCross, self).__init__(parentItem)
+        super(CoordinateCross, self).__init__(parentItem=parentItem)
 
     def paint(self):
         super(CoordinateCross, self).paint()
         glLineWidth(20.0)
-        glBegin(GL_LINES)  # lgtm [py/call/wrong-arguments]
+        glBegin(GL_LINES)
         # X
         glColor4f(1, 0, 0, 0.3)
         glVertex3f(0, 0, 0)
@@ -399,7 +359,7 @@ class CoordinateCross(GLGraphicsItem):
         glVertex3f(0, 0, 0)
         glVertex3f(0, 0, 1)
 
-        glEnd()  # lgtm [py/call/wrong-arguments]
+        glEnd()
 
 
 class Box(GLGraphicsItem):
@@ -453,8 +413,8 @@ class Box(GLGraphicsItem):
 
 
 class Mesh(object):
-    def __init__(self, has_wireframe=False):
-        self.has_wireframe = has_wireframe
+    def __init__(self, hasWireframe=False):
+        self.has_wireframe = hasWireframe
 
         # Array (N,3,3) of all the faces of the mesh. Where N is the number of triangles which is defined by 3 vectors in R3
         self.face_vertices = None
@@ -702,15 +662,15 @@ class Mesh(object):
 class MeshItem(GLGraphicsItem):
     def __init__(
         self,
-        mesh_data,
+        meshData,
         parentItem=None,
         shader=None,
-        face_color=(0.6, 0.6, 0.6, 1.0),
-        edge_color=(1.0, 0.5, 0.5, 1.0),
+        faceColor=(0.6, 0.6, 0.6, 1.0),
+        edgeColor=(1.0, 0.5, 0.5, 1.0),
         smooth=False,
-        gloptions="opaque",
+        glOptions=None,
     ):
-        super(MeshItem, self).__init__(parentItem)
+        super(MeshItem, self).__init__(parentItem=parentItem)
 
         self.draw_faces = True
         self.draw_wireframe = False
@@ -719,15 +679,19 @@ class MeshItem(GLGraphicsItem):
         self.debug_face_edges = False
 
         self.__antialiasing = True
-        self.edge_color = edge_color
-        self.face_color = face_color
+        self.edge_color = edgeColor
+        self.face_color = faceColor
 
         self.shader_registry = ShaderRegistry()
         self.shader_registry.add(shader)
         self.shader_program = self.shader_registry[shader]
-        self.setGLOptions(gloptions)
 
-        self.mesh = mesh_data
+        if glOptions is not None:
+            self.setGLOptions(glOptions)
+        else:
+            self.setGLOptions(self.shader_program.glOptions)
+
+        self.mesh = meshData
         self.mesh.smooth = smooth
 
     def initializeGL(self):
@@ -735,7 +699,7 @@ class MeshItem(GLGraphicsItem):
         # self.mesh = Mesh.cone() # cube()
 
     def paint(self):
-        self.setupGLState()
+        self._applyGLOptions()
 
         if self.__antialiasing:
             glEnable(GL_LINE_SMOOTH)

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Interactive Item
 ================
@@ -15,7 +17,7 @@ from qplotutils.chart.items import ChartItemFlags, ChartWidgetItem
 from .. import CONFIG
 
 __author__ = "Philipp Baust"
-__copyright__ = "Copyright 2017, Philipp Baust"
+__copyright__ = "Copyright 2019, Philipp Baust"
 __credits__ = []
 __license__ = "MIT"
 __version__ = "0.0.1"
