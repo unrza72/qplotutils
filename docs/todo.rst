@@ -7,13 +7,20 @@ TODO
 
 ChartView
     * :strike:`Axis Labels`
-    * Title
-    * Secondary / tertiary left axis
+    * :strike:`Title`
+    * :strike:`Secondary` / tertiary left axis
 
     * Save as image
 
 
 ScatterPlot
-    * Colorbar
-    * Colormap
+    * :strike:`Colorbar`
+    * :strike:`Colormap`
     * Windowing
+
+Wireframe
+    * camera
+    * shader
+    * basic items
+    * basic meshes
+

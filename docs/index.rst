@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-qplotutils user guide
+Qplotutils user guide
 =====================
 
 .. toctree::
@@ -23,7 +23,6 @@ Developer documentation
 
     todo
     styleguide
-
 
 
 Indices and tables
