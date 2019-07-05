@@ -101,6 +101,11 @@ class VersionBumper(object):
         py_hdr_01 = """#!/usr/bin/env python3\n"""
         py_hdr_02 = """# -*- coding: utf-8 -*-\n"""
 
+        if len(contents) == 0:
+            updated_contents.append(py_hdr_01)
+            updated_contents.append(py_hdr_02)
+            return  updated_contents
+
         if contents[0] != py_hdr_01:
             if contents[0].startswith("#!"):
                 # Has shebang, update:
