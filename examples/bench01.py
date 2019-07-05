@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Bench01
 -------
@@ -19,7 +20,7 @@ if PKG_DIR not in sys.path:
 from qplotutils.bench import Dock, Bench
 
 __author__ = "Philipp Baust"
-__copyright__ = "Copyright 2015, 2017, Philipp Baust"
+__copyright__ = "Copyright 2019, Philipp Baust"
 __credits__ = []
 __license__ = "MIT"
 __version__ = "0.0.1"

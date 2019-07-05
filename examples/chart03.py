@@ -1,4 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Chart01
 -------
@@ -22,7 +23,7 @@ from qplotutils.chart.view import ChartView
 from qplotutils.chart.items import LineChartItem
 
 __author__ = "Philipp Baust"
-__copyright__ = "Copyright 2015, 2017, 2018, Philipp Baust"
+__copyright__ = "Copyright 2019, Philipp Baust"
 __credits__ = []
 __license__ = "MIT"
 __version__ = "0.0.1"

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 User controls for interactivity.
@@ -15,7 +15,7 @@ from qplotutils import CONFIG
 from .ui.playback import Ui_PlaybackControl
 
 __author__ = "Philipp Baust"
-__copyright__ = "Copyright 2015-2018, Philipp Baust"
+__copyright__ = "Copyright 2019, Philipp Baust"
 __credits__ = []
 __license__ = "MIT"
 __version__ = "0.0.1"

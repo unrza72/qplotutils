@@ -19,10 +19,8 @@
 import os
 import sys
 p = os.path.abspath(os.path.join(__file__, "..", ".."))
-print p
 sys.path.insert(0, p)
 p = os.path.abspath(os.path.join(__file__, "..", "..", "examples"))
-print p
 sys.path.insert(0, p)
 
 

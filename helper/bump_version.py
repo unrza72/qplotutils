@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 ============
@@ -16,7 +16,7 @@ _log = logging.getLogger("bump_version")
 
 
 __author__ = "Philipp Baust"
-__copyright__ = "Copyright 2015, 2017, Philipp Baust"
+__copyright__ = "Copyright 2019, Philipp Baust"
 __credits__ = []
 __license__ = "MIT"
 __version__ = "0.0.1"
@@ -100,6 +100,11 @@ class VersionBumper(object):
 
         py_hdr_01 = """#!/usr/bin/env python3\n"""
         py_hdr_02 = """# -*- coding: utf-8 -*-\n"""
+
+        if len(contents) == 0:
+            updated_contents.append(py_hdr_01)
+            updated_contents.append(py_hdr_02)
+            return  updated_contents
 
         if contents[0] != py_hdr_01:
             if contents[0].startswith("#!"):
