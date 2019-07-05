@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 qplotutils.bench
 ----------------
@@ -54,7 +56,7 @@ from . import LOG_LEVEL, MIME_TYPE, CONFIG
 from .ui.dock_properties import Ui_DialogDockProperties
 
 __author__ = "Philipp Baust"
-__copyright__ = "Copyright 2015, 2017, Philipp Baust"
+__copyright__ = "Copyright 2019, Philipp Baust"
 __credits__ = []
 __license__ = "MIT"
 __version__ = "0.0.1"

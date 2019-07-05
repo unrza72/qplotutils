@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 __TODO__
@@ -27,7 +27,7 @@ from qplotutils.chart.items import ChartItem, ChartItemFlags
 from qplotutils.chart.view import ChartView
 
 __author__ = "Philipp Baust"
-__copyright__ = "Copyright 2015, 2017, 2018, Philipp Baust"
+__copyright__ = "Copyright 2019, Philipp Baust"
 __credits__ = []
 __license__ = "MIT"
 __version__ = "0.0.1"
