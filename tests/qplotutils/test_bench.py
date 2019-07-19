@@ -22,6 +22,11 @@ from qtpy.QtGui import *
 from qtpy.QtOpenGL import *
 from qtpy.QtWidgets import *
 
+PKG_DIR = os.path.abspath(os.path.join(__file__, "..", "..", ".."))
+print(PKG_DIR)
+if PKG_DIR not in sys.path:
+    sys.path.append(PKG_DIR)
+
 from qplotutils import Configuration
 from qplotutils.bench import *
 

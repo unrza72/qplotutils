@@ -9,4 +9,4 @@ before_install:
   - sudo apt-get install qt5-default
 install:
   - pip install -r requirements.txt
-script: nosetests -v
+script: pytest --cov=qplotutils --cov-report html:coverage tests/
