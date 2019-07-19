@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-======================================
-Tests for package qplotutils.wireframe
-======================================
+===============================
+Tests for package qplotutils.ui
+===============================
 
 
 

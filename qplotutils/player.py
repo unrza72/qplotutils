@@ -12,7 +12,7 @@ from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
 from qplotutils import CONFIG
-from .ui.playback import Ui_PlaybackControl
+from qplotutils.ui.playback import Ui_PlaybackControl
 
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2019, Philipp Baust"

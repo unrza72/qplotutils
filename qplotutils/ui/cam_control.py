@@ -1,9 +1,8 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 # Form implementation generated from reading ui file 'cam_control.ui'
 #
-# Created by: PyQt5 UI code generator 5.11.2
+# Created by: PyQt5 UI code generator 5.12.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -66,14 +65,10 @@ class Ui_CamControl(object):
         self.lineEdit_elevation.setObjectName("lineEdit_elevation")
         self.gridLayout.addWidget(self.lineEdit_elevation, 2, 2, 1, 1)
         self.horizontalLayout.addLayout(self.gridLayout)
-        spacerItem = QtWidgets.QSpacerItem(
-            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
-        )
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.verticalLayout.addLayout(self.horizontalLayout)
-        spacerItem1 = QtWidgets.QSpacerItem(
-            20, 3, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
-        )
+        spacerItem1 = QtWidgets.QSpacerItem(20, 3, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem1)
 
         self.retranslateUi(CamControl)
@@ -88,3 +83,5 @@ class Ui_CamControl(object):
         self.lineEdit_distance.setText(_translate("CamControl", "0"))
         self.lineEdit_azimuth.setText(_translate("CamControl", "0"))
         self.lineEdit_elevation.setText(_translate("CamControl", "0"))
+
+

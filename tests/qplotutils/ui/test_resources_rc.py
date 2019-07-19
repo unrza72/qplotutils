@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-===============================
-Test for qplotutils.chart.utils
-===============================
+===================================
+Test for qplotutils.ui.resources_rc
+===================================
 
 
 
@@ -21,7 +21,7 @@ from qtpy.QtGui import *
 from qtpy.QtOpenGL import *
 from qtpy.QtWidgets import *
 
-from qplotutils.chart.utils import *
+from qplotutils.ui.resources_rc import *
 
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2019, Philipp Baust"
@@ -33,8 +33,3 @@ __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
 
 _log = logging.getLogger(__name__)
-
-
-class TestChartColors(object):
-    # autogenerator: no functions found
-    pass

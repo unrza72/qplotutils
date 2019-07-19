@@ -234,6 +234,10 @@ class ChartView(QGraphicsView):
 
         self._dbg_box_color = Qt.blue
 
+        # Set a default visible range
+        self.setRange(QRectF(-1, -1, 2, 2))
+
+
     def __toggle_legend(self, checked):
         self._legend.setVisible(checked)
 
@@ -1204,6 +1208,7 @@ class ChartArea(QGraphicsWidget):
 
     def showEvent(self, event):
         _log.debug("Show event")
+        # self.autoRange()
         self.adjustRange()
 
     PAN_MODE, ZOOM_BOX_MODE = range(2)
@@ -1455,7 +1460,7 @@ class ChartArea(QGraphicsWidget):
         self.visibleRangeChange.emit(self.__visibleRange)
 
     def adjustRange(self):
-        if self.__visibleRange is None:
+        if self.__visibleRange is None: #  or self.__visibleRange.height() == 0 or self.__visibleRange.width():
             return
 
         if self.__maxVisibleRange:

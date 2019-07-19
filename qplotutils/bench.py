@@ -156,14 +156,16 @@ class BenchItem(QWidget, object):
         :param layout: dict with layout information.
         :return:
         """
-
-        pass
+        raise NotImplementedError()
 
 
 class Placement(object):
     """ Enum of the available Placement options for docks. """
+    options_list = ["Left", "Top", "Right", "Bottom", "Tab"]
 
-    LEFT, TOP, RIGHT, BOTTOM, TAB = ["Left", "Top", "Right", "Bottom", "Tab"]
+    LEFT, TOP, RIGHT, BOTTOM, TAB = options_list #  ["Left", "Top", "Right", "Bottom", "Tab"]
+
+
 
 
 class Bench(QWidget):
@@ -189,6 +191,13 @@ class Bench(QWidget):
         self.root_container = SplitterContainer(self, None)
         self.root_container.contentModified.connect(self.__contentModified)
         self.layout.addWidget(self.root_container)
+
+        # self._style = """
+        #         Bench {
+        #             background-color: #a0a0a1;
+        #         }
+        # """
+        # self.setStyleSheet(self._style)
 
     @classmethod
     def __widgetIndex(cls, placement):
@@ -478,6 +487,7 @@ class AbstractContainer(BenchItem):
         """
         return []
 
+
     @property
     def containers(self):
         """ Returns a list of direct child containers.
@@ -485,9 +495,16 @@ class AbstractContainer(BenchItem):
         :return: list of containers
         """
         return []
+        # raise NotImplementedError()
 
     def addItem(self, index, item):
-        pass
+        """
+
+        :param index:
+        :param item:
+        :return:
+        """
+        raise NotImplementedError()
 
     @property
     def flatDockList(self):
@@ -495,7 +512,7 @@ class AbstractContainer(BenchItem):
 
         :return: list of all docks
         """
-        return []
+        raise NotImplementedError()
 
     @property
     def docks(self):
@@ -503,7 +520,7 @@ class AbstractContainer(BenchItem):
 
         :return: list of docks
         """
-        return []
+        raise NotImplementedError()
 
 
 class SplitterContainer(AbstractContainer):
@@ -775,7 +792,7 @@ class TabContainer(AbstractContainer):
                 event.ignore()
                 return
 
-        if self.rect().width() < 200 and self.rect().height() < 200:
+        if self.rect().width() < 180 or self.rect().height() < 180:
             _log.debug("To less widget left...")
             event.ignore()
             return
@@ -1206,7 +1223,7 @@ class Tab(QWidget):
         self.customContextMenuRequested.connect(self._customContextMenu)
 
         self.layout = QHBoxLayout()
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setContentsMargins(2, 0, 2, 0)
         self.setLayout(self.layout)
 
         self.titleLabel = QLabel()
@@ -1255,17 +1272,19 @@ class Tab(QWidget):
             background-color: transparent;
             border: 0px solid green;
             qproperty-icon: none;
-            image: url(":/bench/close_1");
-            width: 18px;
-            height: 18px;
+            image: url(":/bench/new_close1");
+            width: 12px;
+            height: 12px;
+            padding: 4px; 
         }
         Tab  > QPushButton:hover {
             background-color: transparent;
             border: 0px solid green;
             qproperty-icon: none;
-            image: url(":/bench/close");
-            width: 18px;
-            height: 18px;
+            image: url(":/bench/new_close1");
+            width: 12px;
+            height: 12px;
+            padding: 4px; 
         }
         """
         self.setStyleSheet(self._style)

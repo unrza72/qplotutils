@@ -182,17 +182,17 @@ class TextItem(ChartItem):
         p.drawStaticText(QPointF(0, 0), self._text)
 
 
-class WireItem(ChartItem):
-    def __init__(self, parent=None):
-        super(WireItem, self).__init__(parent)
-
-    def boundingRect(self):
-        return QRectF(QPointF(0, -100), QSizeF(200, 200))
-
-    def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-        pen = QPen(Qt.blue)
-        p.setPen(pen)
-        p.drawRect(QRectF(QPointF(0, -100), QSizeF(200, 200)))
+# class WireItem(ChartItem):
+#     def __init__(self, parent=None):
+#         super(WireItem, self).__init__(parent)
+#
+#     def boundingRect(self):
+#         return QRectF(QPointF(0, -100), QSizeF(200, 200))
+#
+#     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
+#         pen = QPen(Qt.blue)
+#         p.setPen(pen)
+#         p.drawRect(QRectF(QPointF(0, -100), QSizeF(200, 200)))
 
 
 class CoordCross(ChartItem):
