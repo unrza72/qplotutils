@@ -139,10 +139,12 @@ class ChartView3d(QGLWidget):
 
         self.makeCurrent()
 
-        self.cam_ctrl = CamControl(self.props, self)
-        self.cam_ctrl.show()
+        # self.cam_ctrl = CamControl(self.props, self)
+        # self.cam_ctrl.show()
 
         self.props.changed.connect(self.camera_update)
+
+        self._mousePos = None
 
         self.frame_count = 0
         self.frame_time = QTime()
@@ -183,9 +185,13 @@ class ChartView3d(QGLWidget):
             return vp
 
     def resizeGL(self, w, h):
-        glViewport(*self.getViewport())
-        self.setProjection()
-        self.setModelview()
+        try:
+            glViewport(*self.getViewport())
+            self.setProjection()
+            self.setModelview()
+        except Exception as ex:
+            # TODO: For later
+            _log.debug(ex)
 
     def setProjection(self, region=None):
         m = self.projectionMatrix(region)
@@ -413,28 +419,34 @@ class ChartView3d(QGLWidget):
 
         self.camera_update()
 
-    def pixelSize(self, pos):
-        """
-        Return the approximate size of a screen pixel at the location pos
-        Pos may be a Vector or an (N,3) array of locations
-        """
-        cam = self.cameraPosition()
-        if isinstance(pos, np.ndarray):
-            cam = np.array(cam).reshape((1,) * (pos.ndim - 1) + (3,))
-            dist = ((pos - cam) ** 2).sum(axis=-1) ** 0.5
-        else:
-            dist = (pos - cam).length()
-        xDist = dist * 2.0 * np.tan(0.5 * self.props.fov * np.pi / 180.0)
-        return xDist / self.width()
+    # def pixelSize(self, pos):
+    #     """
+    #     Return the approximate size of a screen pixel at the location pos
+    #     Pos may be a Vector or an (N,3) array of locations
+    #     """
+    #     cam = self.cameraPosition()
+    #     if isinstance(pos, np.ndarray):
+    #         cam = np.array(cam).reshape((1,) * (pos.ndim - 1) + (3,))
+    #         dist = ((pos - cam) ** 2).sum(axis=-1) ** 0.5
+    #     else:
+    #         dist = (pos - cam).length()
+    #     xDist = dist * 2.0 * np.tan(0.5 * self.props.fov * np.pi / 180.0)
+    #     return xDist / self.width()
 
     def mousePressEvent(self, ev):
         self._mousePos = ev.pos()
+
+    def mouseReleaseEvent(self, ev):
+        self._mousePos = None
 
     def mouseMoveEvent(self, ev):
         """ Mouse move event handler
 
         :param ev:
         """
+        if self._mousePos is None:
+            return
+
         diff = ev.pos() - self._mousePos
         self._mousePos = ev.pos()
 

@@ -130,7 +130,7 @@ class BenchItem(QWidget, object):
             painter.setPen(QPen(Qt.black, 1.0))
             painter.drawText(QPointF(5, 12), str(self))
 
-    def __repr__(self):
+    def __str__(self):
         return "<{}.{}: uid='{}'>".format(
             self.__module__, self.__class__.__name__, self.uid
         )
@@ -337,7 +337,18 @@ class Bench(QWidget):
 
         previous_container = dock.parentContainer
         self.addDock(dock, placement, ref)
-        previous_container.closeChild(dock.uid)
+
+        # close eventually empty tabcontainers and notify parents
+        if isinstance(previous_container, TabContainer):
+            _log.debug(previous_container)
+
+            if len(previous_container.flatDockList) == 0:
+                _log.debug("Should close")
+                previous_container.closing.emit(previous_container.uid)
+                previous_container.setParent(self)
+                previous_container.close()
+
+                previous_container.deleteLater()
 
     def getDock(self, uid):
         """ Returns the dock with the given UID if dock is part of this bench.
@@ -437,6 +448,7 @@ class Dock(BenchItem):
         :param widget: a widget
         """
         self.layout().addWidget(widget)
+        # widget.setParent(self)
 
     @property
     def title(self):
@@ -592,6 +604,13 @@ class SplitterContainer(AbstractContainer):
 
         return container_list
 
+    # def __str__(self):
+    #     return "<{}.{}: uid='{}', # of subcontainers='{} / {}'>".format(
+    #         self.__module__, self.__class__.__name__, self.uid,
+    #         len(self.flatContainerList),
+    #         len(self.containers)
+    #     )
+
     def addItem(self, index, item):
         if not isinstance(item, (TabContainer, SplitterContainer)):
             raise BenchException("Misuse")
@@ -701,6 +720,12 @@ class TabContainer(AbstractContainer):
         self._dockstack.setSpacing(0)
         self.layout.addLayout(self._dockstack)
 
+    # def __str__(self):
+    #     return "<{}.{}: uid='{}', # of docks='{}'>".format(
+    #         self.__module__, self.__class__.__name__, self.uid,
+    #         len(self.flatDockList)
+    #     )
+
     def activateTab(self, uid):
         _log.debug("Activating tab for dock: {}".format(uid))
 
@@ -799,9 +824,14 @@ class TabContainer(AbstractContainer):
 
         if self.overlay.isHidden():
             _log.debug("Drop overlay")
+
+            w = self._dockstack.currentWidget()
+            # if w is None:
+            #     return
+
             self.overlay.raise_()
             self.overlay.show()
-            w = self._dockstack.currentWidget()
+
             pos = w.mapTo(self, QPoint(0, 0))
             rect = QRect(pos.x(), pos.y(), w.width(), w.height())
             self.overlay.setGeometry(rect)
@@ -825,6 +855,9 @@ class TabContainer(AbstractContainer):
 
     def dragMoveEvent(self, event):
         if not self.__checkEventMimeTypeData(event):
+            return
+
+        if self.overlay.isHidden():
             return
 
         pos = event.pos()
@@ -862,6 +895,9 @@ class TabContainer(AbstractContainer):
 
         if not self.__checkEventMimeTypeData(event):
             event.ignore()
+            return
+
+        if self.overlay.isHidden():
             return
 
         data = event.mimeData().data(MIME_TYPE).data()

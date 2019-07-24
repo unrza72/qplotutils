@@ -42,7 +42,7 @@ _log = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
-    CONFIG.debug = True
+    # CONFIG.debug = False
 
 
     def sigint_handler(signum, frame):
