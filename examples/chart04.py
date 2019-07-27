@@ -11,7 +11,7 @@ import signal
 import sys
 import numpy as np
 from qtpy.QtCore import QTimer
-from qtpy.QtWidgets import QApplication
+from qtpy.QtWidgets import QApplication, QAction, QMenu
 
 
 

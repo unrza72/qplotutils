@@ -9,7 +9,9 @@ import os
 import signal
 import sys
 import numpy as np
-from qtpy.QtCore import QTimer
+
+from qtpy.QtCore import QTimer, Qt
+from qtpy.QtGui import QColor
 from qtpy.QtWidgets import QApplication
 
 import logging
