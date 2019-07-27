@@ -35,7 +35,7 @@ __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
 
 _log = logging.getLogger(__name__)
-
+_log.setLevel(level=logging.WARNING)
 
 @pytest.fixture()
 def chartwidget3d(qtbot : QtBot):
