@@ -163,22 +163,21 @@ class Placement(object):
     """ Enum of the available Placement options for docks. """
     options_list = ["Left", "Top", "Right", "Bottom", "Tab"]
 
-    LEFT, TOP, RIGHT, BOTTOM, TAB = options_list #  ["Left", "Top", "Right", "Bottom", "Tab"]
-
-
+    LEFT, TOP, RIGHT, BOTTOM, TAB = options_list
 
 
 class Bench(QWidget):
-    """ Widget that provides the area on which docks can be added and moved around completely free
+    """ Widget that provides the area on which docks can be added and
+    moved around completely free.
 
     :param parent: parent Widget
     """
 
-    #: Signal that notifies connected slots about changes in layout or added/removed items.
+    r"""Signal that notifies connected slots about changes in layout 
+    or added/removed items."""
     contentModified = Signal()
 
     def __init__(self, parent=None):
-
         super(Bench, self).__init__(parent)
 
         self.layout = QHBoxLayout()
@@ -191,13 +190,6 @@ class Bench(QWidget):
         self.root_container = SplitterContainer(self, None)
         self.root_container.contentModified.connect(self.__contentModified)
         self.layout.addWidget(self.root_container)
-
-        # self._style = """
-        #         Bench {
-        #             background-color: #a0a0a1;
-        #         }
-        # """
-        # self.setStyleSheet(self._style)
 
     @classmethod
     def __widgetIndex(cls, placement):
@@ -263,7 +255,8 @@ class Bench(QWidget):
                 self.root_container.contentModified.connect(self.__contentModified)
                 self.layout.addWidget(self.root_container)
 
-                # Add the previous root container to the new container, than add the dock
+                # Add the previous root container to the new container and
+                # then add the dock
                 self.root_container.addItem(0, temp_container)
 
                 tab_container = TabContainer(self, self.root_container)
@@ -317,12 +310,11 @@ class Bench(QWidget):
         self.contentModified.emit()
 
     def dockMove(self, dock_uid, placement, ref_uid):
-        """ Moves the dock programatically.
-
-        .. TODO:: Check if ref == None is possible.
+        """ Moves the dock.
 
         :param dock_uid: UID of the docks that should move
-        :param placement: Placement relative to the reference dock or absolute if no reference given
+        :param placement: Placement relative to the reference dock or
+        absolute if no reference given
         :param ref_uid: UID of the reference dock
         """
         _log.debug("Dock move: {}, {}, {}".format(dock_uid, placement, ref_uid))
@@ -422,7 +414,9 @@ class Dock(BenchItem):
     """ Signal that is emited when the dock is about to be closed. """
 
     activated = Signal(object)
-    """ Signal that is emited when the dock is activated and thus becomes visible in the tabcontainer. """
+    """ Signal that is emited when the dock is activated and thus 
+    becomes visible in the tabcontainer. 
+    """
 
     def __init__(self, title="Dock"):
         """ Widget that can freely placed and re-sized on the bench.
@@ -498,7 +492,6 @@ class AbstractContainer(BenchItem):
         :return: list of all children
         """
         return []
-
 
     @property
     def containers(self):
@@ -716,6 +709,7 @@ class TabContainer(AbstractContainer):
         self.layout.addWidget(self._tabbar)
 
         self._dockstack = QStackedLayout()
+        
         self._dockstack.setContentsMargins(0, 0, 0, 0)
         self._dockstack.setSpacing(0)
         self.layout.addLayout(self._dockstack)
@@ -790,7 +784,8 @@ class TabContainer(AbstractContainer):
 
     @classmethod
     def __checkEventMimeTypeData(cls, event):
-        """ Checks the drag events MIME type, and that at least two dockbench items on the area.
+        """ Checks the drag events MIME type, and that at least two
+        dockbench items on the area.
 
         :param event: drag event / drop event
         :return: true when the MIME type can be handled
@@ -1211,21 +1206,15 @@ class DropOverlay(QWidget):
         path.closeSubpath()
         painter.drawPath(path)
 
-    # def __del__(self):
-    #     _log.debug("Finalize: {}".format(self))
-
 
 class TabHeader(QWidget):
     def __init__(self):
-        super(TabHeader, self).__init__()  # QWidget.__init__(self)
+        super(TabHeader, self).__init__()
 
         self.layout = QHBoxLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(4)
         self.setLayout(self.layout)
-
-    # def __del__(self):
-    #     _log.debug("Finalize: {}".format(self))
 
     def addTab(self, index, item):
         self.layout.insertWidget(index, item.tab)
@@ -1244,9 +1233,6 @@ class TabHeader(QWidget):
 
 
 class Tab(QWidget):
-
-    # closing = pyqtSignal(object)
-    # activated = pyqtSignal(object)
 
     def __init__(self, dock, title):
         super(Tab, self).__init__()  # QWidget.__init__(self)
@@ -1365,8 +1351,8 @@ class Tab(QWidget):
 
     @Property(bool)
     def active(self):
-        """ Returns the tabs state. If active the parent tabcontainer displays the contents of
-        that tabs dockbench.
+        """ Returns the tabs state. If active the parent tabcontainer
+        displays the contents of that tabs dockbench.
 
         :return: True if active
         """
@@ -1432,8 +1418,8 @@ class Tab(QWidget):
         event.accept()
         drag = QDrag(self)
         mimeData = QMimeData()
-        encodedData = QByteArray(pickle.dumps(self._dock.uid))
-        mimeData.setData(MIME_TYPE, encodedData)
+        encoded_data = QByteArray(pickle.dumps(self._dock.uid))
+        mimeData.setData(MIME_TYPE, encoded_data)
         drag.setMimeData(mimeData)
         drag.setPixmap(pixmap)
         action = drag.exec_(Qt.MoveAction)
@@ -1447,5 +1433,4 @@ class Tab(QWidget):
 
 class BenchException(Exception):
     """ Wrapper for all exceptions. """
-
     pass
