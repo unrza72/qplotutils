@@ -323,10 +323,10 @@ class Grid(GLGraphicsItem):
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
 
         glLineWidth(1.3)
-        glBegin(GL_LINES)  # lgtm [py/call/wrong-arguments]
+        glBegin(GL_LINES)
 
-        xvals = np.linspace(-self.x / 2.0, self.x / 2.0, self.x / self.xs + 1)
-        yvals = np.linspace(-self.y / 2.0, self.y / 2.0, self.y / self.ys + 1)
+        xvals = np.linspace(-self.x / 2.0, self.x / 2.0, int(self.x / self.xs + 1))
+        yvals = np.linspace(-self.y / 2.0, self.y / 2.0, int(self.y / self.ys + 1))
 
         glColor4f(*self.edge_color)
         for x in xvals:
@@ -335,7 +335,7 @@ class Grid(GLGraphicsItem):
         for y in yvals:
             glVertex3f(xvals[0], y, 0)
             glVertex3f(xvals[-1], y, 0)
-        glEnd()  # lgtm [py/call/wrong-arguments]
+        glEnd()
 
 
 class CoordinateCross(GLGraphicsItem):
@@ -400,7 +400,7 @@ class Box(GLGraphicsItem):
         ]
 
         glLineWidth(2.0)
-        glBegin(GL_LINES)  # lgtm [py/call/wrong-arguments]
+        glBegin(GL_LINES)
 
         glColor4f(1, 0, 0, 1)
         for k in range(8):
@@ -409,7 +409,7 @@ class Box(GLGraphicsItem):
                     glVertex3f(*p[k])
                     glVertex3f(*p[j])
 
-        glEnd()  # lgtm [py/call/wrong-arguments]
+        glEnd()
 
 
 class Mesh(object):

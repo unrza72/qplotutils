@@ -36,7 +36,7 @@ class Vector3d(np.ndarray):
         return Vector3d(v[0], v[1], v[2])
 
     def __new__(cls, x, y, z):  # , info=None):
-        obj = np.asarray([x, y, z]).view(cls)
+        obj = np.asarray([x, y, z], dtype=np.float).view(cls)
         return obj
 
     def __init__(self, x, y, z):

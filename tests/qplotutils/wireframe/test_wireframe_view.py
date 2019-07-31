@@ -86,7 +86,7 @@ class TestChartView3d(object):
         qtbot.mousePress(chartwidget3d, Qt.LeftButton, pos=p.toPoint())
 
         # leftclick move in x direction is on azimuth
-        move_right = np.ones((100), np.int) * 6
+        move_right = np.ones((10), np.int) * 6
         move_left = -1 * move_right
 
         move = np.concatenate((move_right, move_left))
@@ -119,7 +119,7 @@ class TestChartView3d(object):
         qtbot.mousePress(chartwidget3d, Qt.LeftButton, pos=p.toPoint())
 
         # leftclick move in x direction is on azimuth
-        move_right = np.ones((30), np.int) * 6
+        move_right = np.ones((10), np.int) * 6
         move_left = -1 * move_right
 
         move = np.concatenate((move_right, move_left))
@@ -153,7 +153,7 @@ class TestChartView3d(object):
         qtbot.mousePress(chartwidget3d, Qt.LeftButton, pos=p.toPoint())
 
         # leftclick move in x direction is on azimuth
-        move_right = np.ones((30), np.int) * 6
+        move_right = np.ones((10), np.int) * 6
         move_left = -1 * move_right
 
         move = np.concatenate((move_right, move_left))

@@ -11,8 +11,8 @@ import logging
 import os
 import signal
 import sys
-from qtpy.QtCore import QTimer
-from qtpy.QtWidgets import QApplication
+from qtpy.QtCore import QTimer, QRectF
+from qtpy.QtWidgets import QApplication, QMenu, QAction
 
 
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
@@ -87,8 +87,9 @@ if __name__ == "__main__":
         menu = QMenu()
 
         def remove_handle():
-            h = roi.handles[1]
-            roi.removeHandle(h)
+            if len(roi.handles) > 0:
+                h = roi.handles[0]
+                roi.removeHandle(h)
 
         def rotate_90():
             roi.setRotation(roi.rotation() + 82.)

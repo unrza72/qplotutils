@@ -22,6 +22,7 @@ from qtpy.QtOpenGL import *
 from qtpy.QtWidgets import *
 
 from qplotutils.chart.interactive import *
+from qplotutils.chart.view import ChartView
 
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2019, Philipp Baust"
@@ -35,12 +36,32 @@ __status__ = "Development"
 _log = logging.getLogger(__name__)
 
 
+@pytest.fixture()
+def view(qtbot : QtBot):
+    view = ChartView(orientation=ChartView.CARTESIAN)
+    view.resize(800, 800)
+    view.show()
+
+    qtbot.addWidget(view)
+
+    return  view
+
+DELAY = 200
+
+
 class TestInteractiveChangeEvent(object):
     # autogenerator: no functions found
     pass
 
 
 class TestInteractiveVerticalLine(object):
+
+    def test_vline(self, view : ChartView, qtbot : QtBot):
+        ivline = InteractiveVerticalLine()
+        ivline.setX(5, "Current Timestamp", Qt.darkGreen)
+        view.addItem(ivline)
+
+        qtbot.wait(DELAY)
 
     def test_hoverEnterEvent(self):
         """ Tests for hoverEnterEvent

@@ -12,3 +12,5 @@ exclude_lines =
 ignore_errors = True
 omit =
     tests/*
+    qplotutils/ui/*
+    qplotutils/flow/*

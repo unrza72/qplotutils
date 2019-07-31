@@ -47,7 +47,7 @@ __status__ = "Development"
 _log = logging.getLogger(__name__)
 
 
-DISPLAY_LENGTH = 500 # ms
+DISPLAY_LENGTH = 200 # ms
 
 @pytest.fixture()
 def dut(qtbot : QtBot):

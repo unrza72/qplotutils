@@ -10,6 +10,7 @@ import logging
 
 import math
 import numpy as np
+from PyQt5.QtGui import QMouseEvent
 from qtpy.QtCore import Signal, Qt, QPointF, QRectF, QSizeF
 from qtpy.QtGui import (
     QPen,
@@ -237,6 +238,10 @@ class ChartView(QGraphicsView):
         # Set a default visible range
         self.setRange(QRectF(-1, -1, 2, 2))
 
+    def mousePressEvent(self, e : QMouseEvent):
+        print("Click")
+        e.setAccepted(False)
+        super().mousePressEvent(e)
 
     def __toggle_legend(self, checked):
         self._legend.setVisible(checked)
@@ -1214,6 +1219,7 @@ class ChartArea(QGraphicsWidget):
     PAN_MODE, ZOOM_BOX_MODE = range(2)
 
     def mousePressEvent(self, event):
+        print("ClickClick")
         _log.debug("Mouse press event")
 
         # self.__mouseMode = ChartArea.PAN_MODE

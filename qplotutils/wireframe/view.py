@@ -139,10 +139,14 @@ class ChartView3d(QGLWidget):
 
         self.makeCurrent()
 
-        # self.cam_ctrl = CamControl(self.props, self)
+        self.cam_ctrl = CamControl(self.props, self)
         # self.cam_ctrl.show()
 
         self.props.changed.connect(self.camera_update)
+
+        # Store projection matrix in case we receive invalid values during
+        # computation
+        self.__projection_matrix = QMatrix4x4()
 
         self._mousePos = None
 
@@ -206,6 +210,10 @@ class ChartView3d(QGLWidget):
             region = (0, 0, self.width(), self.height())
 
         x0, y0, w, h = self.getViewport()
+
+        if  w == 0:
+            return self.__projection_matrix
+
         dist = self.props.distance
         fov = self.props.fov
         nearClip = dist * 0.001
@@ -224,6 +232,8 @@ class ChartView3d(QGLWidget):
 
         tr = QMatrix4x4()
         tr.frustum(left, right, bottom, top, nearClip, farClip)
+
+        self.__projection_matrix = tr
         return tr
 
     def setModelview(self):
@@ -497,7 +507,8 @@ class ChartView3d(QGLWidget):
             self.setCameraPosition(elevation=21, azimuth=-161)
 
         elif ev.key() == Qt.Key_C:
-            if self.cam_ctrl.isVisible():
-                self.cam_ctrl.close()
-            else:
-                self.cam_ctrl.show()
+            if self.cam_ctrl.parent() == self:
+                if self.cam_ctrl.isVisible():
+                    self.cam_ctrl.close()
+                else:
+                    self.cam_ctrl.show()
