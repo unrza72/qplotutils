@@ -26,7 +26,6 @@ __status__ = "Development"
 
 
 class VersionBumper(object):
-
     def __init__(self, root):
         if not os.path.exists(root):
             _log.error("Path does not exist.")
@@ -43,7 +42,7 @@ class VersionBumper(object):
         return self.__attr
 
     def do_bump(self):
-        for dirpath, dirnames, filenames  in os.walk(self.root):
+        for dirpath, dirnames, filenames in os.walk(self.root):
             for filename in filenames:
                 if not filename.endswith(".py"):
                     continue
@@ -52,7 +51,6 @@ class VersionBumper(object):
                 _log.debug("Fullpath: {}".format(full_path))
 
                 self.apply(full_path)
-
 
     def apply(self, filepath):
         with open(filepath, "r") as fp:
@@ -63,8 +61,10 @@ class VersionBumper(object):
             contents = self.fix_file_header(contents)
 
         if self.dry_run:
-            print("\n-------------------------------------------------------\n"
-                  "FILE:", filepath)
+            print(
+                "\n-------------------------------------------------------\n" "FILE:",
+                filepath,
+            )
             print("".join(contents))
             return
 
@@ -82,7 +82,7 @@ class VersionBumper(object):
                 k = m.group(1)
                 v = self.docstring_attributes[k]
                 if isinstance(v, (list, tuple)):
-                    updated_line = '__{}__ = {}'.format(k, v)
+                    updated_line = "__{}__ = {}".format(k, v)
                 else:
                     updated_line = '__{}__ = "{}"'.format(k, v)
                 # print(updated_line)
@@ -104,7 +104,7 @@ class VersionBumper(object):
         if len(contents) == 0:
             updated_contents.append(py_hdr_01)
             updated_contents.append(py_hdr_02)
-            return  updated_contents
+            return updated_contents
 
         if contents[0] != py_hdr_01:
             if contents[0].startswith("#!"):
@@ -125,14 +125,14 @@ class VersionBumper(object):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     parser = argparse.ArgumentParser()
-    parser.add_argument(dest="path", type=str, help="File or path where to bump versions")
+    parser.add_argument(
+        dest="path", type=str, help="File or path where to bump versions"
+    )
     parser.add_argument(dest="next_version", type=str, help="Sets the given version")
-    parser.add_argument("--copyright", dest="copyright",  type=str)
-    parser.add_argument("--fix-shebang", dest="fix_shebang", action='store_true')
-    parser.add_argument("--dry-run", dest="dry_run", action='store_true')
+    parser.add_argument("--copyright", dest="copyright", type=str)
+    parser.add_argument("--fix-shebang", dest="fix_shebang", action="store_true")
+    parser.add_argument("--dry-run", dest="dry_run", action="store_true")
     args = parser.parse_args()
-
-
 
     vb = VersionBumper(args.path)
     vb.fix_shebang = args.fix_shebang
@@ -143,5 +143,3 @@ if __name__ == "__main__":
         vb.docstring_attributes["copyright"] = args.copyright
 
     vb.do_bump()
-
-

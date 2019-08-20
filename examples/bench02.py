@@ -36,6 +36,7 @@ if __name__ == "__main__":
     The docks can be resized and dragged around.
     """
     CONFIG.debug_layout = True
+
     def sigint_handler(signum, frame):
         """ Install handler for the SIGINT signal. To kill app through shell.
 
@@ -45,7 +46,6 @@ if __name__ == "__main__":
         """
         # sys.stderr.write('\r')
         QApplication.exit()
-
 
     signal.signal(signal.SIGINT, sigint_handler)
 
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     bench.addDock(dock_01)
 
     dock_02 = Dock(title="Dock 2")
-    bench.addDock(dock_02, placement=Placement.RIGHT) # TAB, ref=dock_01)
+    bench.addDock(dock_02, placement=Placement.RIGHT)  # TAB, ref=dock_01)
 
     # dock_03 = Dock(title="Dock 3")
     # bench.addDock(dock_03, placement=Placement.TOP)
@@ -72,9 +72,7 @@ if __name__ == "__main__":
     # dock_04 = Dock(title="Dock 4")
     # bench.addDock(dock_04, placement=Placement.BOTTOM, ref=dock_01)
 
-
     bench.setWindowTitle("Bench Example 02")
     bench.resize(800, 800)
     bench.show()
     qapp.exec_()
-

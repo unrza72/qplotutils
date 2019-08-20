@@ -131,7 +131,7 @@ class ShaderRegistry(object):
                 gl_FragColor = color;
             }
             """,
-            glOptions=DefaultGlOptions.TRANSLUCENT
+            glOptions=DefaultGlOptions.TRANSLUCENT,
         ),
         "shaded": ShaderProgram(
             "shaded",

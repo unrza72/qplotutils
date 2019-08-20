@@ -14,6 +14,7 @@ from qtpy.QtCore import Qt, QPointF, QRectF, QLineF
 from qtpy.QtGui import QPen, QBrush, QColor, QPainter, QPainterPath
 from qtpy.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem
 
+from qplotutils.common import Vector2
 from .items import ChartItem
 
 __author__ = "Philipp Baust"
@@ -136,10 +137,10 @@ class RectangularRegion(ChartItem):
         return self._path.boundingRect()
 
     def updatePath(self):
-        p0 = Vec2(self.state.w0, self.state.h0)
-        p1 = Vec2(-self.state.w1, self.state.h0)
-        p2 = Vec2(-self.state.w1, -self.state.h1)
-        p3 = Vec2(self.state.w0, -self.state.h1)
+        p0 = Vector2(self.state.w0, self.state.h0)
+        p1 = Vector2(-self.state.w1, self.state.h0)
+        p2 = Vector2(-self.state.w1, -self.state.h1)
+        p3 = Vector2(self.state.w0, -self.state.h1)
 
         p0t = p0.rotate(self.state.rotation)
         p1t = p1.rotate(self.state.rotation)
@@ -167,7 +168,7 @@ class RectangularRegion(ChartItem):
         p.drawEllipse(QPointF(0, 0), 0.25, 0.25)
 
     def mousePressEvent(self, e):
-        # !!!Fucking leason learned, call super to avoid weird jumps in position!!!
+        # !!!Fucking lesson learned, call super to avoid weird jumps in position!!!
         super(RectangularRegion, self).mousePressEvent(e)
         self.__in_move = True
 
@@ -176,20 +177,29 @@ class RectangularRegion(ChartItem):
         self.__in_move = False
 
     def itemChange(self, change, value):
+        # TODO: Currently untestable with QTest / QtBot
         if change == QGraphicsItem.ItemPositionChange and self.__in_move:
-            old_pos = self.pos()
-            new_pos = value  # .toPointF()
-
-            delta = old_pos - new_pos
-            _log.debug("Delta: {}".format(delta))
-
-            self.state.pos = new_pos
-            value = new_pos
-
-            for handle in self.handles:
-                handle.updatePosition()
-
+            value = self._move(self.pos(), value)
         return super(RectangularRegion, self).itemChange(change, value)
+
+    def _move(self, old_pos, new_pos):
+        """ Preforms a roi move.
+
+        :param old_pos:
+        :param new_pos:
+        :return new pos
+
+        """
+        delta = old_pos - new_pos
+        _log.debug("Delta: {}".format(delta))
+
+        self.state.pos = new_pos
+        value = new_pos
+
+        for handle in self.handles:
+            handle.updatePosition()
+
+        return value
 
     def rotation(self):
         """ Override takes rotation from the state instead of items transformation.
@@ -209,146 +219,6 @@ class RectangularRegion(ChartItem):
             h.updatePosition()
 
         self.updatePath()
-
-
-class Vec2(object):
-    """ Representation of a 2-d vector. Acts as a bridge between Qt's QpointF and numpy. """
-
-    def __init__(self, x=0, y=0):
-        self._v = np.array([x, y]).T
-
-    def rotate(self, a):
-        """ Rotates the vector by given value in radians.
-
-        :param a: rotation in radians
-        :return: rotated point as Vec2
-        """
-        rotation_matrix = np.array(
-            [[math.cos(a), -math.sin(a)], [math.sin(a), math.cos(a)]]
-        )
-
-        result = Vec2()
-        result._v = np.dot(rotation_matrix, self._v)
-        return result
-
-    def angle(self, other):
-        """ Calculates the inner angle between self and the other vector with directionality.
-
-        :param other: Vec2
-        :return: rotation in radians with directionality
-        """
-        try:
-            v = np.dot(self.array, other.array) / (
-                np.linalg.norm(self.array) * np.linalg.norm(other.array)
-            )
-            if not -1 <= v <= 1:
-                return 0
-
-            delta = np.arccos(v)
-        except Exception as ex:
-            _log.info(ex)
-            delta = 0
-
-        # cross product to determine the turning direction
-        k = np.cross(other.array, self.array)
-        _log.debug("Change by {}, {}".format(delta * 180 / np.pi, k))
-        v = np.sign(k) * delta
-
-        return v
-
-    @property
-    def x(self):
-        """ X coordinate. """
-        return self._v[0]
-
-    @x.setter
-    def x(self, value):
-        self._v[0] = value
-
-    @property
-    def y(self):
-        """ Y coordinate. """
-        return self._v[1]
-
-    @y.setter
-    def y(self, value):
-        self._v[1] = value
-
-    @property
-    def qpointF(self):
-        """ Returns a QpointF representation.
-
-        :return: QPointF
-        """
-        return QPointF(self._v[0], self._v[1])
-
-    @property
-    def array(self):
-        return self._v
-
-    @classmethod
-    def fromQpointF(cls, qp):
-        """ Initializes Vec from QPointF
-
-        :param qp: QPointF
-        :return: a Vec2
-        """
-        return Vec2(qp.x(), qp.y())
-
-    def dot(self, other):
-        """  Scalar product of this and the other. Same as numpy.dot().
-
-        :param other: Other Vec2
-        :return: scalar product
-        """
-        result = Vec2()
-        result._v = np.dot(self.array, other.array)
-        return result
-
-    def cross(self):
-        raise NotImplementedError()
-
-    def __add__(self, other):
-        """ Vector addition.
-
-        :param other:
-        :return:
-        """
-        # Element-wise addition
-        result = Vec2()
-        result._v = self.array * other.array
-        return result
-
-    def __sub__(self, other):
-        """ Vector substraction
-
-        :param other:
-        :return:
-        """
-        # Element-wise subtraction
-        result = Vec2()
-        result._v = self.array * other.array
-        return result
-
-    def __mul__(self, scalar_or_vec2):
-        """ Either scalar multiplication in case of other is a scalar, or in case of other Vec2 the
-        Hadamard product.
-
-        The Hadamard product is used to scale handle very easily.
-        TODO: Kinda dirty...
-
-        :param scalar_or_vec2: scalar or vec2
-        :return: Vec2
-        """
-        # Very unclean
-        result = Vec2()
-        if isinstance(scalar_or_vec2, Vec2):
-            # hadamard
-            result._v = self.array * scalar_or_vec2.array
-        else:
-            # Multiply by scalar
-            result._v = self.array * scalar_or_vec2
-        return result
 
 
 class HandlePosition(object):
@@ -373,17 +243,21 @@ class HandlePosition(object):
         :param location:
         :return:
         """
-        v = Vec2()
-
         if 2 ** 0 & location:
-            v.y = 1
+            y = 1
         elif 2 ** 2 & location:
-            v.y = -1
+            y = -1
+        else:
+            y = 0
 
         if 2 ** 1 & location:
-            v.x = 1
+            x = 1
         elif 2 ** 3 & location:
-            v.x = -1
+            x = -1
+        else:
+            x = 0
+
+        v = Vector2(x, y)
 
         return v
 
@@ -431,14 +305,13 @@ class RoiHandle(ChartItem):
         else:
             y = state.h1
 
-        p0 = Vec2(x, y) * self.handle_position
+        p0 = Vector2(x, y) * self.handle_position
         a = state.rotation
         p0t = p0.rotate(a)
         self.setPos(p0t.qpointF)
 
     def hoverEnterEvent(self, e):
         self._brush = QBrush(QColor(Qt.white))
-        print("hover enter")
         super(RoiHandle, self).hoverEnterEvent(e)
 
     def hoverLeaveEvent(self, e):
@@ -484,56 +357,54 @@ class ResizeHandle(RoiHandle):
 
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange and self.__in_resize:
-            # old_pos = self.pos()
-            # value = value # .toPointF()
+            # TODO: untestable events cannot be triggered through qtbot
             new_pos = value
             _log.debug("new pos: {}".format(new_pos))
-
-            # backrotation around the current angle
-            state = self.parentItem().state
-            a = -state.rotation
-
-            p0 = Vec2.fromQpointF(new_pos)
-            p0t = p0.rotate(a)
-
-            result = Vec2(p0t.x, p0t.y)
-
-            # FIXME: McCabe
-            if self.handle_position.x > 0 and p0t.x > 0:
-                self.parentItem().state.w0 = abs(p0t.x)
-            elif self.handle_position.x < 0 and p0t.x < 0:
-                self.parentItem().state.w1 = abs(p0t.x)
-            else:
-                result.x = 0
-
-                # Fast move will be forced to zero.
-                if self.handle_position.x > 0:
-                    self.parentItem().state.w0 = 0
-                if self.handle_position.x < 0:
-                    self.parentItem().state.w1 = 0
-
-            if self.handle_position.y > 0 and p0t.y > 0:
-                self.parentItem().state.h0 = abs(p0t.y)
-            elif self.handle_position.y < 0 and p0t.y < 0:
-                self.parentItem().state.h1 = abs(p0t.y)
-            else:
-                result.y = 0
-                if self.handle_position.y > 0:
-                    self.parentItem().state.h0 = 0
-                if self.handle_position.y < 0:
-                    self.parentItem().state.h1 = 0
-
-            self.parentItem().updatePath()
-
-            for handle in self.parentItem().handles:
-                if handle is not self:
-                    handle.updatePosition()
-
-            # compute new handle position
-            p1t = result.rotate(-a)
-            value = p1t.qpointF
-
+            value = self._resize(new_pos)
         return super(ResizeHandle, self).itemChange(change, value)
+
+    def _resize(self, new_pos):
+        # back rotation around the current angle
+        state = self.parentItem().state
+        a = -state.rotation
+        p0t = Vector2.fromQpointF(new_pos).rotate(a)
+
+        result = Vector2(p0t.x, p0t.y)
+
+        # FIXME: McCabe
+        if self.handle_position.x > 0 and p0t.x > 0:
+            self.parentItem().state.w0 = abs(p0t.x)
+        elif self.handle_position.x < 0 and p0t.x < 0:
+            self.parentItem().state.w1 = abs(p0t.x)
+        else:
+            result.x = 0
+
+            # Fast move will be forced to zero.
+            if self.handle_position.x > 0:
+                self.parentItem().state.w0 = 0
+            if self.handle_position.x < 0:
+                self.parentItem().state.w1 = 0
+
+        if self.handle_position.y > 0 and p0t.y > 0:
+            self.parentItem().state.h0 = abs(p0t.y)
+        elif self.handle_position.y < 0 and p0t.y < 0:
+            self.parentItem().state.h1 = abs(p0t.y)
+        else:
+            result.y = 0
+            if self.handle_position.y > 0:
+                self.parentItem().state.h0 = 0
+            if self.handle_position.y < 0:
+                self.parentItem().state.h1 = 0
+
+        self.parentItem().updatePath()
+
+        for handle in self.parentItem().handles:
+            if handle is not self:
+                handle.updatePosition()
+
+        # compute new handle position
+        p1t = result.rotate(-a)
+        return p1t.qpointF
 
 
 class RotateHandle(RoiHandle):
@@ -547,12 +418,12 @@ class RotateHandle(RoiHandle):
             2 * self.handle_radius,
             2 * self.handle_radius,
         )
-        self.last_pos = Vec2(0, 0)
+        self.last_pos = Vector2(0, 0)
         # self.updatePosition()
 
     def updatePosition(self):
         super(RotateHandle, self).updatePosition()
-        self.last_pos = Vec2.fromQpointF(self.pos())
+        self.last_pos = Vector2.fromQpointF(self.pos())
 
     def boundingRect(self):
         return self.__r
@@ -576,7 +447,7 @@ class RotateHandle(RoiHandle):
             state = self.parentItem().state
 
             u = self.last_pos
-            v = Vec2.fromQpointF(value)  # .toPointF())
+            v = Vector2.fromQpointF(value)  # .toPointF())
 
             delta = v.angle(u)
             a = state.rotation + delta
@@ -596,7 +467,7 @@ class RotateHandle(RoiHandle):
             else:
                 y = 0
 
-            p0 = Vec2(x, y)
+            p0 = Vector2(x, y)
             p0t = p0.rotate(a)
 
             # update roi box and other handles

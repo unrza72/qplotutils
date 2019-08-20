@@ -12,6 +12,8 @@ import logging
 from qtpy.QtCore import Signal, Qt, QPointF, QRectF, QLineF
 from qtpy.QtGui import QPen, QBrush, QColor, QPainter
 from qtpy.QtWidgets import QGraphicsItem, QStyleOptionGraphicsItem
+
+from qplotutils import Configuration
 from qplotutils.chart.items import ChartItemFlags, ChartWidgetItem
 
 from .. import CONFIG
@@ -28,6 +30,8 @@ __status__ = "Development"
 _log = logging.getLogger(__name__)
 _log.setLevel(logging.DEBUG)
 
+_cfg = Configuration()
+
 
 class InteractiveChangeEvent(object):
     def __init__(self):
@@ -35,7 +39,9 @@ class InteractiveChangeEvent(object):
 
 
 class InteractiveVerticalLine(ChartWidgetItem):
-    """ Vertical Line which can be moved by mouse interaction. Usefull for timelines. """
+    """ Vertical Line which can be moved by mouse interaction.
+    Useful for time series.
+    """
 
     positionChange = Signal(object)
 
@@ -74,11 +80,13 @@ class InteractiveVerticalLine(ChartWidgetItem):
             self._color = color
             self._pen = QPen(QBrush(color), 1.0, Qt.SolidLine)
             self._pen.setCosmetic(True)
-        # self._brush = QBrush(QColor(255, 255, 255, 0))
 
-        if self._x != x:
-            self._x = x
-            self.setPos(QPointF(self._x, 0))
+        if self._x == x:
+            # Do not trigger yet another update when nothing changed
+            return
+
+        self._x = x
+        self.setPos(QPointF(self._x, 0))
 
     def visibleRangeChanged(self, rect):
         t = self.parentItem().transform()
@@ -90,7 +98,6 @@ class InteractiveVerticalLine(ChartWidgetItem):
         self.prepareGeometryChange()
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-        # p.setRenderHint(QPainter.Antialiasing)
         p.setPen(self._pen)
         p.setBrush(self._brush)
 
@@ -108,11 +115,13 @@ class InteractiveVerticalLine(ChartWidgetItem):
     def itemChange(self, change, value):
         if change == QGraphicsItem.ItemPositionChange:
             old_pos = self.pos()
-            # value = value #.toPointF()
 
-            e = InteractiveChangeEvent()
-            e.position = value
-            self.positionChange.emit(e)
+            if old_pos.x() != value.x():
+                # Fire a cahnge event event when (and only when) the position
+                # has changed
+                e = InteractiveChangeEvent()
+                e.position = value
+                self.positionChange.emit(e)
 
             return QPointF(value.x(), old_pos.y())
 
@@ -129,4 +138,5 @@ class InteractiveVerticalLine(ChartWidgetItem):
         self.update()
 
     def __del__(self):
-        _log.debug("Finalize Interactive vLine {}".format(self))
+        if _cfg.debug:
+            _log.debug("Finalize Interactive vLine {}".format(self))

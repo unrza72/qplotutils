@@ -44,7 +44,6 @@ if __name__ == "__main__":
         # sys.stderr.write('\r')
         QApplication.exit()
 
-
     signal.signal(signal.SIGINT, sigint_handler)
 
     qapp = QApplication([])
@@ -69,4 +68,3 @@ if __name__ == "__main__":
     bench.resize(300, 400)
     bench.show()
     qapp.exec_()
-

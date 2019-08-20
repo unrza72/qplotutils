@@ -34,11 +34,14 @@ __maintainer__ = "Philipp Baust"
 __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
 
+DELAY = 50
+
 _log = logging.getLogger(__name__)
 _log.setLevel(level=logging.WARNING)
 
+
 @pytest.fixture()
-def chartwidget3d(qtbot : QtBot):
+def chartwidget3d(qtbot: QtBot):
     w = ChartView3d()
     w.props.distance = 5
     w.resize(800, 800)
@@ -48,23 +51,22 @@ def chartwidget3d(qtbot : QtBot):
     cc = CoordinateCross()
     w.addItem(cc)
 
-    grid = Grid(20, )
+    grid = Grid(20)
     w.addItem(grid)
 
     return w
 
 
 class TestChartView3d(object):
-
-    def test_show_item(self, chartwidget3d: ChartView3d,  qtbot: QtBot):
-        b = MeshItem(Mesh.cube(2), shader='shaded')
+    def test_show_item(self, chartwidget3d: ChartView3d, qtbot: QtBot):
+        b = MeshItem(Mesh.cube(2), shader="shaded")
         b.translate(2, 2, 0)
         chartwidget3d.addItem(b)
 
-        qtbot.wait(200)
+        qtbot.wait(DELAY)
         assert len(chartwidget3d.items) == 3
 
-    def test_show_check_props(self, chartwidget3d: ChartView3d,  qtbot: QtBot):
+    def test_show_check_props(self, chartwidget3d: ChartView3d, qtbot: QtBot):
         for k in range(20):
             chartwidget3d.props.azimuth_angle += 2
             qtbot.wait(5)
@@ -77,10 +79,11 @@ class TestChartView3d(object):
             chartwidget3d.props.distance += 2
             qtbot.wait(5)
 
-        qtbot.wait(200)
+        qtbot.wait(DELAY)
 
-    def test_azimuth_w_mouse(self, chartwidget3d: ChartView3d, qapp: QApplication,
-                      qtbot: QtBot):
+    def test_azimuth_w_mouse(
+        self, chartwidget3d: ChartView3d, qapp: QApplication, qtbot: QtBot
+    ):
 
         p = QPointF(400, 200)
         qtbot.mousePress(chartwidget3d, Qt.LeftButton, pos=p.toPoint())
@@ -99,8 +102,9 @@ class TestChartView3d(object):
             _log.debug("move to {},{}".format(p.x(), p.y()))
 
             # Workaround: bug in QTest lib. See: https://bugreports.qt.io/browse/QTBUG-5232
-            event = QMouseEvent(QEvent.MouseMove, p, Qt.LeftButton, Qt.LeftButton,
-                                Qt.NoModifier)
+            event = QMouseEvent(
+                QEvent.MouseMove, p, Qt.LeftButton, Qt.LeftButton, Qt.NoModifier
+            )
             qapp.sendEvent(chartwidget3d, event)
 
             qtbot.wait(2)
@@ -111,9 +115,7 @@ class TestChartView3d(object):
         qtbot.mouseRelease(chartwidget3d, Qt.LeftButton, pos=p.toPoint())
         qtbot.wait(200)
 
-
-    def test_pan(self, chartwidget3d: ChartView3d, qapp: QApplication,
-                      qtbot: QtBot):
+    def test_pan(self, chartwidget3d: ChartView3d, qapp: QApplication, qtbot: QtBot):
 
         p = QPointF(400, 200)
         qtbot.mousePress(chartwidget3d, Qt.LeftButton, pos=p.toPoint())
@@ -134,8 +136,9 @@ class TestChartView3d(object):
             _log.debug("move to {},{}".format(p.x(), p.y()))
 
             # Workaround: bug in QTest lib. See: https://bugreports.qt.io/browse/QTBUG-5232
-            event = QMouseEvent(QEvent.MouseMove, p, Qt.MiddleButton, Qt.MiddleButton,
-                                Qt.NoModifier)
+            event = QMouseEvent(
+                QEvent.MouseMove, p, Qt.MiddleButton, Qt.MiddleButton, Qt.NoModifier
+            )
             qapp.sendEvent(chartwidget3d, event)
 
             qtbot.wait(20)
@@ -146,8 +149,7 @@ class TestChartView3d(object):
         qtbot.mouseRelease(chartwidget3d, Qt.LeftButton, pos=p.toPoint())
         qtbot.wait(200)
 
-    def test_zoom(self, chartwidget3d: ChartView3d, qapp: QApplication,
-                 qtbot: QtBot):
+    def test_zoom(self, chartwidget3d: ChartView3d, qapp: QApplication, qtbot: QtBot):
 
         p = QPointF(400, 200)
         qtbot.mousePress(chartwidget3d, Qt.LeftButton, pos=p.toPoint())
@@ -158,7 +160,7 @@ class TestChartView3d(object):
 
         move = np.concatenate((move_right, move_left))
 
-        qtbot.wait(200)
+        qtbot.wait(DELAY)
 
         for delta in move:
             # az = chartwidget3d.props.azimuth_angle
@@ -168,19 +170,18 @@ class TestChartView3d(object):
             _log.debug("move to {},{}".format(p.x(), p.y()))
 
             # Workaround: bug in QTest lib. See: https://bugreports.qt.io/browse/QTBUG-5232
-            event = QMouseEvent(QEvent.MouseMove, p, Qt.MiddleButton, Qt.MiddleButton,
-                                Qt.NoModifier)
+            event = QMouseEvent(
+                QEvent.MouseMove, p, Qt.MiddleButton, Qt.MiddleButton, Qt.NoModifier
+            )
             qapp.sendEvent(chartwidget3d, event)
 
-            qtbot.wait(20)
+            qtbot.wait(DELAY)
 
             # assert az != chartwidget3d.props.azimuth_angle
             # assert el == chartwidget3d.props.elevation_angle
 
         qtbot.mouseRelease(chartwidget3d, Qt.LeftButton, pos=p.toPoint())
-        qtbot.wait(200)
-
-
+        qtbot.wait(DELAY)
 
     # def test_show_all(self, chartwidget3d: ChartView3d,  qapp : QApplication, qtbot: QtBot):
     #
@@ -253,8 +254,6 @@ class TestChartView3d(object):
     #
     #     qtbot.mouseRelease(w, Qt.LeftButton, pos=p.toPoint())
     #     qtbot.wait(1000)
-
-
 
     # def test_addItem(self, qtbot: QtBot):
     #     """ Tests for addItem
@@ -405,7 +404,6 @@ class TestChartView3d(object):
 
 
 class TestViewProperties(object):
-
     def test_azimuth_angle(self, qtbot: QtBot):
         """ Tests for azimuth_angle
 

@@ -35,7 +35,6 @@ __email__ = "philipp.baust@gmail.com"
 __status__ = "Development"
 
 
-
 if __name__ == "__main__":
     """ Minimal example showing a bench with 2 docks.
     The docks can be resized and dragged around.
@@ -43,7 +42,6 @@ if __name__ == "__main__":
 
     cfg = Configuration()
     cfg.debug = True
-
 
     def sigint_handler(signum, frame):
         """ Install handler for the SIGINT signal. To kill app through shell.
@@ -54,7 +52,6 @@ if __name__ == "__main__":
         """
         # sys.stderr.write('\r')
         QApplication.exit()
-
 
     signal.signal(signal.SIGINT, sigint_handler)
 

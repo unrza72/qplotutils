@@ -38,22 +38,21 @@ _log = logging.getLogger(__name__)
 
 
 @pytest.fixture()
-def chartwidget3d(qtbot : QtBot):
+def chartwidget3d(qtbot: QtBot):
     w = ChartView3d()
     w.resize(800, 800)
     qtbot.addWidget(w)
     w.show()
-
 
     w.props.distance = 10
 
     return w
 
 
-DELAY = 200
+DELAY = 50
+
 
 class TestBox(object):
-
     def test_paint(self, chartwidget3d: ChartView3d, qtbot: QtBot):
         """ Tests for paint
 
@@ -65,8 +64,7 @@ class TestBox(object):
 
 
 class TestCoordinateCross(object):
-
-    def test_paint(self, chartwidget3d: ChartView3d,  qtbot: QtBot):
+    def test_paint(self, chartwidget3d: ChartView3d, qtbot: QtBot):
         """ Tests for paint
 
         """
@@ -76,7 +74,6 @@ class TestCoordinateCross(object):
 
 
 class TestGLGraphicsItem(object):
-
     def test_applyGLOptions(self, qtbot: QtBot):
         """ Tests for applyGLOptions
 
@@ -261,7 +258,6 @@ class TestGLGraphicsItem(object):
 
 
 class TestGrid(object):
-
     def test_paint(self, chartwidget3d: ChartView3d, qtbot: QtBot):
         """ Tests for paint
 
@@ -272,7 +268,6 @@ class TestGrid(object):
 
 
 class TestMesh(object):
-
     def test_compute_face_arrays(self):
         """ Tests for compute_face_arrays
         
@@ -284,7 +279,7 @@ class TestMesh(object):
         """ Tests for cone
         
         """
-        b = MeshItem(Mesh.cone(), shader='shaded')
+        b = MeshItem(Mesh.cone(), shader="shaded")
         b.translate(2, 2, 0)
 
         chartwidget3d.addItem(b)
@@ -294,9 +289,8 @@ class TestMesh(object):
         """ Tests for cube
         
         """
-        b = MeshItem(Mesh.cube(2), shader='shaded')
+        b = MeshItem(Mesh.cube(2), shader="shaded")
         b.translate(2, 2, 0)
-
 
         chartwidget3d.addItem(b)
         qtbot.wait(DELAY)
@@ -312,7 +306,7 @@ class TestMesh(object):
         """ Tests for sphere
         
         """
-        b = MeshItem(Mesh.sphere(), shader='shaded')
+        b = MeshItem(Mesh.sphere(), shader="shaded")
         b.translate(2, 2, 0)
 
         chartwidget3d.addItem(b)
@@ -320,7 +314,6 @@ class TestMesh(object):
 
 
 class TestMeshItem(object):
-
     def test_initializeGL(self, qtbot: QtBot):
         """ Tests for initializeGL
 

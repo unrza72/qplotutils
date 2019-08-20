@@ -14,7 +14,6 @@ from qtpy.QtCore import QTimer
 from qtpy.QtWidgets import QApplication, QAction, QMenu
 
 
-
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
 print(PKG_DIR)
 if PKG_DIR not in sys.path:
@@ -36,7 +35,6 @@ __status__ = "Development"
 
 
 class SignalDock(Dock):
-
     def __init__(self, title="OSCI"):
         super(SignalDock, self).__init__(title)
 
@@ -50,13 +48,10 @@ class SignalDock(Dock):
         self.timeline.setX(e.position.x())
 
 
-
-
 if __name__ == "__main__":
     """ Minimal example showing a bench with 2 docks.
     The docks can be resized and dragged around.
     """
-
 
     def sigint_handler(signum, frame):
         """ Install handler for the SIGINT signal. To kill app through shell.
@@ -67,7 +62,6 @@ if __name__ == "__main__":
         """
         # sys.stderr.write('\r')
         QApplication.exit()
-
 
     signal.signal(signal.SIGINT, sigint_handler)
 
@@ -152,4 +146,3 @@ if __name__ == "__main__":
 
     bench.show()
     qapp.exec_()
-

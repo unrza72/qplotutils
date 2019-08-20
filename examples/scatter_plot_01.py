@@ -17,7 +17,6 @@ from qtpy.QtCore import QTimer
 from qtpy.QtWidgets import QApplication
 
 
-
 PKG_DIR = os.path.abspath(os.path.join(__file__, "..", ".."))
 print(PKG_DIR)
 if PKG_DIR not in sys.path:
@@ -50,7 +49,6 @@ if __name__ == "__main__":
     cfg = Configuration()
     cfg.debug = False
 
-
     def sigint_handler(signum, frame):
         """ Install handler for the SIGINT signal. To kill app through shell.
 
@@ -60,7 +58,6 @@ if __name__ == "__main__":
         """
         # sys.stderr.write('\r')
         QApplication.exit()
-
 
     signal.signal(signal.SIGINT, sigint_handler)
 
@@ -104,7 +101,6 @@ if __name__ == "__main__":
     for k in range(50):
         s = ScatterItem(random.randint(-100, 100), random.randint(-100, 100), k)
         view_02.addItem(s)
-
 
     # Third
     cm_03 = Colormap(color._jet_data)

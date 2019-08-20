@@ -38,20 +38,20 @@ _log = logging.getLogger(__name__)
 
 
 @pytest.fixture()
-def view(qtbot : QtBot):
+def view(qtbot: QtBot):
     view = ChartView(orientation=ChartView.CARTESIAN)
     view.resize(800, 800)
     view.show()
 
     qtbot.addWidget(view)
 
-    return  view
+    return view
 
-DELAY = 200
+
+DELAY = 50
 
 
 class TestColorbar(object):
-
     def test_generatePicture(self):
         """ Tests for generatePicture
         
@@ -82,7 +82,6 @@ class TestColorbar(object):
 
 
 class TestScatterItem(object):
-
     def test_boundingRect(self):
         """ Tests for boundingRect
         
@@ -113,8 +112,7 @@ class TestScatterItem(object):
 
 
 class TestScatterPlotView(object):
-
-    def test_scatter_plots(self, qtbot : QtBot):
+    def test_scatter_plots(self, qtbot: QtBot):
         # First dock
         cm_01 = Colormap()
         view_01 = ScatterPlotView(cm_01)
@@ -129,14 +127,14 @@ class TestScatterPlotView(object):
 
         items = []
         for k in range(100):
-            s = ScatterItem(np.random.randint(-100, 100), np.random.randint(-100, 100), k)
+            s = ScatterItem(
+                np.random.randint(-100, 100), np.random.randint(-100, 100), k
+            )
             items.append(s)
 
         view_01.addItems(items)
         view_01.autoRange()
-        qtbot.wait(200)
-
-
+        qtbot.wait(DELAY)
 
     def test_ScatterPlotView__colormap_callback(self, qtbot: QtBot):
         """ Tests for ScatterPlotView__colormap_callback

@@ -65,10 +65,14 @@ class Ui_CamControl(object):
         self.lineEdit_elevation.setObjectName("lineEdit_elevation")
         self.gridLayout.addWidget(self.lineEdit_elevation, 2, 2, 1, 1)
         self.horizontalLayout.addLayout(self.gridLayout)
-        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        spacerItem = QtWidgets.QSpacerItem(
+            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
         self.horizontalLayout.addItem(spacerItem)
         self.verticalLayout.addLayout(self.horizontalLayout)
-        spacerItem1 = QtWidgets.QSpacerItem(20, 3, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            20, 3, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
         self.verticalLayout.addItem(spacerItem1)
 
         self.retranslateUi(CamControl)
@@ -83,5 +87,3 @@ class Ui_CamControl(object):
         self.lineEdit_distance.setText(_translate("CamControl", "0"))
         self.lineEdit_azimuth.setText(_translate("CamControl", "0"))
         self.lineEdit_elevation.setText(_translate("CamControl", "0"))
-
-

@@ -36,7 +36,6 @@ _log = logging.getLogger(__name__)
 
 
 class TestUi_PlaybackControl(object):
-
     def test_retranslateUi(self):
         """ Tests for retranslateUi
         

@@ -119,17 +119,18 @@ class Colorbar(ChartItem):
         self.setVisible(True)
 
         metrics = QFontMetrics(self.font)
-        runWidth = 0
+        run_width = 0
 
         for entry in [v_min, v_max]:
             w = metrics.width("{}".format(entry))
-            if w > runWidth:
-                runWidth = w
-        self._bRect.setWidth(runWidth + 60)
+            if w > run_width:
+                run_width = w
+        self._bRect.setWidth(run_width + 60)
 
-        self._updatePicture()
+        self.updatePicture()
 
-    def _updatePicture(self):
+    def updatePicture(self):
+        """ Updates the colorbar. """
         self._picture = QPicture()
         painter = QPainter(self._picture)
         self._generatePicture(painter)
@@ -183,7 +184,7 @@ class ScatterPlotView(ChartView):
     def __init__(self, colormap, min=None, max=None, parent=None):
         super(ScatterPlotView, self).__init__(parent, orientation=ChartView.CARTESIAN)
 
-        self.setCacheMode(QGraphicsView.CacheBackground)
+        # self.setCacheMode(QGraphicsView.CacheBackground)
 
         self.normalize = Normalize(min, max)
         self.lower_bound_dynamic = min is None
@@ -208,11 +209,16 @@ class ScatterPlotView(ChartView):
             and len(self.scatter_items) > 50
         ):
             _log.warning(
-                "Depending on the ordering of your data adding scatter items might be very slow. O(n**2)"
+                "Depending on the ordering of your data adding "
+                "scatter items might be very slow: O(n**2)."
             )
         self.addItems([item])
 
     def addItems(self, items):
+        """ Adds a list of scatter items to the view.
+
+        :param items: list of scatter items
+        """
         force_update_all = False
         for item in items:
             if isinstance(item, ScatterItem):
@@ -220,6 +226,9 @@ class ScatterPlotView(ChartView):
                 r = weakref.ref(item)
                 self.scatter_items.append(r)
 
+                # We might need to update the colorbar scaling,
+                # in case the range is dynamic and new values are exceeding
+                # the current min/max values.
                 if (
                     self.normalize.value_min is None
                     or self.lower_bound_dynamic
@@ -240,8 +249,9 @@ class ScatterPlotView(ChartView):
             super(ScatterPlotView, self).addItem(item)
 
         if force_update_all:
+            # Update the colobar as well...
             self.cb.v_min = self.normalize.value_min
             self.cb.v_max = self.normalize.value_max
-            self.cb._updatePicture()
+            self.cb.updatePicture()
             for s in self.scatter_items:
                 s().updatePicture()

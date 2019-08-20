@@ -20,7 +20,12 @@ print(PKG_DIR)
 if PKG_DIR not in sys.path:
     sys.path.append(PKG_DIR)
 
-from qplotutils.chart.roi import RectangularRegion, ResizeHandle, HandlePosition, RotateHandle
+from qplotutils.chart.roi import (
+    RectangularRegion,
+    ResizeHandle,
+    HandlePosition,
+    RotateHandle,
+)
 from qplotutils.chart.view import ChartView
 
 
@@ -43,7 +48,6 @@ if __name__ == "__main__":
     """
     logging.basicConfig(level=logging.DEBUG)
 
-
     def sigint_handler(signum, frame):
         """ Install handler for the SIGINT signal. To kill app through shell.
 
@@ -53,7 +57,6 @@ if __name__ == "__main__":
         """
         # sys.stderr.write('\r')
         QApplication.exit()
-
 
     signal.signal(signal.SIGINT, sigint_handler)
 
@@ -72,15 +75,13 @@ if __name__ == "__main__":
     # view.visibleRegion()
     view.show()
 
-    roi = RectangularRegion(1, 0, 2, 1, 0.)
+    roi = RectangularRegion(1, 0, 2, 1, 0.0)
     roi.addHandle(ResizeHandle(position=HandlePosition.TOP))
     roi.addHandle(ResizeHandle(position=HandlePosition.LEFT))
     roi.addHandle(ResizeHandle(position=HandlePosition.BOTTOM))
     roi.addHandle(ResizeHandle(position=HandlePosition.RIGHT))
     roi.addHandle(RotateHandle(position=HandlePosition.RIGHT | HandlePosition.TOP))
     view.addItem(roi)
-
-
 
     def contextMenu(pos):
 
@@ -92,18 +93,17 @@ if __name__ == "__main__":
                 roi.removeHandle(h)
 
         def rotate_90():
-            roi.setRotation(roi.rotation() + 82.)
+            roi.setRotation(roi.rotation() + 82.0)
 
-        rm_action = QAction('Remove handle', view)
+        rm_action = QAction("Remove handle", view)
         rm_action.triggered.connect(remove_handle)
 
-        ro_action = QAction('Rotate by 82', view)
+        ro_action = QAction("Rotate by 82", view)
         ro_action.triggered.connect(rotate_90)
 
         menu.addAction(rm_action)
         menu.addAction(ro_action)
         menu.exec_(view.mapToGlobal(pos))
-
 
     view.customContextMenuRequested.connect(contextMenu)
 

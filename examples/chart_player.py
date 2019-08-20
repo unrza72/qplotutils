@@ -19,7 +19,6 @@ if PKG_DIR not in sys.path:
     sys.path.append(PKG_DIR)
 
 
-
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2019, Philipp Baust"
 __credits__ = []
@@ -31,7 +30,6 @@ __status__ = "Development"
 
 _log = logging.getLogger(__name__)
 _log.setLevel(logging.DEBUG)
-
 
 
 if __name__ == "__main__":
@@ -48,11 +46,9 @@ if __name__ == "__main__":
     p2 = pd.DataFrame(index=idx2)
     p2["v2"] = v2
 
-    ts_merge = pd.merge(p1, p2, left_index=True, right_index=True, how='outer')
-
+    ts_merge = pd.merge(p1, p2, left_index=True, right_index=True, how="outer")
 
     print(p1.head(), p2.head())
     print(ts_merge.head(20))
-
 
     ts_merge.reindex()

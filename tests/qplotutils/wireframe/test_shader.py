@@ -36,7 +36,6 @@ _log = logging.getLogger(__name__)
 
 
 class TestShaderProgram(object):
-
     def test__enter__(self):
         """ Tests for _enter__
         
@@ -88,7 +87,6 @@ class TestShaderProgram(object):
 
 
 class TestShaderRegistry(object):
-
     def test__getitem__(self):
         """ Tests for _getitem__
         

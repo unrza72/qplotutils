@@ -37,21 +37,20 @@ _log = logging.getLogger(__name__)
 
 
 @pytest.fixture()
-def view(qtbot : QtBot):
+def view(qtbot: QtBot):
     view = ChartView(orientation=ChartView.CARTESIAN)
     view.resize(800, 800)
     view.show()
 
     qtbot.addWidget(view)
 
-    return  view
+    return view
 
-DELAY = 200
 
+DELAY = 50
 
 
 class TestBaseMixin(object):
-
     def test_chartItemFlags(self):
         """ Tests for chartItemFlags
         
@@ -82,7 +81,6 @@ class TestBaseMixin(object):
 
 
 class TestChartItem(object):
-
     def test_boundingRect(self):
         """ Tests for boundingRect
         
@@ -109,7 +107,6 @@ class TestChartItemGroup(object):
 
 
 class TestChartWidgetItem(object):
-
     def test_boundingRect(self):
         """ Tests for boundingRect
         
@@ -124,8 +121,7 @@ class TestColorSet(object):
 
 
 class TestCoordCross(object):
-
-    def test_boundingRect(self, view : ChartView, qtbot: QtBot):
+    def test_boundingRect(self, view: ChartView, qtbot: QtBot):
         """ Tests for boundingRect
         
         """
@@ -143,7 +139,6 @@ class TestCoordCross(object):
 
 
 class TestHLine(object):
-
     def test_label(self):
         """ Tests for label
         
@@ -174,7 +169,6 @@ class TestHLine(object):
 
 
 class TestLineChartItem(object):
-
     def test_makePath(self):
         """ Tests for makePath
         
@@ -240,7 +234,6 @@ class TestLineChartItem(object):
 
 
 class TestRectMarker(object):
-
     def test_boundingRect(self):
         """ Tests for boundingRect
         
@@ -257,12 +250,11 @@ class TestRectMarker(object):
 
 
 class TestTextItem(object):
-
-    def test_boundingRect(self, view : ChartView, qtbot : QtBot):
+    def test_boundingRect(self, view: ChartView, qtbot: QtBot):
         """ Tests for boundingRect
         
         """
-        ti = TextItem(QPoint(0,0), "Foo")
+        ti = TextItem(QPoint(0, 0), "Foo")
         view.addItem(ti)
 
         qtbot.wait(DELAY)
@@ -276,7 +268,6 @@ class TestTextItem(object):
 
 
 class TestVLine(object):
-
     def test_label(self):
         """ Tests for label
         

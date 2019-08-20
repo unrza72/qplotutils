@@ -9,6 +9,6 @@ setup(name='qplotutils',
       license='MIT',
       packages=['qplotutils',],
       install_requires=[
-            'qtpy', 'numpy', 'PyOpenGL',
+            'qtpy', 'numpy', 'PyOpenGL', 'pytest'
       ],
       zip_safe=False)

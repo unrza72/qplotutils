@@ -11,6 +11,8 @@ import logging
 
 import numpy as np
 
+from qplotutils import QPlotUtilsException
+
 __author__ = "Philipp Baust"
 __copyright__ = "Copyright 2019, Philipp Baust"
 __credits__ = []
@@ -86,21 +88,38 @@ class Colormap(object):
         self.lut[:, 3] = a
 
     def __channel_gradient(self, d):
+        """ Computes the gradient for the given channel data.
+        Expect a tuple of tuples of minimum two elements.
+        The inner tuples is expected to have 3 elements:
+
+            * relative LUT position [0..1]
+            * start / end value at the given LUT position
+            * gradient start / end value at the given LUT position
+        """
         c = np.zeros(self.N, dtype=np.float)
 
         for l, r in zip(d[0:-1], d[1:]):
-            l_idx = self.lut_index(l[0])
-            l_sv = l[1]
-            l_v = l[2]
+            lut_index_left = self.lut_index(l[0])
+            start_value = l[1]
+            value_left = l[2]
 
-            r_idx = self.lut_index(r[0])
-            r_v = r[1]
-            r_ev = r[2]
+            lut_index_right = self.lut_index(r[0])
+            value_right = r[1]
+            end_value = r[2]
 
-            c[l_idx:r_idx] = l_sv + (r_v - l_v) / (r_idx - l_idx * 1.0) * np.arange(
-                0, r_idx - l_idx
+            if lut_index_left == lut_index_right:
+                raise QPlotUtilsException(
+                    "Colormap defintion not valid. "
+                    "Duplicated realative LUT position."
+                )
+
+            # start value + value differential over LUT range
+            c[lut_index_left:lut_index_right] = start_value + (
+                value_right - value_left
+            ) / (lut_index_right - lut_index_left * 1.0) * np.arange(
+                0, lut_index_right - lut_index_left
             )
-            c[r_idx] = r_ev
+            c[lut_index_right] = end_value
 
         return c
 
@@ -120,13 +139,42 @@ class Colormap(object):
 
 
 class Normalize(object):
-    def __init__(self, value_min, value_max, lower_bound=0.0, upper_bound=1.0):
-        self.value_min = value_min
-        self.value_max = value_max
+    """ Performs value normalization for scatter plot coloring. """
+
+    def __init__(self, value_min=None, value_max=None):
+        """ Constructor.
+
+        :param value_min: Min value
+        :param value_max: Max value
+        """
+        self._value_min = value_min
+        self._value_max = value_max
+
+    @property
+    def value_min(self):
+        return self._value_min
+
+    @value_min.setter
+    def value_min(self, value):
+        self._value_min = value
+
+    @property
+    def value_max(self):
+        return self._value_max
+
+    @value_max.setter
+    def value_max(self, value):
+        self._value_max = value
 
     def __call__(self, values, dtype=np.float32):
-        # if not self.value_min <= values <= self.value_max:
-        #     return np.NaN  # Colormap can decide to what to do with these values
+        """ Returns a normalized value between [0..1] for the given values.
+        If min and max are defined in the constructor out of bound values
+        get masked.
+
+        :param values: value or list of values
+        :param dtype: optional numpy data type
+        :return: normalized values
+        """
         out_of_bounds_greater = np.ma.masked_greater(values, self.value_max)
         out_of_bounds_less = np.ma.masked_less(values, self.value_min)
 

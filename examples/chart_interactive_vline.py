@@ -38,7 +38,6 @@ _log.setLevel(logging.DEBUG)
 
 
 class AWidget(QObject):
-
     def __init__(self, parent=None):
         super(AWidget, self).__init__(parent)
 
@@ -49,7 +48,6 @@ class AWidget(QObject):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
 
-
     def sigint_handler(signum, frame):
         """ Install handler for the SIGINT signal. To kill app through shell.
 
@@ -59,7 +57,6 @@ if __name__ == "__main__":
         """
         # sys.stderr.write('\r')
         QApplication.exit()
-
 
     signal.signal(signal.SIGINT, sigint_handler)
 
@@ -91,9 +88,7 @@ if __name__ == "__main__":
     # view.setRange(QRectF(0,0,30,1))
     # view.setMaxVisibleRange(QRectF(-100,-10000,600,20000))
 
-
     a = AWidget()
     ivline.positionChange.connect(a.report)
-
 
     qapp.exec_()

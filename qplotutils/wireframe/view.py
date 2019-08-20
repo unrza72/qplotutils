@@ -211,7 +211,7 @@ class ChartView3d(QGLWidget):
 
         x0, y0, w, h = self.getViewport()
 
-        if  w == 0:
+        if w == 0:
             return self.__projection_matrix
 
         dist = self.props.distance

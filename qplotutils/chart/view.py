@@ -238,7 +238,7 @@ class ChartView(QGraphicsView):
         # Set a default visible range
         self.setRange(QRectF(-1, -1, 2, 2))
 
-    def mousePressEvent(self, e : QMouseEvent):
+    def mousePressEvent(self, e: QMouseEvent):
         print("Click")
         e.setAccepted(False)
         super().mousePressEvent(e)
@@ -291,8 +291,11 @@ class ChartView(QGraphicsView):
 
     def addItem(self, item=ChartItem()):
         item.setParentItem(self.centralWidget.area.getRootItem())
+
+        # call ounce on add
+        item.visibleRangeChanged(self.centralWidget.area.visible_range)
+        # then connect to be notified
         self.centralWidget.area.visibleRangeChange.connect(item.visibleRangeChanged)
-        # self.connect(self.centralWidget.area, SIGNAL("visibleRangeChange"), item.visibleRangeChanged)
 
         if not item.chartItemFlags & ChartItemFlags.FLAG_NO_LABEL:
             self.legend.addEntry(item)
@@ -1466,7 +1469,9 @@ class ChartArea(QGraphicsWidget):
         self.visibleRangeChange.emit(self.__visibleRange)
 
     def adjustRange(self):
-        if self.__visibleRange is None: #  or self.__visibleRange.height() == 0 or self.__visibleRange.width():
+        if (
+            self.__visibleRange is None
+        ):  #  or self.__visibleRange.height() == 0 or self.__visibleRange.width():
             return
 
         if self.__maxVisibleRange:
@@ -1559,6 +1564,10 @@ class ChartArea(QGraphicsWidget):
         _log.debug("bbox: {}".format(r))
         self.__visibleRange = r
         self.adjustRange()
+
+    @property
+    def visible_range(self):
+        return self.__visibleRange
 
     def __repr__(self):
         return "<ChartArea>"

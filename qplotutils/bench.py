@@ -161,6 +161,7 @@ class BenchItem(QWidget, object):
 
 class Placement(object):
     """ Enum of the available Placement options for docks. """
+
     options_list = ["Left", "Top", "Right", "Bottom", "Tab"]
 
     LEFT, TOP, RIGHT, BOTTOM, TAB = options_list
@@ -709,7 +710,7 @@ class TabContainer(AbstractContainer):
         self.layout.addWidget(self._tabbar)
 
         self._dockstack = QStackedLayout()
-        
+
         self._dockstack.setContentsMargins(0, 0, 0, 0)
         self._dockstack.setSpacing(0)
         self.layout.addLayout(self._dockstack)
@@ -1233,7 +1234,6 @@ class TabHeader(QWidget):
 
 
 class Tab(QWidget):
-
     def __init__(self, dock, title):
         super(Tab, self).__init__()  # QWidget.__init__(self)
 
@@ -1433,4 +1433,5 @@ class Tab(QWidget):
 
 class BenchException(Exception):
     """ Wrapper for all exceptions. """
+
     pass

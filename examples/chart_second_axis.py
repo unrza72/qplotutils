@@ -23,7 +23,11 @@ print(PKG_DIR)
 if PKG_DIR not in sys.path:
     sys.path.append(PKG_DIR)
 
-from qplotutils.chart.view import ChartView, SecondaryHorizontalAxis, SecondaryVerticalAxis
+from qplotutils.chart.view import (
+    ChartView,
+    SecondaryHorizontalAxis,
+    SecondaryVerticalAxis,
+)
 from qplotutils.chart.items import LineChartItem, HLine, VLine
 
 __author__ = "Philipp Baust"
@@ -39,7 +43,6 @@ __status__ = "Development"
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
 
-
     def sigint_handler(signum, frame):
         """ Install handler for the SIGINT signal. To kill app through shell.
 
@@ -49,7 +52,6 @@ if __name__ == "__main__":
         """
         # sys.stderr.write('\r')
         QApplication.exit()
-
 
     signal.signal(signal.SIGINT, sigint_handler)
 
@@ -66,7 +68,6 @@ if __name__ == "__main__":
     view.show()
     view.title = "A Title"
 
-
     # A line chart_tests item (again)
     l = LineChartItem()
     x = np.arange(-30, 300, 0.2, dtype=np.float)
@@ -79,10 +80,8 @@ if __name__ == "__main__":
     sec_vertical = SecondaryVerticalAxis(y, y * 10)
     view.centralWidget.addSecondaryVerticalAxis(sec_vertical)
 
-
     view.addItem(l)
     view.autoRange()
-
 
     # Add a horizontal line
     h = HLine()

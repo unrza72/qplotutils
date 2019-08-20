@@ -36,7 +36,6 @@ __status__ = "Development"
 
 
 class SignalDock(Dock):
-
     def __init__(self, title="OSCI"):
         super(SignalDock, self).__init__(title)
 
@@ -55,7 +54,6 @@ if __name__ == "__main__":
     The docks can be resized and dragged around.
     """
 
-
     def sigint_handler(signum, frame):
         """ Install handler for the SIGINT signal. To kill app through shell.
 
@@ -65,7 +63,6 @@ if __name__ == "__main__":
         """
         # sys.stderr.write('\r')
         QApplication.exit()
-
 
     signal.signal(signal.SIGINT, sigint_handler)
 
@@ -112,4 +109,3 @@ if __name__ == "__main__":
     dock_01.timeline.setX(12)
 
     qapp.exec_()
-

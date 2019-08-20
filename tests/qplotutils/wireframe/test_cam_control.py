@@ -36,7 +36,6 @@ _log = logging.getLogger(__name__)
 
 
 class TestCamControl(object):
-
     def test_cam_changed(self, qtbot: QtBot):
         """ Tests for cam_changed
 

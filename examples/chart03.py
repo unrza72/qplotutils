@@ -35,7 +35,6 @@ __status__ = "Development"
 if __name__ == "__main__":
     """ ChartView with labels and title """
 
-
     def sigint_handler(signum, frame):
         """ Install handler for the SIGINT signal. To kill app through shell.
 
@@ -45,7 +44,6 @@ if __name__ == "__main__":
         """
         # sys.stderr.write('\r')
         QApplication.exit()
-
 
     signal.signal(signal.SIGINT, sigint_handler)
 

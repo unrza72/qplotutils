@@ -41,12 +41,11 @@ class TestDefaultGlOptions(object):
 
 
 class TestVector3d(object):
-
     def test__str__(self):
         """ Tests for _str__
         
         """
-        v = Vector3d(6,7,8)
+        v = Vector3d(6, 7, 8)
         s = str(v)
         assert s is not None
 
@@ -77,10 +76,10 @@ class TestVector3d(object):
         """ Tests for x
         
         """
-        v = Vector3d(1,2,3)
+        v = Vector3d(1, 2, 3)
         assert v.x == 1
-        v.x = .9
-        assert v.x == .9
+        v.x = 0.9
+        assert v.x == 0.9
 
     def test_y(self):
         """ Tests for y
@@ -88,8 +87,8 @@ class TestVector3d(object):
         """
         v = Vector3d(1, 2, 3)
         assert v.y == 2
-        v.y = .9
-        assert v.y == .9
+        v.y = 0.9
+        assert v.y == 0.9
 
     def test_z(self):
         """ Tests for z
@@ -97,5 +96,5 @@ class TestVector3d(object):
         """
         v = Vector3d(1, 2, 3)
         assert v.z == 3
-        v.z = .9
-        assert v.z == .9
+        v.z = 0.9
+        assert v.z == 0.9
