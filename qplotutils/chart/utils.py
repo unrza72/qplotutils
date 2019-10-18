@@ -8,6 +8,7 @@ Utility classes to aid proper vizualization.
 """
 import logging
 
+from PyQt5.QtGui import QBrush
 from qtpy.QtCore import Qt
 from qtpy.QtGui import QPen
 
@@ -43,6 +44,12 @@ def makePen(color, lineWidth=1.0, lineStyle=Qt.SolidLine, cosmetic=True):
 
     return pen
 
+def makeBrush(color, style=Qt.SolidPattern):
+    brush = QBrush(
+        color,
+        style
+    )
+    return brush
 
 class ChartColors(object):
     """ Color sets for line charts, e.g.  """

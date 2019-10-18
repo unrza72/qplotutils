@@ -2,9 +2,10 @@
 
 # Form implementation generated from reading ui file 'dock_properties.ui'
 #
-# Created by: PyQt5 UI code generator 5.12.1
+# Created by: PyQt5 UI code generator 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
+
 
 from qtpy import QtCore, QtGui, QtWidgets
 
@@ -22,19 +23,13 @@ class Ui_DialogDockProperties(object):
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label)
         self.lineEditDockName = QtWidgets.QLineEdit(DialogDockProperties)
         self.lineEditDockName.setObjectName("lineEditDockName")
-        self.formLayout.setWidget(
-            0, QtWidgets.QFormLayout.FieldRole, self.lineEditDockName
-        )
+        self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.lineEditDockName)
         self.verticalLayout.addLayout(self.formLayout)
-        spacerItem = QtWidgets.QSpacerItem(
-            20, 1, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
-        )
+        spacerItem = QtWidgets.QSpacerItem(20, 1, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
-        spacerItem1 = QtWidgets.QSpacerItem(
-            40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
-        )
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem1)
         self.pushButtonOk = QtWidgets.QPushButton(DialogDockProperties)
         self.pushButtonOk.setObjectName("pushButtonOk")
@@ -51,9 +46,7 @@ class Ui_DialogDockProperties(object):
 
     def retranslateUi(self, DialogDockProperties):
         _translate = QtCore.QCoreApplication.translate
-        DialogDockProperties.setWindowTitle(
-            _translate("DialogDockProperties", "Dialog")
-        )
+        DialogDockProperties.setWindowTitle(_translate("DialogDockProperties", "Dialog"))
         self.label.setText(_translate("DialogDockProperties", "Title:"))
         self.pushButtonOk.setText(_translate("DialogDockProperties", "Ok"))
         self.pushButtonCancel.setText(_translate("DialogDockProperties", "Cancel"))

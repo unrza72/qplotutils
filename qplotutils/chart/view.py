@@ -10,7 +10,9 @@ import logging
 
 import math
 import numpy as np
-from PyQt5.QtGui import QMouseEvent
+from qtpy.QtCore import QSize
+from qtpy.QtGui import QMouseEvent, QImage
+from qtpy.QtSvg import QSvgGenerator
 from qtpy.QtCore import Signal, Qt, QPointF, QRectF, QSizeF
 from qtpy.QtGui import (
     QPen,
@@ -238,8 +240,40 @@ class ChartView(QGraphicsView):
         # Set a default visible range
         self.setRange(QRectF(-1, -1, 2, 2))
 
+    def export_image(self, filename, size=QSize()):
+        """ Exports the currently displayed items to the given filename.
+
+        :param filename: filename including the extension (e.g. JPEG, JPG, PNG)
+        :param size: Output size of the image
+        """
+        img = QImage(size.width(), size.height(), QImage.Format_RGB32)
+        painter = QPainter(img)
+        self.render(painter, QRectF(img.rect()), self.sceneRect().toRect())
+        img.save(filename)
+        painter.end()
+        _log.debug("Finished export")
+
+    def export_svg(self, filename):
+        """ Export the view as SVG.
+
+        **Experimantal**
+
+        :param filename: filename including the extension (e.g. JPEG, JPG, PNG)
+        :return:
+        """
+        generator = QSvgGenerator()
+        generator.setFileName(filename)
+        generator.setSize(self.size())
+        generator.setViewBox(self.sceneRect().toRect());
+        generator.setTitle("qplotutils chartview export")
+
+        painter = QPainter()
+        painter.begin(generator)
+        self.render(painter, QRectF(self.sceneRect().toRect()),
+                    self.sceneRect().toRect())
+        painter.end()
+
     def mousePressEvent(self, e: QMouseEvent):
-        print("Click")
         e.setAccepted(False)
         super().mousePressEvent(e)
 
@@ -281,6 +315,11 @@ class ChartView(QGraphicsView):
     def showEvent(self, event):
         self.centralWidget.area.axisChange()
         self.__layout_map_keys()
+
+    def force_layout(self):
+        self.centralWidget.area.axisChange()
+        self.__layout_map_keys()
+        self.__relayout()
 
     def setCoordinatesOrientation(self, orientation=DEFAULT_ORIENTATION):
         self.centralWidget.area.getRootItem().setTransform(orientation)
@@ -1222,7 +1261,7 @@ class ChartArea(QGraphicsWidget):
     PAN_MODE, ZOOM_BOX_MODE = range(2)
 
     def mousePressEvent(self, event):
-        print("ClickClick")
+        # print("ClickClick")
         _log.debug("Mouse press event")
 
         # self.__mouseMode = ChartArea.PAN_MODE

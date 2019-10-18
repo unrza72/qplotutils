@@ -311,12 +311,11 @@ class Bench(QWidget):
         self.contentModified.emit()
 
     def dockMove(self, dock_uid, placement, ref_uid):
-        """ Moves the dock.
+        """ Moves a dock.
 
-        :param dock_uid: UID of the docks that should move
-        :param placement: Placement relative to the reference dock or
-        absolute if no reference given
-        :param ref_uid: UID of the reference dock
+        :param dock_uid: UID of the dock that is moved.
+        :param placement: Placement relative to the reference dock or absolute
+        :param ref_uid: Reference dock UUID for relative placement
         """
         _log.debug("Dock move: {}, {}, {}".format(dock_uid, placement, ref_uid))
 
@@ -436,6 +435,7 @@ class Dock(BenchItem):
         """
         self.setStyleSheet(self._style)
         self.setLayout(QVBoxLayout())
+        self.layout().setContentsMargins(0,0,0,0)
 
     def addWidget(self, widget):
         """ Adds the given widget to the docks central layout.
@@ -461,10 +461,27 @@ class Dock(BenchItem):
         layout = super(Dock, self).saveLayout()
         layout["title"] = self.title
 
+        if self.layout().count() == 1:
+            widget = self.layout().itemAt(0).widget()
+            layout["widget_class"] = widget.__class__.__name__
+            layout["widget_module"] = widget.__class__.__module__
+
         return layout
 
     def loadLayout(self, layout):
         self.title = layout["title"]
+
+        if "widget_class" in layout:
+            module_str = layout["widget_module"]
+            class_str =layout["widget_class"]
+
+            # Bootstrap part II: Make the child containers
+            mod = __import__(module_str, fromlist=[class_str])
+            klass = getattr(mod, class_str)
+
+            child_obj = klass()
+            self.addWidget(child_obj)
+
 
     def closeEvent(self, event):
         _log.debug("Close event")

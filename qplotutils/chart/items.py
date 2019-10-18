@@ -37,6 +37,8 @@ __status__ = "Development"
 _log = logging.getLogger(__name__)
 _log.setLevel(LOG_LEVEL)
 
+_cfg = CONFIG
+
 
 class ChartItemFlags(object):
     """ Enum with flags that control behavior and apearance of chart_tests items. """
@@ -126,7 +128,8 @@ class ChartWidgetItem(BaseMixin, QGraphicsWidget):
 
 class ChartItem(BaseMixin, QGraphicsItem):
     """ Base class for all GraphicItems.
-    This implementation overrides boundingRect and paint in order to provide bounding boxing during debugging.
+    This implementation overrides boundingRect and paint in order to provide
+    bounding boxing during debugging.
 
     :param parent: Parent item
     """
@@ -150,6 +153,8 @@ class ChartItem(BaseMixin, QGraphicsItem):
 
     def __del__(self):
         _log.debug("Finalizing: {}".format(self))
+
+
 
 
 class TextItem(ChartItem):
@@ -208,22 +213,23 @@ class CoordCross(ChartItem):
         return QRectF(-9, -9, 18, 18)
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-        pen = QPen(Qt.red)
-        p.setPen(pen)
+        # pen = QPen(Qt.red)
+        p.setPen(makePen(Qt.red))
 
         p.drawLine(QLineF(0, 0, 2, 0))
         p.drawLine(QLineF(2, 0, 1.5, 0.5))
         p.drawLine(QLineF(2, 0, 1.5, -0.5))
 
-        pen = QPen(Qt.blue)
-        p.setPen(pen)
+        # pen = QPen(Qt.blue)
+        p.setPen(makePen(Qt.blue))
         p.drawLine(QLineF(0, 0, 0, 2))
         p.drawLine(QLineF(0, 2, 0.5, 1.5))
         p.drawLine(QLineF(0, 2, -0.5, 1.5))
 
-        pen = QPen(Qt.yellow)
-        p.setPen(pen)
-        p.drawRect(-9, -9, 18, 18)
+        if _cfg.debug_layout:
+            pen = QPen(makePen(Qt.yellow))
+            p.setPen(pen)
+            p.drawRect(-9, -9, 18, 18)
 
 
 class LineChartItem(ChartItem):
@@ -241,7 +247,7 @@ class LineChartItem(ChartItem):
         self._bRect = None
         self.markers = {}
 
-        self._showticks = False
+        self._show_ticks = False
         self._visible_range = None
 
         self._ordinate = None
@@ -273,15 +279,23 @@ class LineChartItem(ChartItem):
 
     @property
     def showTicks(self):
-        """ Property if true the chart_tests will display tickmarks if the number of displayed data points is below
-        400.
+        """ Property if true the chart_tests will display tick marks
+        if the number of displayed data points is below 400.
         """
-        return self._showticks
+        return self._show_ticks
 
     @showTicks.setter
     def showTicks(self, value):
-        self._showticks = value
+        self._show_ticks = value
         self.visibleRangeChanged(self._visible_range)
+
+    @property
+    def color(self):
+        return self._color
+
+    @color.setter
+    def color(self, value):
+        self._color = value
 
     # @property
     # def color(self):
@@ -289,14 +303,23 @@ class LineChartItem(ChartItem):
 
     @property
     def label(self):
-        """ Property to get the items label. """
         return self._label
+
+    @label.setter
+    def label(self, value):
+        self._label = value
+
+    # @property
+    # def label(self):
+    #     """ Property to get the items label. """
+    #     return self._label
 
     def plot(self, data, index=None, label=None, color=QColor(Qt.red)):
         """ Sets the charts data points.
 
         :param data: ordinate values
-        :param index: abscissa values. Optional, if not set datapoints are indexed starting with 0
+        :param index: abscissa values. Optional, if not set datapoints are
+         indexed starting with 0
         :param label: Label of the chart_tests.
         :param color: Color of the chart_tests
         """
@@ -361,13 +384,16 @@ class LineChartItem(ChartItem):
             p.drawRect(self._bRect)
 
     def visibleRangeChanged(self, rect=QRectF()):
-        """ Slot that is called whenver the views visible range changed.
+        """ Slot that is called whenever the views visible range changed.
 
         :param rect: view rectangle.
         """
-
         _log.debug("Visible range changed to: {}".format(rect))
         self._visible_range = rect
+
+        if rect is None:
+            # _log.debug("???")
+            return
 
         visible_indices = np.where(
             np.logical_and(
@@ -380,10 +406,6 @@ class LineChartItem(ChartItem):
 
         # self.markers = []
         if len(visible_indices) < 400 and self.showTicks:
-            # _log.debug("Too many indices for display")
-            # return
-
-            # self.markers = [QPointF(self._xData[idx], self._yData[idx]) for idx in visible_indices]
             _log.debug("Making markers")
             for idx in visible_indices:
                 if idx not in self.markers:

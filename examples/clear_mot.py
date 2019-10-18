@@ -210,8 +210,8 @@ if __name__ == "__main__":
     )
     obj_ref = pd.DataFrame(f, columns=columns)
 
-    cov_columns = columns[1:]
-    cov = np.array([[1.0, 0, 0, 0], [0, 1.9, 0, 0], [0, 0, 1.0, 0], [0, 0, 0, 3.0]])
+    # cov_columns = columns[1:]
+    # cov = np.array([[1.0, 0, 0, 0], [0, 1.9, 0, 0], [0, 0, 1.0, 0], [0, 0, 0, 3.0]])
 
     cov_columns = columns[1:3]
     cov = np.array([[1.0, 0], [0, 4.0]])
