@@ -110,17 +110,89 @@ def check_for_qt(class_type):
     return False
 
 
-if __name__ == "__main__":
+def make_test_module(module_name, abs_test_pkg_path, force=False):
+    test_module_filename = "test_" + module_name.split(".")[-1] + ".py"
+    abs_test_module_path = os.path.join(abs_test_pkg_path, test_module_filename)
 
-    root = os.path.abspath(os.path.join(__file__, "..", ".."))
-    qplotutils_base = os.path.join(root, "qplotutils")
+    if os.path.exists(abs_test_module_path) and not force:
+        print("Testmodule '{}' already created.".format(test_module_filename))
+        # continue
+        return
+
+    print("Creating testmodule '{}'.".format(test_module_filename))
+    with open(abs_test_module_path, "w") as fp:
+        fp.write(
+            tmpl_module.format(
+                title=format_rst("Test for " + module_name, "title"),
+                module_under_test=module_name,
+            )
+        )
+
+        m = importlib.import_module(module_name)
+        for name, obj in inspect.getmembers(m):
+            if inspect.isclass(obj) and obj.__module__.startswith(module_name):
+
+                print(
+                    "Clazz:",
+                    name,
+                    " Module:",
+                    obj.__module__,
+                    abs_test_pkg_path,
+                )
+
+                fp.write(tmpl_class.format(class_name=name))
+
+                is_qt = check_for_qt(obj)
+                fp.write(tmpl_class_body.format(class_name=name))
+
+                # function bodies here
+                number_of_tests = 0
+                for fkt_name, fkt_ in inspect.getmembers(obj):
+                    if inspect.isdatadescriptor(fkt_) and hasattr(fkt_, "fget"):
+                        # property
+                        if not fkt_.fget.__qualname__.startswith(name):
+                            continue
+
+                    elif inspect.isfunction(fkt_):
+                        if not fkt_.__qualname__.startswith(name):
+                            # not immplemented here
+                            continue
+
+                        if fkt_name in ["__init__", "__del__", "__repr__"]:
+                            continue
+
+                        if fkt_name.startswith("_"):
+                            # chomp first letter fir protected method signature
+                            fkt_name = fkt_name[1:]
+
+                    else:
+                        continue
+
+                    print(fkt_)
+                    number_of_tests += 1
+                    if is_qt:
+                        fp.write(
+                            tmpl_test_fkt_qbot.format(function_name=fkt_name)
+                        )
+                    else:
+                        fp.write(tmpl_test_fkt.format(function_name=fkt_name))
+
+                if number_of_tests == 0:
+                    fp.write(tmpl_no_fkt)
+
+        fp.close()
+
+
+def walk_package(root, qplotutils_base):
+    # root = os.path.abspath(os.path.join(__file__, "..", ".."))
+    # qplotutils_base = os.path.join(root, "qplotutils")
     for base_dir, dirnames, filenames in os.walk(qplotutils_base):
 
         for filename in filenames:
             if not filename.endswith(".py") or filename == "__init__.py":
                 continue
 
-            package_name = base_dir[len(root) + 1 :].replace(os.sep, ".")
+            package_name = base_dir[len(root) + 1:].replace(os.sep, ".")
             module_name = package_name + "." + filename[:-3]
 
             # Check and create package paths:
@@ -148,71 +220,117 @@ if __name__ == "__main__":
                             )
                             fp.close()
 
-            test_module_filename = "test_" + module_name.split(".")[-1] + ".py"
-            abs_test_module_path = os.path.join(abs_test_pkg_path, test_module_filename)
-            if os.path.exists(abs_test_module_path):
-                print("Testmodule '{}' already created.".format(test_module_filename))
-                continue
 
-            print("Creating testmodule '{}'.".format(test_module_filename))
-            with open(abs_test_module_path, "w") as fp:
-                fp.write(
-                    tmpl_module.format(
-                        title=format_rst("Test for " + module_name, "title"),
-                        module_under_test=module_name,
-                    )
-                )
 
-                m = importlib.import_module(module_name)
-                for name, obj in inspect.getmembers(m):
-                    if inspect.isclass(obj) and obj.__module__.startswith(module_name):
+if __name__ == "__main__":
+    pass
+    make_test_module(
+        "qplotutils.player",
+        r"/home/phil/Development/qplotutils/tests/qplotutils",
+        force=True
+    )
 
-                        print(
-                            "Clazz:",
-                            name,
-                            " Module:",
-                            obj.__module__,
-                            abs_test_pkg_path,
-                        )
-
-                        fp.write(tmpl_class.format(class_name=name))
-
-                        is_qt = check_for_qt(obj)
-                        fp.write(tmpl_class_body.format(class_name=name))
-
-                        # function bodies here
-                        number_of_tests = 0
-                        for fkt_name, fkt_ in inspect.getmembers(obj):
-                            if inspect.isdatadescriptor(fkt_) and hasattr(fkt_, "fget"):
-                                # property
-                                if not fkt_.fget.__qualname__.startswith(name):
-                                    continue
-
-                            elif inspect.isfunction(fkt_):
-                                if not fkt_.__qualname__.startswith(name):
-                                    # not immplemented here
-                                    continue
-
-                                if fkt_name in ["__init__", "__del__", "__repr__"]:
-                                    continue
-
-                                if fkt_name.startswith("_"):
-                                    # chomp first letter fir protected method signature
-                                    fkt_name = fkt_name[1:]
-
-                            else:
-                                continue
-
-                            print(fkt_)
-                            number_of_tests += 1
-                            if is_qt:
-                                fp.write(
-                                    tmpl_test_fkt_qbot.format(function_name=fkt_name)
-                                )
-                            else:
-                                fp.write(tmpl_test_fkt.format(function_name=fkt_name))
-
-                        if number_of_tests == 0:
-                            fp.write(tmpl_no_fkt)
-
-                fp.close()
+    # root = os.path.abspath(os.path.join(__file__, "..", ".."))
+    # qplotutils_base = os.path.join(root, "qplotutils")
+    # for base_dir, dirnames, filenames in os.walk(qplotutils_base):
+    #
+    #     for filename in filenames:
+    #         if not filename.endswith(".py") or filename == "__init__.py":
+    #             continue
+    #
+    #         package_name = base_dir[len(root) + 1 :].replace(os.sep, ".")
+    #         module_name = package_name + "." + filename[:-3]
+    #
+    #         # Check and create package paths:
+    #         rel_test_pkg_path = "tests" + os.sep + os.sep.join(package_name.split("."))
+    #         abs_test_pkg_path = os.path.join(root, rel_test_pkg_path)
+    #
+    #         if os.path.exists(abs_test_pkg_path):
+    #             print("Package '{}' already exists.".format(rel_test_pkg_path))
+    #         else:
+    #             print(
+    #                 "Creating package '{}' already created.".format(rel_test_pkg_path)
+    #             )
+    #             pkg_path = root
+    #             for nibble in rel_test_pkg_path.split(os.sep):
+    #                 pkg_path = os.path.join(pkg_path, nibble)
+    #                 if not os.path.exists(pkg_path):
+    #                     os.makedirs(pkg_path)
+    #                     with open(os.path.join(pkg_path, "__init__.py"), "w") as fp:
+    #                         fp.write(
+    #                             tmpl__init__.format(
+    #                                 title=format_rst(
+    #                                     "Tests for package " + package_name, "title"
+    #                                 )
+    #                             )
+    #                         )
+    #                         fp.close()
+    #
+    #         test_module_filename = "test_" + module_name.split(".")[-1] + ".py"
+    #         abs_test_module_path = os.path.join(abs_test_pkg_path, test_module_filename)
+    #         if os.path.exists(abs_test_module_path):
+    #             print("Testmodule '{}' already created.".format(test_module_filename))
+    #             continue
+    #
+    #         print("Creating testmodule '{}'.".format(test_module_filename))
+    #         with open(abs_test_module_path, "w") as fp:
+    #             fp.write(
+    #                 tmpl_module.format(
+    #                     title=format_rst("Test for " + module_name, "title"),
+    #                     module_under_test=module_name,
+    #                 )
+    #             )
+    #
+    #             m = importlib.import_module(module_name)
+    #             for name, obj in inspect.getmembers(m):
+    #                 if inspect.isclass(obj) and obj.__module__.startswith(module_name):
+    #
+    #                     print(
+    #                         "Clazz:",
+    #                         name,
+    #                         " Module:",
+    #                         obj.__module__,
+    #                         abs_test_pkg_path,
+    #                     )
+    #
+    #                     fp.write(tmpl_class.format(class_name=name))
+    #
+    #                     is_qt = check_for_qt(obj)
+    #                     fp.write(tmpl_class_body.format(class_name=name))
+    #
+    #                     # function bodies here
+    #                     number_of_tests = 0
+    #                     for fkt_name, fkt_ in inspect.getmembers(obj):
+    #                         if inspect.isdatadescriptor(fkt_) and hasattr(fkt_, "fget"):
+    #                             # property
+    #                             if not fkt_.fget.__qualname__.startswith(name):
+    #                                 continue
+    #
+    #                         elif inspect.isfunction(fkt_):
+    #                             if not fkt_.__qualname__.startswith(name):
+    #                                 # not immplemented here
+    #                                 continue
+    #
+    #                             if fkt_name in ["__init__", "__del__", "__repr__"]:
+    #                                 continue
+    #
+    #                             if fkt_name.startswith("_"):
+    #                                 # chomp first letter fir protected method signature
+    #                                 fkt_name = fkt_name[1:]
+    #
+    #                         else:
+    #                             continue
+    #
+    #                         print(fkt_)
+    #                         number_of_tests += 1
+    #                         if is_qt:
+    #                             fp.write(
+    #                                 tmpl_test_fkt_qbot.format(function_name=fkt_name)
+    #                             )
+    #                         else:
+    #                             fp.write(tmpl_test_fkt.format(function_name=fkt_name))
+    #
+    #                     if number_of_tests == 0:
+    #                         fp.write(tmpl_no_fkt)
+    #
+    #             fp.close()

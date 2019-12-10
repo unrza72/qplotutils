@@ -427,22 +427,23 @@ class LineChartItem(ChartItem):
 
 
 class RectMarker(ChartItem):
-    """ Recatngular tick mark.
+    """ Rectangular tick mark.
 
     :param parent: Parent Item
     """
 
-    def __init__(self, pos, parent=None):
+    def __init__(self, pos, color=Qt.white, parent=None):
         super(RectMarker, self).__init__(parent)
         self.setFlags(QGraphicsItem.ItemIgnoresTransformations)
 
+        self._color = color
         self.setPos(pos)
 
     def boundingRect(self):
         return QRectF(-2, -2, 4, 4)
 
     def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-        p.setPen(QPen(Qt.white))
+        p.setPen(QPen(self.color))
         p.drawRect(QRectF(-2, -2, 4, 4))
 
 

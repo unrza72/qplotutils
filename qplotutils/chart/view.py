@@ -208,6 +208,7 @@ class ChartView(QGraphicsView):
         self.setAcceptDrops(False)
 
         scene = QGraphicsScene()
+
         self.setScene(scene)
 
         self.centralWidget = ChartWidget()
@@ -274,7 +275,7 @@ class ChartView(QGraphicsView):
         painter.end()
 
     def mousePressEvent(self, e: QMouseEvent):
-        e.setAccepted(False)
+        # e.setAccepted(False)
         super().mousePressEvent(e)
 
     def __toggle_legend(self, checked):
@@ -1278,6 +1279,9 @@ class ChartArea(QGraphicsWidget):
         #     super(ChartArea, self).mousePressEvent(event)
         else:
             self.__mouseMode = ChartArea.PAN_MODE
+
+        # event.setAccepted(False)
+        # super().mousePressEvent(event)
         # super(ChartArea, self).mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
@@ -1561,15 +1565,30 @@ class ChartArea(QGraphicsWidget):
 
         # Enforce fixed aspect ratio
         if self.__aspectRatio is not None:
+            # TODO: Although everything is kept in view, the positioning
+            #  of the bounding box inside the area is not optimal.
+            #  This happens when the aspect ratio is very high
+            _w = bbox.width()
+            _h = bbox.height()
             if t.m12() != 0:
                 # AUTOSAR width and height flipped
-                bbox.setWidth(
-                    self.__aspectRatio * area.height() / area.width() * bbox.height()
-                )
+                w = self.__aspectRatio * area.height() / area.width() * bbox.height()
             else:
-                bbox.setWidth(
-                    self.__aspectRatio * area.width() / area.height() * bbox.height()
-                )
+                w = self.__aspectRatio * area.width() / area.height() * bbox.height()
+
+            if _w <= w:
+                bbox.setWidth(w)
+            else:
+                _log.info("Aspect mismatch")
+                sf = _w / w
+                bbox.setHeight(_h * sf)
+
+        # For debugging, which is needed
+        _w0 = bbox.width()
+        _w1 = self.__visibleRange.width()
+
+        _h0 = bbox.height()
+        _h1 = self.__visibleRange.height()
 
         s11 = (area.width()) / bbox.width() * sign(t.m11())
         s12 = (area.height()) / bbox.width() * sign(t.m12())
@@ -1578,8 +1597,8 @@ class ChartArea(QGraphicsWidget):
 
         _log.info("{}, {}; {}, {}".format(s11, s12, s21, s22))
 
-        # The following shift works for not transformed, flipped y, flipped y and rotated 90 degrees
-        # and yes this still is ugly....
+        # The following shift works for not transformed, flipped y, flipped y
+        # and rotated 90 degrees and yes this still is ugly....
         if s11 > 0 or s21 > 0:
             dx = -bbox.left() * s11
         else:

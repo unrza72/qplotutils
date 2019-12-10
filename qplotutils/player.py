@@ -5,22 +5,15 @@ User controls for interactivity.
 
 """
 import logging
-import datetime
 import time
 from collections import deque
 
 import numpy as np
-import pandas as pd
-from PyQt5.QtCore import QPointF
 from qtpy.QtCore import *
 from qtpy.QtGui import *
 from qtpy.QtWidgets import *
 
 from qplotutils import CONFIG
-from qplotutils.chart.interactive import InteractiveVerticalLine
-from qplotutils.chart.items import LineChartItem, ChartItem, TextItem
-from qplotutils.chart.utils import makePen, makeBrush
-from qplotutils.chart.view import ChartView
 from qplotutils.ui.playback import Ui_PlaybackControl
 
 __author__ = "Philipp Baust"
@@ -37,131 +30,49 @@ _log.setLevel(logging.DEBUG)
 
 
 class IPlayable(object):
+    """ Playback for things that are considered realtime data. """
 
     data_changed = Signal(object)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # when set to server to playable will send
-        self.time_server = False
-        self.time_agent = True
-        self.time_agent_possible = True
+    def render_timestamp(self, ts):
+        """ Slot that is called on change of the current timestamp.
+        Simplest case when rendering on every timestamp is possible without
+        to much computational effort.
 
-    def render_ts(self, ts):
+        :param ts:
+        :return:
+        """
         pass
 
-    # def render_idx(self, ts):
-    #     pass
+    def on_state_change(self, state):
+        """ Gets notified whenever the play stae changes.
+        Currently only playback / paused.
+        Needed when the playback device is optimized for playback but
+        on timestamp rendering is expensive or too slow
 
+        :param state:
+        :return:
+        """
+        pass
 
-class OsciPlayable(IPlayable, ChartView):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def on_playback_speed_change(self, playback_speed):
+        """ Gets notified when the playback speed changes
 
-        self._displayed_data = pd.DataFrame()
-        self._k = 0
+        :param playback_speed:
+        :return:
+        """
+        pass
 
-        self._ivline = InteractiveVerticalLine()
-        self._ivline.setX(0, "Current Timestamp", Qt.darkGreen)
-        self.addItem(self._ivline)
+    def on_playback_timeline_change(self, timeline):
+        """ Gets notified whenever the player timeline changes.
 
-
-    def add_data(self, signal: pd.Series, name=None):
-
-        if name is None:
-            self._k += 1
-            name = "signal_{0:02d}".format(self._k)
-
-        self._displayed_data[name] = signal
-
-        l = LineChartItem()
-        l.label = name
-        l.plot(signal.values, signal.index.values)
-        self.addItem(l)
-
-        self.data_changed.emit(self._displayed_data.index.values)
-
-    def render_ts(self, ts):
-        # _log.debug("Osci update: {}".format(ts))
-        self._ivline.setX(ts)
-
-
-class IBirdeyeItem(ChartItem):
-    def __init__(self, row, parent=None):
-        super(ChartItem, self).__init__(parent=parent)
-        self.row = None
-        # self._brect = None
-        self._path = None
-        self.update_path(row)
-
-    def update_path(self, row):
-        self.row = row
-        p = QPainterPath()
-        p.moveTo(row["x0"], row["y0"])
-        p.lineTo(row["x0"], row["y0"])
-        p.lineTo(row["x1"], row["y1"])
-        p.lineTo(row["x2"], row["y2"])
-        p.lineTo(row["x3"], row["y3"])
-        p.lineTo(row["x0"], row["y0"])
-
-        if self._path is None:
-            self.b_rect = p.boundingRect()
-        else:
-            # make sure the update will not produce a tail
-            self.b_rect = self._path.boundingRect().united(p.boundingRect())
-        self._path = p
-
-
-        self.update()
-
-    def boundingRect(self):
-        return self.b_rect.adjusted(-.2, -.2, .4, .4)
-
-    def paint(self, p=QPainter(), o=QStyleOptionGraphicsItem(), widget=None):
-        p.setPen(makePen((Qt.white)))
-        p.setBrush(makeBrush(Qt.white))
-        p.drawPath(self._path)
-
-
-class Birdview(IPlayable, ChartView):
-    def __init__(self, prototyp: IBirdeyeItem, *arg, **kwargs):
-        super().__init__(*arg, **kwargs)
-        self.prototyp = prototyp
-        self.df = None
-
-        self.c_items = {}
-        self.setVisibleRange(QRectF(-5, -10, 60, 10))
-        self.setCoordinatesOrientation(self.AUTOSAR)
-
-        # self._fps_t0 = None
-        # self.fps_text = TextItem(QPointF(10, 10),"Test")
-        # self.addItem(self.fps_text)
-        self.setAspectRatio(1.)
-
-    def add_data(self, df: pd.DataFrame):
-        self.df = df
-        self.df.set_index([ "ts", "obj_id"], drop=False, inplace=True)
-        self.render_ts(df["ts"].values[0])
-
-    def render_ts(self, ts):
-        sub_df = self.df.loc[ts,:]
-
-        deleted_obj_ids = [c for c in self.c_items.keys() if c not in sub_df["obj_id"]]
-        for c in deleted_obj_ids:
-            self.removeItem(self.c_items[c])
-            del self.c_items[c]
-
-        for idx, row in sub_df.iterrows():
-            obj_id = row["obj_id"]
-            if obj_id in self.c_items:
-                # update existing
-                self.c_items[obj_id].update_path(row)
-            else:
-                # add new
-                obj = self.prototyp(row)
-                self.c_items[obj_id] = obj
-                self.addItem(obj)
+        :param timeline:
+        :return:
+        """
+        pass
 
 
 class PlaybackWidget(QWidget):
@@ -180,12 +91,17 @@ class PlaybackWidget(QWidget):
     #: emited whenever the timestamp is changed.
     # timestamp_changed = Signal(int, float)
 
+    class State(object):
+        Playback = "playback"
+        Paused = "paused"
+
     def __init__(self, parent=None):
         super(PlaybackWidget, self).__init__(parent)
         self.ui = Ui_PlaybackControl()
         self.ui.setupUi(self)
 
-        self._timeline_df = pd.DataFrame()
+        # self._timeline_df = pd.DataFrame()
+        self._timeline = np.array([])
 
         self.ui.button_play_pause.clicked.connect(self.play_pause)
         self.ui.button_back.clicked.connect(self.step_back)
@@ -196,24 +112,30 @@ class PlaybackWidget(QWidget):
         # self.ui.edit_timestamp.textEdited.connect(self.jump_to_timestamp)
         self.ui.doubleSpinBox.valueChanged.connect(self._set_play_speed)
 
-        self.__is_playing = False
-
-        self._ts_format = "{0:02.4f}"
+        self._is_playing = False
+        self._ts_format = "{0:2.0f}"
 
         self.render_delay = 1  # ms accounted for rendering
 
+        # State variables to monitor the actual playback-speed
         self._step = 0
-        self._filter_length = 10
+        self._filter_length = 40
         self._t = deque(maxlen=self._filter_length)
 
-    def on_data_change(self, timeline):
-        print("Data change")
+        self._timeline_scaling_factor = 1.0E-6
 
+    @property
+    def timeline_scaling_factor(self):
+        return self._timeline_scaling_factor
+
+    @timeline_scaling_factor.setter
+    def timeline_scaling_factor(self, value):
+        self._timeline_scaling_factor = value
 
     def _set_play_speed(self, value):
-        samples = len(self.timeline)
-        v = self._timeline_df["timeline"].values
-        duration = v[-1] - v[0]
+        samples = len(self.timeline) - 1
+        v = self.timeline * self.timeline_scaling_factor
+        duration = v[-1] - v[0]  # in seconds
 
         true_step = duration / samples * 1000
         # _log.debug("Slack: {}ms".format(slack))
@@ -226,11 +148,15 @@ class PlaybackWidget(QWidget):
 
     @property
     def timeline(self):
-        return self._timeline_df.index.values
+        """ List of timestamps.
+        Pay attention to the timestamp scaling factor, default is 1.0E-6.
+        Meaning the timeline is expected to be given in micro seconds.
+        """
+        return self._timeline
 
     @timeline.setter
     def timeline(self, values):
-        self._timeline_df["timeline"] = values
+        self._timeline = values # _df["timeline"] = values
 
         # self.ui.edit_timestamp.setText(self._ts_format.format(values[0]))
         self.ui.slider_index.setMinimum(0)
@@ -240,10 +166,25 @@ class PlaybackWidget(QWidget):
 
         self._set_play_speed(self.ui.doubleSpinBox.value())
         self.ui.doubleSpinBox.setMinimum(0.1)
-        self.ui.doubleSpinBox.setMaximum(10)
+        self.ui.doubleSpinBox.setMaximum(5)
 
-    def playable_changed(self, timeline):
-        _log.debug("Playable changed")
+    def register_playable(self, playable: IPlayable):
+        _log.debug("Playable registered")
+
+        name = playable.__module__ + "." +  playable.__class__.__name__
+
+        # if name in self._timeline_df:
+        #     # update df
+        #
+        # else:
+        #     s = pd.Series(data=playable.)
+        #
+        #     self._timeline_df[name]
+
+
+    def unregister_playable(self, playable: IPlayable):
+        _log.debug("Playable un-registered")
+
 
     ts_change = Signal(float)
 
@@ -252,7 +193,7 @@ class PlaybackWidget(QWidget):
 
     def _slider_value_changed(self, value):
         try:
-            ts = self._timeline_df.loc[value, "timeline"]
+            ts = self.timeline[value]
             # ts = self.timestamps[value]
             self.ui.edit_timestamp.setText(self._ts_format.format(ts))
 
@@ -261,26 +202,28 @@ class PlaybackWidget(QWidget):
             _log.debug(e)
 
     def play_pause(self):
-        if self.__is_playing:
+        if self._is_playing:
             self.pause()
         else:
             self.play()
 
     def pause(self):
-        if not self.__is_playing:
+        if not self._is_playing:
             return
         self.ui.button_play_pause.setIcon(
             QIcon(":/player/icons/media-playback-start.svg")
         )
-        self.__is_playing = False
+        self.ui.button_play_pause.setIconSize(QSize(32,32))
+        self._is_playing = False
 
     def play(self):
-        if self.__is_playing:
+        if self._is_playing:
             return
         self.ui.button_play_pause.setIcon(
             QIcon(":/player/icons/media-playback-pause.svg")
         )
-        self.__is_playing = True
+        self.ui.button_play_pause.setIconSize(QSize(32, 32))
+        self._is_playing = True
         # self._t0 = time.perf_counter_ns()
         self.advance()
 
@@ -298,11 +241,7 @@ class PlaybackWidget(QWidget):
         else:
             next_index = self.ui.slider_index.value() + 1
 
-        if (
-            not self._timeline_df.index.values[0]
-            <= next_index
-            <= self._timeline_df.index.values[-1]
-        ):
+        if not (0 <= next_index <= len(self.timeline)):
 
             # if self._t0 is not None:
             #     td = (time.perf_counter_ns() - self._t0) * 1.0e-9
@@ -321,39 +260,30 @@ class PlaybackWidget(QWidget):
             return
 
         self.ui.slider_index.setValue(next_index)
-        if self.__is_playing:
-            QTimer.singleShot(self._step - self.render_delay, self.advance)
+        if self._is_playing:
+            d = self._step - self.render_delay
+            if d <= 0:
+                d = 0
+            QTimer.singleShot(d, self.advance)
             # self._t.append(time.perf_counter_ns())
 
-            if len(self._t) >= self._filter_length:
+            if d > 2 and  len(self._t) >= self._filter_length:
                 measured_step = np.median(np.diff(self._t) * 1.0e-6)
                 delta = measured_step - self._step
                 # _log.debug("Delta: {}".format(delta))
-                if delta > 1:
+                if delta > 2:
                     d = np.abs(np.round(delta, 0))
-                    _log.warning("Adjusting delay, Delta is  {}".format(delta))
+                    # _log.warning("Adjusting delay, Delta is  {}".format(delta))
                     if (self._step - self.render_delay - d) < 1:
                         _log.warning("Reached max possible speed.")
                     else:
                         self.render_delay += d
                         self._t.clear()
-                elif delta < -1:
+                elif delta < -2:
                         d = np.abs(np.round(delta, 0))
-                        _log.warning("Adjusting delay, Delta is  {}".format(delta))
+                        # _log.warning("Adjusting delay, Delta is  {}".format(delta))
                         self.render_delay -= d
                         self._t.clear()
 
 
             self._t.append(time.perf_counter_ns())
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
-    qapp = QApplication([])
-
-    CONFIG.debug = True
-
-    p = PlaybackWidget()
-    p.show()
-    p.timestamps = np.arange(0, 1000, 12) * 141000
-
-    qapp.exec_()
